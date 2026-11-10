@@ -100,7 +100,9 @@ select is(pg_temp.resultado(), pg_temp.total(array['activo']) - pg_temp.total(ar
   'el resultado es igual a la variación del patrimonio');
 
 create function pg_temp.global(p_types text[]) returns bigint language sql as
-$$ select coalesce(sum(case when nature = 'deudora' then debit_cents - credit_cents
+-- El signo lo da el grupo de la cuenta: una cuenta contraria (repartos a
+-- integrantes, dentro del fondo) resta.
+$$ select coalesce(sum(case when type in ('activo', 'costo', 'gasto', 'otro') then debit_cents - credit_cents
                               else credit_cents - debit_cents end), 0)::bigint
    from public.report_account_totals() where type::text = any(p_types) $$;
 select is(pg_temp.global(array['activo']),

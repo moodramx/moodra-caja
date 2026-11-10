@@ -83,6 +83,20 @@ test.describe('integrante', () => {
     }
   })
 
+  test('Más ofrece notificaciones y la guía "Cómo se usa" en tres pasos', async ({ page }) => {
+    await page.goto('/mas')
+    await expect(page.getByText('🔔 Notificaciones')).toBeVisible()
+    await page.getByRole('button', { name: /Cómo se usa/ }).click()
+    const guide = page.getByRole('dialog')
+    await expect(guide.getByText('Registra en el momento')).toBeVisible()
+    await guide.getByRole('button', { name: 'Siguiente' }).click()
+    await expect(guide.getByText('Funciona sin señal')).toBeVisible()
+    await guide.getByRole('button', { name: 'Siguiente' }).click()
+    await expect(guide.getByText('Las cuentas, siempre claras')).toBeVisible()
+    await guide.getByRole('button', { name: 'Empezar' }).click()
+    await expect(guide).toHaveCount(0)
+  })
+
   test('los targets de navegación miden al menos 48 px', async ({ page }) => {
     await page.goto('/')
     const links = page.getByRole('navigation', { name: 'Secciones' }).getByRole('link')

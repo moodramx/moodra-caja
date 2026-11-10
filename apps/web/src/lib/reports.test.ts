@@ -8,6 +8,7 @@ import {
   buildLedger,
   buildMemberBalances,
   buildMerchMargin,
+  buildSettlement,
   buildShowRanking,
   buildTrialBalance,
   cashOf,
@@ -154,6 +155,22 @@ describe('balance general', () => {
   })
 })
 
+describe('cuentas que van al revés de su grupo', () => {
+  it('los repartos a integrantes restan del fondo y el balance sigue cuadrando', () => {
+    // Se repartieron $1,000: D 3.2.02 Repartos · H 2.4.02 Reparto por pagar.
+    const withDistribution = [
+      ...totals,
+      { ...acc('3.2.02', 'Repartos a Pepe', 'patrimonio', 100_000, 0), nature: 'deudora' as const },
+      acc('2.4.02', 'Reparto por pagar a Pepe', 'pasivo', 0, 100_000),
+    ]
+    const { report, assets, liabilitiesAndEquity } = buildBalanceSheet(withDistribution, '')
+    expect(liabilitiesAndEquity).toBe(assets)
+    expect(amount(report, '3.2.02 Repartos a Pepe')).toBe(-100_000n)
+    expect(amount(report, 'Total pasivo')).toBe(220_000n)
+    expect(amount(report, 'Total fondo')).toBe(1_330_000n)
+  })
+})
+
 describe('flujo de efectivo', () => {
   it('entradas, salidas y saldo final', () => {
     const { report, change, closing } = buildCashFlow(flows, 0n, 'todo')
@@ -240,6 +257,43 @@ describe('integrantes, merch y shows', () => {
       'hoy',
     )
     expect(report.rows.at(-1)?.cells).toEqual(['Total', 40_000n, 50_000n, 500_000n, 0n])
+  })
+
+  it('liquidación: el menor número de entregas para quedar en ceros', () => {
+    const report = buildSettlement(
+      [
+        // Trae $700 de la banda y no se le debe nada: los entrega.
+        {
+          display_name: 'Ana',
+          cash_cents: 70_000,
+          owed_cents: 0,
+          contributions_cents: 0,
+          distributions_cents: 0,
+        },
+        // Se le deben $500 y no trae nada.
+        {
+          display_name: 'Beto',
+          cash_cents: 0,
+          owed_cents: 50_000,
+          contributions_cents: 0,
+          distributions_cents: 0,
+        },
+        // Trae $100 y se le deben $100: ya está a mano.
+        {
+          display_name: 'Caro',
+          cash_cents: 10_000,
+          owed_cents: 10_000,
+          contributions_cents: 0,
+          distributions_cents: 0,
+        },
+      ],
+      'hoy',
+    )
+    expect(report.rows.map((row) => row.cells)).toEqual([
+      ['Ana le entrega a Beto', 50_000n],
+      ['Ana le entrega a La banda (caja o cuenta)', 20_000n],
+    ])
+    expect(buildSettlement([], 'hoy').rows).toEqual([])
   })
 
   const merch = [

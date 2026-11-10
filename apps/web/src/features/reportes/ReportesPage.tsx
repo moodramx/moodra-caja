@@ -19,6 +19,7 @@ import {
 } from '../../lib/queries'
 import {
   balanceOf,
+  groupBalance,
   buildBalanceSheet,
   buildBreakEven,
   buildCashFlow,
@@ -27,6 +28,7 @@ import {
   buildLedger,
   buildMemberBalances,
   buildMerchMargin,
+  buildSettlement,
   buildShowRanking,
   buildTrialBalance,
   cashOf,
@@ -50,11 +52,12 @@ const todayInMexico = () =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date())
 const sum = (values: bigint[]) => values.reduce((total, value) => total + value, 0n)
 const sumOf = (rows: AccountTotal[], test: (row: AccountTotal) => boolean) =>
-  sum(rows.filter(test).map(balanceOf))
+  sum(rows.filter(test).map(groupBalance))
 
 /** Todo lo que necesitan los reportes de un periodo. */
 function useReportData(period: Period) {
-  const movement = useAccountTotals(period.from, period.to)
+  // Resultados sin el asiento de cierre de año, para que un año cerrado siga mostrando sus números.
+  const movement = useAccountTotals(period.from, period.to, true, false)
   const cumulative = useAccountTotals(null, period.to)
   const opening = useAccountTotals(
     null,
@@ -65,6 +68,7 @@ function useReportData(period: Period) {
     period.previous?.from ?? null,
     period.previous?.to ?? null,
     period.previous !== undefined,
+    false,
   )
   const flows = useCashFlow(period.from, period.to)
   const merch = useMerchReport(period.from, period.to)
@@ -269,6 +273,7 @@ type ReportKey =
   | 'equilibrio'
   | 'margen'
   | 'inventario'
+  | 'liquidacion'
 const REPORTS: { key: ReportKey; label: string }[] = [
   { key: 'resultados', label: 'Resultados' },
   { key: 'balance', label: 'Balance' },
@@ -280,6 +285,7 @@ const REPORTS: { key: ReportKey; label: string }[] = [
   { key: 'equilibrio', label: 'Punto de equilibrio' },
   { key: 'margen', label: 'Margen de merch' },
   { key: 'inventario', label: 'Inventario' },
+  { key: 'liquidacion', label: 'Liquidación' },
 ]
 
 const ALERT_EMOJI: Record<string, string> = {
@@ -412,6 +418,7 @@ function ContadorView({ period, data }: { period: Period; data: ReportData }) {
     equilibrio: buildBreakEven(data.shows, period),
     margen: buildMerchMargin(data.merch, period.label),
     inventario: buildInventory(data.merch, period.label),
+    liquidacion: buildSettlement(data.members, 'al día de hoy'),
   }
   const ledgerReport =
     account && ledger.data

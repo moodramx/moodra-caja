@@ -9,7 +9,7 @@ import { useJournal, useTrialBalance } from '../../lib/queries'
 const cents = (value: number | null) => (value ? formatMXN(BigInt(value)) : '')
 
 /** Solo el contador entra; la seguridad real está en la base (RLS y RPC). */
-function ContadorOnly({ children }: { children: ReactNode }) {
+export function ContadorOnly({ children }: { children: ReactNode }) {
   const { profile } = useAuth()
   if (profile && profile.role !== 'contador') return <Navigate to="/" />
   return children

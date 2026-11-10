@@ -21,9 +21,13 @@ import { Route as AppReportesRouteImport } from './routes/_app/reportes'
 import { Route as AppSaldosRouteImport } from './routes/_app/saldos'
 import { Route as AppShowsRouteImport } from './routes/_app/shows'
 import { Route as AppTransporteRouteImport } from './routes/_app/transporte'
+import { Route as AppContadorAsientoRouteImport } from './routes/_app/contador/asiento'
 import { Route as AppContadorBalanzaRouteImport } from './routes/_app/contador/balanza'
 import { Route as AppContadorBoleterasRouteImport } from './routes/_app/contador/boleteras'
+import { Route as AppContadorCatalogosRouteImport } from './routes/_app/contador/catalogos'
+import { Route as AppContadorCierresRouteImport } from './routes/_app/contador/cierres'
 import { Route as AppContadorDiarioRouteImport } from './routes/_app/contador/diario'
+import { Route as AppContadorOperacionRouteImport } from './routes/_app/contador/operacion'
 import { Route as AppContadorProductosRouteImport } from './routes/_app/contador/productos'
 import { Route as AppContadorUsuariosRouteImport } from './routes/_app/contador/usuarios'
 
@@ -86,6 +90,11 @@ const AppTransporteRoute = AppTransporteRouteImport.update({
   path: '/transporte',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContadorAsientoRoute = AppContadorAsientoRouteImport.update({
+  id: '/contador/asiento',
+  path: '/contador/asiento',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContadorBalanzaRoute = AppContadorBalanzaRouteImport.update({
   id: '/contador/balanza',
   path: '/contador/balanza',
@@ -96,9 +105,24 @@ const AppContadorBoleterasRoute = AppContadorBoleterasRouteImport.update({
   path: '/contador/boleteras',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContadorCatalogosRoute = AppContadorCatalogosRouteImport.update({
+  id: '/contador/catalogos',
+  path: '/contador/catalogos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContadorCierresRoute = AppContadorCierresRouteImport.update({
+  id: '/contador/cierres',
+  path: '/contador/cierres',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContadorDiarioRoute = AppContadorDiarioRouteImport.update({
   id: '/contador/diario',
   path: '/contador/diario',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContadorOperacionRoute = AppContadorOperacionRouteImport.update({
+  id: '/contador/operacion',
+  path: '/contador/operacion',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContadorProductosRoute = AppContadorProductosRouteImport.update({
@@ -124,9 +148,13 @@ export interface FileRoutesByFullPath {
   '/saldos': typeof AppSaldosRoute
   '/shows': typeof AppShowsRoute
   '/transporte': typeof AppTransporteRoute
+  '/contador/asiento': typeof AppContadorAsientoRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/boleteras': typeof AppContadorBoleterasRoute
+  '/contador/catalogos': typeof AppContadorCatalogosRoute
+  '/contador/cierres': typeof AppContadorCierresRoute
   '/contador/diario': typeof AppContadorDiarioRoute
+  '/contador/operacion': typeof AppContadorOperacionRoute
   '/contador/productos': typeof AppContadorProductosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
 }
@@ -142,9 +170,13 @@ export interface FileRoutesByTo {
   '/shows': typeof AppShowsRoute
   '/transporte': typeof AppTransporteRoute
   '/': typeof AppIndexRoute
+  '/contador/asiento': typeof AppContadorAsientoRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/boleteras': typeof AppContadorBoleterasRoute
+  '/contador/catalogos': typeof AppContadorCatalogosRoute
+  '/contador/cierres': typeof AppContadorCierresRoute
   '/contador/diario': typeof AppContadorDiarioRoute
+  '/contador/operacion': typeof AppContadorOperacionRoute
   '/contador/productos': typeof AppContadorProductosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
 }
@@ -162,9 +194,13 @@ export interface FileRoutesById {
   '/_app/shows': typeof AppShowsRoute
   '/_app/transporte': typeof AppTransporteRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/contador/asiento': typeof AppContadorAsientoRoute
   '/_app/contador/balanza': typeof AppContadorBalanzaRoute
   '/_app/contador/boleteras': typeof AppContadorBoleterasRoute
+  '/_app/contador/catalogos': typeof AppContadorCatalogosRoute
+  '/_app/contador/cierres': typeof AppContadorCierresRoute
   '/_app/contador/diario': typeof AppContadorDiarioRoute
+  '/_app/contador/operacion': typeof AppContadorOperacionRoute
   '/_app/contador/productos': typeof AppContadorProductosRoute
   '/_app/contador/usuarios': typeof AppContadorUsuariosRoute
 }
@@ -182,9 +218,13 @@ export interface FileRouteTypes {
     | '/saldos'
     | '/shows'
     | '/transporte'
+    | '/contador/asiento'
     | '/contador/balanza'
     | '/contador/boleteras'
+    | '/contador/catalogos'
+    | '/contador/cierres'
     | '/contador/diario'
+    | '/contador/operacion'
     | '/contador/productos'
     | '/contador/usuarios'
   fileRoutesByTo: FileRoutesByTo
@@ -200,9 +240,13 @@ export interface FileRouteTypes {
     | '/shows'
     | '/transporte'
     | '/'
+    | '/contador/asiento'
     | '/contador/balanza'
     | '/contador/boleteras'
+    | '/contador/catalogos'
+    | '/contador/cierres'
     | '/contador/diario'
+    | '/contador/operacion'
     | '/contador/productos'
     | '/contador/usuarios'
   id:
@@ -219,9 +263,13 @@ export interface FileRouteTypes {
     | '/_app/shows'
     | '/_app/transporte'
     | '/_app/'
+    | '/_app/contador/asiento'
     | '/_app/contador/balanza'
     | '/_app/contador/boleteras'
+    | '/_app/contador/catalogos'
+    | '/_app/contador/cierres'
     | '/_app/contador/diario'
+    | '/_app/contador/operacion'
     | '/_app/contador/productos'
     | '/_app/contador/usuarios'
   fileRoutesById: FileRoutesById
@@ -317,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTransporteRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/contador/asiento': {
+      id: '/_app/contador/asiento'
+      path: '/contador/asiento'
+      fullPath: '/contador/asiento'
+      preLoaderRoute: typeof AppContadorAsientoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/contador/balanza': {
       id: '/_app/contador/balanza'
       path: '/contador/balanza'
@@ -331,11 +386,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContadorBoleterasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/contador/catalogos': {
+      id: '/_app/contador/catalogos'
+      path: '/contador/catalogos'
+      fullPath: '/contador/catalogos'
+      preLoaderRoute: typeof AppContadorCatalogosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/contador/cierres': {
+      id: '/_app/contador/cierres'
+      path: '/contador/cierres'
+      fullPath: '/contador/cierres'
+      preLoaderRoute: typeof AppContadorCierresRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/contador/diario': {
       id: '/_app/contador/diario'
       path: '/contador/diario'
       fullPath: '/contador/diario'
       preLoaderRoute: typeof AppContadorDiarioRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/contador/operacion': {
+      id: '/_app/contador/operacion'
+      path: '/contador/operacion'
+      fullPath: '/contador/operacion'
+      preLoaderRoute: typeof AppContadorOperacionRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/contador/productos': {
@@ -366,9 +442,13 @@ interface AppRouteChildren {
   AppShowsRoute: typeof AppShowsRoute
   AppTransporteRoute: typeof AppTransporteRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppContadorAsientoRoute: typeof AppContadorAsientoRoute
   AppContadorBalanzaRoute: typeof AppContadorBalanzaRoute
   AppContadorBoleterasRoute: typeof AppContadorBoleterasRoute
+  AppContadorCatalogosRoute: typeof AppContadorCatalogosRoute
+  AppContadorCierresRoute: typeof AppContadorCierresRoute
   AppContadorDiarioRoute: typeof AppContadorDiarioRoute
+  AppContadorOperacionRoute: typeof AppContadorOperacionRoute
   AppContadorProductosRoute: typeof AppContadorProductosRoute
   AppContadorUsuariosRoute: typeof AppContadorUsuariosRoute
 }
@@ -384,9 +464,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppShowsRoute: AppShowsRoute,
   AppTransporteRoute: AppTransporteRoute,
   AppIndexRoute: AppIndexRoute,
+  AppContadorAsientoRoute: AppContadorAsientoRoute,
   AppContadorBalanzaRoute: AppContadorBalanzaRoute,
   AppContadorBoleterasRoute: AppContadorBoleterasRoute,
+  AppContadorCatalogosRoute: AppContadorCatalogosRoute,
+  AppContadorCierresRoute: AppContadorCierresRoute,
   AppContadorDiarioRoute: AppContadorDiarioRoute,
+  AppContadorOperacionRoute: AppContadorOperacionRoute,
   AppContadorProductosRoute: AppContadorProductosRoute,
   AppContadorUsuariosRoute: AppContadorUsuariosRoute,
 }

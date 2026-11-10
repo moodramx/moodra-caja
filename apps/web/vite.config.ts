@@ -56,6 +56,8 @@ export default defineConfig({
             options: { cacheName: 'exportar-reportes', expiration: { maxEntries: 6 } },
           },
         ],
+        // Recibe las notificaciones push dentro del mismo service worker.
+        importScripts: ['push-sw.js'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
       },

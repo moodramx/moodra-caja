@@ -76,6 +76,12 @@ function Row({
 function merchLines(
   op: OutboxOp,
 ): { qty: number; unit_price_cents?: number; unit_cost_cents?: number; is_gift?: boolean }[] {
+  // Solo los tipos de merch llevan piezas; otros (asiento manual) también traen "lines".
+  if (
+    !op.type ||
+    !['venta_merch', 'compra_merch', 'salida_merch', 'ajuste_inventario'].includes(op.type)
+  )
+    return []
   const payload = op.payload as { lines?: []; qty?: number } | undefined
   return payload?.lines ?? (payload?.qty ? [{ qty: payload.qty }] : [])
 }
@@ -92,11 +98,39 @@ function opAsRow(op: OutboxOp, categories: { id: string; name: string; emoji: st
     GastoPayload & IngresoPayload & EntregaPayload & PuseDineroPayload
   >
   const category = categories.find((c) => c.id === p.category_id)
+  // Datos de los tipos que no son gasto, cobro ni merch (transporte y contador).
+  const raw = (op.payload ?? {}) as {
+    dest_name?: string
+    from_member?: string
+    to_member?: string
+    member_id?: string
+    place?: string
+    counted_cents?: number
+    reason?: string
+    lines?: { debit_cents?: number }[]
+  }
+  const extra = {
+    amount:
+      op.type === 'asiento_manual'
+        ? (raw.lines ?? []).reduce((sum, line) => sum + (line.debit_cents ?? 0), 0)
+        : op.type === 'arqueo'
+          ? (raw.counted_cents ?? 0)
+          : undefined,
+    dest: raw.dest_name,
+    from: op.type === 'pago_transporte' ? raw.from_member : undefined,
+    to: op.type === 'pago_transporte' ? raw.to_member : undefined,
+    member:
+      op.type === 'pago_reparto' || op.type === 'arqueo'
+        ? (raw.member_id ?? op.user_id)
+        : undefined,
+    place: raw.place,
+    reason: raw.reason,
+  }
   return {
     type: op.type ?? null,
     status: 'registrado',
     created_by: op.user_id,
-    amount_cents: p.amount_cents ?? merchAmount(op),
+    amount_cents: p.amount_cents ?? extra.amount ?? merchAmount(op),
     pieces: merchPieces(op),
     stock_kind: (op.payload as { kind?: string } | undefined)?.kind ?? null,
     category_name: category?.name ?? null,
@@ -106,6 +140,13 @@ function opAsRow(op: OutboxOp, categories: { id: string; name: string; emoji: st
     fund_kind: p.kind ?? null,
     fund_member: (p as { member_id?: string }).member_id ?? null,
     captured_at: op.captured_at,
+    trip_dest: extra.dest ?? null,
+    pay_from: extra.from ?? null,
+    pay_to: extra.to ?? null,
+    admin_member: extra.member ?? null,
+    count_place: extra.place ?? null,
+    count_diff: null,
+    manual_reason: extra.reason ?? null,
   } as FeedRow
 }
 

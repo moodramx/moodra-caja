@@ -1213,6 +1213,58 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"notification_log": {
+                  Row: {
+                    "key": string,"sent_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "key": string,"sent_at"?: string
+                  }
+                  Update: {
+                    "key"?: string,"sent_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"notification_prefs": {
+                  Row: {
+                    "muted": (string)[],"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "muted"?: (string)[],"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "muted"?: (string)[],"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "v_distributions_payable"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "notification_prefs_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
                 },"periods": {
                   Row: {
                     "closed_at": string | null,"closed_by": string | null,"created_at": string,"id": string,"month": number,"reopen_reason": string | null,"status": Database["public"]['Enums']["period_status"],"year": number
@@ -1589,6 +1641,44 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_inventory"
       referencedColumns: ["variant_id"]
+    }
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string,"user_agent": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"p256dh": string,"user_agent"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "v_distributions_payable"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"receivable_collections": {
@@ -3028,6 +3118,9 @@ isOneToOne: true
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_push_subscription":
+{ Args: { "p_endpoint": string }; Returns: undefined
+                           },
 "distribution_preview":
 { Args: { "p_amount": number }; Returns: {
               "compensation_cents": number,"display_name": string,"gross_cents": number,"member_id": string,"net_cents": number
@@ -3279,6 +3372,9 @@ isOneToOne: true
         isOneToOne: true
         isSetofReturn: false
       } },
+"save_push_subscription":
+{ Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string,"p_user_agent"?: string }; Returns: string
+                           },
 "save_show":
 { Args: { "p_payload": Json }; Returns: string
                            },
@@ -3310,6 +3406,9 @@ isOneToOne: true
                            },
 "set_intern_salary":
 { Args: { "p_cents": number }; Returns: number
+                           },
+"set_notification_muted":
+{ Args: { "p_types": (string)[] }; Returns: (string)[]
                            },
 "set_product_photo":
 { Args: { "p_path": string,"p_product_id": string }; Returns: undefined

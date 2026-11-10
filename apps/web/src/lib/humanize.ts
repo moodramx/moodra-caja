@@ -11,7 +11,11 @@ import type {
 } from './events'
 import { formatMXNShort } from './money'
 
-const money = (cents: number | bigint) => formatMXNShort(BigInt(cents))
+// Tolera montos raros (NaN de una captura local a medias) en vez de tronar la pantalla.
+const money = (cents: number | bigint) =>
+  formatMXNShort(
+    typeof cents === 'bigint' ? cents : BigInt(Number.isFinite(cents) ? Math.trunc(cents) : 0),
+  )
 
 export const PAID_WITH_OPTIONS = [
   { value: 'efectivo_banda', emoji: '💵', label: 'Efectivo de la banda que traigo' },
@@ -224,10 +228,39 @@ export function feedText(row: FeedRow, nameOf: (id: string | null) => string): F
         title: `Se le regresaron ${amount} a ${nameOf(row.fund_member)}`,
         badge,
       }
+    case 'reparto':
+      return { emoji: '🎉', title: `Se repartieron ${amount} entre los integrantes`, badge }
+    case 'pago_reparto':
+      return {
+        emoji: '💸',
+        title: `Se le pagaron ${amount} de reparto a ${nameOf(row.admin_member)}`,
+        badge,
+      }
+    case 'arqueo': {
+      const whose =
+        row.count_place === 'caja' ? 'la caja' : `el efectivo de ${nameOf(row.admin_member)}`
+      const diff = row.count_diff ?? 0
+      return {
+        emoji: '🧮',
+        title:
+          row.count_diff === null || row.count_diff === undefined
+            ? `${who} contó ${whose}`
+            : diff === 0
+              ? `${who} contó ${whose}: está completo`
+              : `${who} contó ${whose}: ${diff < 0 ? 'faltaron' : 'sobraron'} ${amount}`,
+        badge,
+      }
+    }
+    case 'asiento_manual':
+      return {
+        emoji: '✍️',
+        title: `Ajuste del contador: ${row.manual_reason ?? ''} · ${amount}`,
+        badge,
+      }
     case 'viaje':
       return {
         emoji: '🚗',
-        title: `${who} registró un viaje a ${row.trip_dest ?? 'algún lado'} · ${amount}`,
+        title: `${who} registró un viaje a ${row.trip_dest ?? 'algún lado'}${row.amount_cents ? ` · ${amount}` : ''}`,
         badge,
       }
     case 'pago_transporte':

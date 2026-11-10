@@ -30,17 +30,28 @@ export const balanceOf = (t: AccountTotal): bigint =>
     ? BigInt(t.debit_cents) - BigInt(t.credit_cents)
     : BigInt(t.credit_cents) - BigInt(t.debit_cents)
 
+/**
+ * Saldo según el grupo al que pertenece la cuenta (activo, costo, gasto y otros
+ * suman con cargos; pasivo, fondo e ingresos, con abonos). Una cuenta que va al
+ * revés de su grupo —"Repartos a integrantes" dentro del fondo— sale negativa
+ * y resta, que es lo correcto en el balance y en los resultados.
+ */
+export const groupBalance = (t: AccountTotal): bigint =>
+  ['activo', 'costo', 'gasto', 'otro'].includes(t.type)
+    ? BigInt(t.debit_cents) - BigInt(t.credit_cents)
+    : BigInt(t.credit_cents) - BigInt(t.debit_cents)
+
 const byCode = (a: { code: string }, b: { code: string }) =>
   a.code.localeCompare(b.code, undefined, { numeric: true })
 const sum = (values: bigint[]) => values.reduce((total, value) => total + value, 0n)
 const ofType = (rows: AccountTotal[], ...types: AccountTotal['type'][]) =>
-  rows.filter((row) => types.includes(row.type) && balanceOf(row) !== 0n).sort(byCode)
+  rows.filter((row) => types.includes(row.type) && groupBalance(row) !== 0n).sort(byCode)
 
 /** Resultado del periodo: ingresos − costos − gastos − otros. */
 export function resultOf(rows: AccountTotal[]): bigint {
   return (
-    sum(rows.filter((r) => r.type === 'ingreso').map(balanceOf)) -
-    sum(rows.filter((r) => ['costo', 'gasto', 'otro'].includes(r.type)).map(balanceOf))
+    sum(rows.filter((r) => r.type === 'ingreso').map(groupBalance)) -
+    sum(rows.filter((r) => ['costo', 'gasto', 'otro'].includes(r.type)).map(groupBalance))
   )
 }
 
@@ -113,7 +124,7 @@ export function buildIncomeStatement(
 ): Report {
   const prevOf = (code: string) => {
     const found = previous?.rows.find((row) => row.code === code)
-    return found ? balanceOf(found) : 0n
+    return found ? groupBalance(found) : 0n
   }
   const all = previous
     ? [...rows, ...previous.rows.filter((p) => !rows.some((r) => r.code === p.code))]
@@ -126,7 +137,7 @@ export function buildIncomeStatement(
     const accounts = ofType(all, ...types)
     const current = (code: string) => {
       const found = rows.find((row) => row.code === code)
-      return found ? balanceOf(found) : 0n
+      return found ? groupBalance(found) : 0n
     }
     out.push({ cells: [title], kind: 'section' })
     for (const account of accounts) {
@@ -178,8 +189,8 @@ export function buildBalanceSheet(rows: AccountTotal[], asOf: string) {
     const accounts = ofType(rows, type)
     out.push({ cells: [title], kind: 'section' })
     for (const account of accounts)
-      out.push({ cells: [`${account.code} ${account.name}`, balanceOf(account)] })
-    return sum(accounts.map(balanceOf))
+      out.push({ cells: [`${account.code} ${account.name}`, groupBalance(account)] })
+    return sum(accounts.map(groupBalance))
   }
 
   const assets = group('Activo', 'activo')
@@ -398,6 +409,50 @@ export function buildMemberBalances(rows: MemberBalanceRow[], asOf: string): Rep
         kind: 'grand',
       },
     ],
+  }
+}
+
+/**
+ * Liquidación: quién le entrega a quién para dejar todos los saldos en cero,
+ * con el menor número de movimientos. Cada integrante debe entregar el efectivo
+ * de la banda que trae, y la banda le debe lo que puso de su bolsa; "La banda"
+ * es la caja o cuenta común.
+ */
+export function buildSettlement(rows: MemberBalanceRow[], asOf: string): Report {
+  const BAND = 'La banda (caja o cuenta)'
+  const debtors: { name: string; cents: bigint }[] = []
+  const creditors: { name: string; cents: bigint }[] = []
+  let band = 0n
+  for (const row of rows) {
+    const net = BigInt(row.cash_cents ?? 0) - BigInt(row.owed_cents ?? 0)
+    if (net > 0n) debtors.push({ name: row.display_name ?? '', cents: net })
+    if (net < 0n) creditors.push({ name: row.display_name ?? '', cents: -net })
+    band -= net
+  }
+  // La banda recibe lo que sobra o pone lo que falta.
+  if (band < 0n) creditors.push({ name: BAND, cents: -band })
+  if (band > 0n) debtors.push({ name: BAND, cents: band })
+
+  const out: ReportRow[] = []
+  const biggest = (list: { name: string; cents: bigint }[]) =>
+    list.sort((a, b) =>
+      a.cents === b.cents ? a.name.localeCompare(b.name) : b.cents > a.cents ? 1 : -1,
+    )
+  while (debtors.length > 0 && creditors.length > 0) {
+    const debtor = biggest(debtors)[0]!
+    const creditor = biggest(creditors)[0]!
+    const cents = debtor.cents < creditor.cents ? debtor.cents : creditor.cents
+    out.push({ cells: [`${debtor.name} le entrega a ${creditor.name}`, cents] })
+    debtor.cents -= cents
+    creditor.cents -= cents
+    if (debtor.cents === 0n) debtors.shift()
+    if (creditor.cents === 0n) creditors.shift()
+  }
+  return {
+    title: 'Liquidación: quién le debe a quién',
+    subtitle: asOf,
+    columns: ['Movimiento para quedar en ceros', 'Monto'],
+    rows: out,
   }
 }
 

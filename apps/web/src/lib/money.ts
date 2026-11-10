@@ -26,6 +26,21 @@ export function formatMXNShort(cents: bigint): string {
   return full.endsWith('.00') ? full.slice(0, -3) : full
 }
 
+/** "1,234.5" o "1234.50" escrito a mano → centavos; null si no es un monto. Vacío = 0. */
+export function pesosToCents(text: string): number | null {
+  const clean = text.trim().replace(/[$\s,]/g, '')
+  if (clean === '') return 0
+  if (!/^\d{1,9}(\.\d{1,2})?$/.test(clean)) return null
+  const [whole = '0', frac = ''] = clean.split('.')
+  return Number(whole) * 100 + Number((frac + '00').slice(0, 2))
+}
+
+/** Centavos → texto para un campo: 12345 → "123.45", 12300 → "123". */
+export function centsToPesos(cents: number): string {
+  const text = `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`
+  return text.endsWith('.00') ? text.slice(0, -3) : text
+}
+
 export type KeypadKey = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '.' | 'back'
 
 /**

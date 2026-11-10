@@ -2,6 +2,7 @@
 // app, al recuperar red, al volver a primer plano y cada 30 s si hay pendientes.
 import { useEffect, useState } from 'react'
 import type { QueryClient } from '@tanstack/react-query'
+import { pingNotify } from '../push'
 import { supabaseBackend } from './backend'
 import { db, type OutboxOp } from './db'
 import { SyncEngine } from './sync'
@@ -38,7 +39,11 @@ export function useOutbox(userId: string | undefined): OutboxOp[] {
 /** Arranca los disparadores de sync para el usuario. Devuelve cómo apagarlos. */
 export function startSync(userId: string, queryClient: QueryClient): () => void {
   // Cuando algo llega al servidor, se refrescan las lecturas.
-  engine.onSynced = () => void queryClient.invalidateQueries()
+  // …y se le avisa al servidor para que mande las notificaciones que toquen.
+  engine.onSynced = () => {
+    void queryClient.invalidateQueries()
+    pingNotify()
+  }
 
   const run = () => void engine.sync(userId)
   const force = () => void engine.sync(userId, { force: true })

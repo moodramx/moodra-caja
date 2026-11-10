@@ -28,6 +28,8 @@ import { PuseFlow } from '../captura/PuseFlow'
 import { Feed, useFeedIsEmpty } from '../feed/Feed'
 import { ProjectList } from '../proyectos/Proyectos'
 import { ShowsToClose } from '../shows/ShowsExtras'
+import { Onboarding } from '../onboarding/Onboarding'
+import { shouldShowOnboarding } from '../onboarding/seen'
 import { InstallBanner } from '../pwa/InstallGuide'
 
 type FlowName = 'gaste' | 'cobre' | 'pase' | 'puse'
@@ -355,9 +357,11 @@ export function InicioPage() {
   const [flow, setFlow] = useState<FlowName | null>(null)
   const empty = useFeedIsEmpty(15)
   const close = () => setFlow(null)
+  const [welcome, setWelcome] = useState(shouldShowOnboarding)
 
   return (
     <Page number="01" title="Inicio">
+      <Onboarding open={welcome} onClose={() => setWelcome(false)} />
       <p className="display text-4xl">
         {profile ? `Qué onda, ${profile.display_name} ${profile.emoji}` : 'Qué onda'}
       </p>

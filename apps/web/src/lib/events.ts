@@ -134,6 +134,41 @@ export interface PagoTransportePayload {
   to_member: string
 }
 
+/** Reparto entre quienes participan (solo contador). */
+export interface RepartoPayload {
+  amount_cents: number
+  note?: string
+}
+export interface PagoRepartoPayload {
+  amount_cents: number
+  member_id: string
+  origin: MoneyPlace
+  holder_member_id?: string
+}
+/** Conteo de efectivo: la caja o lo que trae un integrante. */
+export interface ArqueoPayload {
+  place: 'caja' | 'efectivo_integrante'
+  member_id?: string
+  counted_cents: number
+  note?: string
+}
+export interface AsientoManualPayload {
+  reason: string
+  lines: { account_id: string; debit_cents?: number; credit_cents?: number; memo?: string }[]
+}
+/** Pagar algo que quedó pendiente con un proveedor o tercero. */
+export interface PagoProveedorPayload {
+  amount_cents: number
+  origin: MoneyPlace
+  description?: string
+}
+/** Convertir lo que se le debe a alguien en aportación, o al revés (solo contador). */
+export interface ReclasificacionPayload {
+  amount_cents: number
+  member_id: string
+  direction: 'a_aportacion' | 'a_prestamo'
+}
+
 export type SubmitPayload =
   | GastoPayload
   | IngresoPayload
@@ -149,6 +184,12 @@ export type SubmitPayload =
   | CobroPendientePayload
   | ViajePayload
   | PagoTransportePayload
+  | RepartoPayload
+  | PagoRepartoPayload
+  | ArqueoPayload
+  | AsientoManualPayload
+  | PagoProveedorPayload
+  | ReclasificacionPayload
 
 export type InventoryRow = Database['public']['Views']['v_inventory']['Row']
 

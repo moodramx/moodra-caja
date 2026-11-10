@@ -1,0 +1,72 @@
+name: Respaldo semanal
+
+# Cada domingo: respaldo completo de la base (pg_dump) más los reportes clave en
+# CSV (se abren en Excel), subido a Google Drive. Se conservan 12 semanas.
+# En el plan gratis de Supabase este es el ÚNICO respaldo descargable.
+#
+# Secretos del repositorio (ver docs/RESPALDOS.md para crearlos):
+#   SUPABASE_DB_URL  cadena de conexión de Postgres (Session pooler), con contraseña
+#   RCLONE_CONFIG    contenido de rclone.conf con un remoto llamado "drive"
+#   RCLONE_FOLDER    carpeta de destino en Drive, p. ej. Respaldos-Moodra
+on:
+  schedule:
+    - cron: '0 9 * * 0' # domingos 09:00 UTC = 03:00 en Ciudad de México
+  workflow_dispatch:
+
+jobs:
+  respaldo:
+    name: pg_dump + CSV a Google Drive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revisar secretos
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$RCLONE_CONFIG" ]; then
+            echo "::error::Faltan los secretos SUPABASE_DB_URL y RCLONE_CONFIG (ver docs/RESPALDOS.md)."
+            exit 1
+          fi
+
+      - name: Instalar cliente de Postgres 17 y rclone
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 rclone
+
+      - name: Respaldar
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          STAMP=$(TZ=America/Mexico_City date +%Y-%m-%d)
+          mkdir -p "respaldo/moodra-$STAMP"
+          cd "respaldo/moodra-$STAMP"
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --schema=public --schema=auth --schema=storage \
+            --no-owner --no-privileges --format=custom --file=base.dump
+          # Reportes clave en CSV, para consultarlos sin restaurar nada.
+          csv() { psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "\copy ($2) to '$1.csv' with (format csv, header)"; }
+          csv diario "select j.number, j.date, j.description, a.code, a.name, l.debit_cents / 100.0 as cargo, l.credit_cents / 100.0 as abono from public.journal_lines l join public.journal_entries j on j.id = l.entry_id join public.accounts a on a.id = l.account_id order by j.number, a.code"
+          csv balanza "select code, name, debit_cents / 100.0 as cargos, credit_cents / 100.0 as abonos, balance_cents / 100.0 as saldo from public.v_trial_balance order by code"
+          csv saldos "select display_name, cash_cents / 100.0 as trae, owed_cents / 100.0 as se_le_debe, contributions_cents / 100.0 as aportado, distributions_cents / 100.0 as repartos from public.v_member_balances order by display_name"
+          csv inventario "select product_name, label, stock_qty, avg_cost_cents / 100.0 as costo_promedio, stock_value_cents / 100.0 as valor from public.v_inventory order by product_name, label"
+          cd ..
+          tar -czf "moodra-$STAMP.tar.gz" "moodra-$STAMP"
+          ls -lh "moodra-$STAMP.tar.gz"
+          echo "ARCHIVO=respaldo/moodra-$STAMP.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Subir a Google Drive y conservar 12 semanas
+        env:
+          RCLONE_CONFIG_CONTENT: ${{ secrets.RCLONE_CONFIG }}
+          RCLONE_FOLDER: ${{ secrets.RCLONE_FOLDER }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/rclone
+          printf '%s' "$RCLONE_CONFIG_CONTENT" > ~/.config/rclone/rclone.conf
+          DESTINO="drive:${RCLONE_FOLDER:-Respaldos-Moodra}"
+          rclone copy "$ARCHIVO" "$DESTINO"
+          rclone delete "$DESTINO" --min-age 84d
+          rclone lsf "$DESTINO"

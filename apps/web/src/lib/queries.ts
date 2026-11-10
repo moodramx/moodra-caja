@@ -275,13 +275,23 @@ export function useTrialBalance() {
 const orUndefined = (value: string | null) => value ?? undefined
 
 /** Cargos y abonos por cuenta en un rango (null = sin límite). */
-export function useAccountTotals(from: string | null, to: string | null, enabled = true) {
+export function useAccountTotals(
+  from: string | null,
+  to: string | null,
+  enabled = true,
+  /** false: deja fuera el asiento de cierre de año (para reportes de resultados). */
+  includeClosing = true,
+) {
   return useQuery({
-    queryKey: ['report', 'totals', from, to],
+    queryKey: ['report', 'totals', from, to, includeClosing],
     enabled,
     queryFn: () =>
       unwrap(
-        supabase.rpc('report_account_totals', { p_from: orUndefined(from), p_to: orUndefined(to) }),
+        supabase.rpc('report_account_totals', {
+          p_from: orUndefined(from),
+          p_to: orUndefined(to),
+          p_include_closing: includeClosing,
+        }),
       ),
   })
 }
@@ -369,6 +379,77 @@ export function useTrips(limit = 30) {
           .order('captured_at', { ascending: false })
           .limit(limit),
       ),
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Operación del contador (Fase 5b y 5c)
+// ---------------------------------------------------------------------------
+export function useDistributionsPayable() {
+  return useQuery({
+    queryKey: ['distributions-payable'],
+    queryFn: () =>
+      unwrap(supabase.from('v_distributions_payable').select('*').order('display_name')),
+  })
+}
+
+export function useDistributionPreview(amountCents: number) {
+  return useQuery({
+    queryKey: ['distribution-preview', amountCents],
+    enabled: amountCents > 0,
+    queryFn: () => unwrap(supabase.rpc('distribution_preview', { p_amount: amountCents })),
+  })
+}
+
+export function usePeriods() {
+  return useQuery({
+    queryKey: ['periods'],
+    queryFn: () =>
+      unwrap(
+        supabase
+          .from('v_periods')
+          .select('*')
+          .order('year', { ascending: false })
+          .order('month', { ascending: false }),
+      ),
+  })
+}
+
+export function usePeriodChecklist(year: number | null, month: number | null) {
+  return useQuery({
+    queryKey: ['period-checklist', year, month],
+    enabled: year !== null && month !== null,
+    queryFn: () => unwrap(supabase.rpc('period_checklist', { p_year: year!, p_month: month! })),
+  })
+}
+
+/** Catálogo de cuentas completo, en orden de código. */
+export function useAccounts() {
+  return useQuery({
+    queryKey: ['accounts'],
+    queryFn: () =>
+      unwrap(
+        supabase
+          .from('accounts')
+          .select('id, code, name, type, nature, is_postable, active, member_id')
+          .order('code'),
+      ),
+    staleTime: 5 * 60_000,
+  })
+}
+
+/** Todas las categorías, activas o no (para editarlas). */
+export function useAllCategories() {
+  return useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => unwrap(supabase.from('categories').select('*').order('kind').order('sort')),
+  })
+}
+
+export function useContacts() {
+  return useQuery({
+    queryKey: ['contacts'],
+    queryFn: () => unwrap(supabase.from('contacts').select('*').order('name')),
   })
 }
 
