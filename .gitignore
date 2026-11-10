@@ -1,0 +1,21 @@
+node_modules/
+dist/
+dev-dist/
+.env
+.env.*
+!.env.example
+*.local
+.netlify/
+
+# Supabase CLI
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+
+# Pruebas
+apps/web/test-results/
+apps/web/playwright-report/
+coverage/
+
+.DS_Store
+Thumbs.db

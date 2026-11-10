@@ -1,0 +1,79 @@
+import { Link } from '@tanstack/react-router'
+import { Switch } from 'radix-ui'
+import { Button } from '../../design/Button'
+import { Card, Page } from '../../design/Page'
+import { useAuth } from '../../lib/auth'
+import { useMode } from '../../lib/mode'
+import { InstallButton } from '../pwa/InstallGuide'
+
+const rowClass =
+  'flex min-h-14 items-center justify-between gap-3 rounded-control px-3 -mx-3 active:bg-surface-2'
+
+export function MasPage() {
+  const { profile, signOut } = useAuth()
+  const { contadorMode, canUseContadorMode, setContadorMode } = useMode()
+
+  return (
+    <Page number="05" title="Más">
+      <Card>
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="grid size-14 place-items-center rounded-full bg-surface-2 text-2xl"
+          >
+            {profile?.emoji ?? '🎵'}
+          </span>
+          <div>
+            <p className="text-lg font-semibold">{profile?.display_name ?? '…'}</p>
+            <p className="text-ink-muted">@{profile?.username ?? '…'}</p>
+          </div>
+        </div>
+      </Card>
+
+      {canUseContadorMode && (
+        <Card>
+          <label className={rowClass}>
+            <span>
+              <span className="block font-semibold">Modo contador</span>
+              <span className="block text-sm text-ink-muted">
+                Apágalo para ver la app como la ve la banda.
+              </span>
+            </span>
+            <Switch.Root
+              checked={contadorMode}
+              onCheckedChange={setContadorMode}
+              className="relative h-8 w-14 shrink-0 rounded-full bg-line transition-colors data-[state=checked]:bg-accent"
+            >
+              <Switch.Thumb className="block size-6 translate-x-1 rounded-full bg-ink transition-transform data-[state=checked]:translate-x-7 data-[state=checked]:bg-accent-ink" />
+            </Switch.Root>
+          </label>
+          {contadorMode && (
+            <Link to="/contador/usuarios" className={rowClass}>
+              <span className="font-semibold">👥 Usuarios</span>
+              <span aria-hidden="true" className="text-ink-muted">
+                ›
+              </span>
+            </Link>
+          )}
+        </Card>
+      )}
+
+      <Card>
+        <Link to="/componentes" className={rowClass}>
+          <span className="font-semibold">🎛️ Probar componentes</span>
+          <span aria-hidden="true" className="text-ink-muted">
+            ›
+          </span>
+        </Link>
+      </Card>
+
+      <InstallButton block />
+
+      <Button variant="secondary" block onClick={() => void signOut()}>
+        Cerrar sesión
+      </Button>
+
+      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 0</p>
+    </Page>
+  )
+}

@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+/*
+ * Tokens de diseño (PRD §10). Fuente de verdad de los estilos.
+ * PENDIENTE: tipografías, acento y radios definitivos salen del repo de
+ * moodra.mx (ver docs/DECISIONES.md). Por ahora: sans del sistema y acento blanco.
+ */
+@theme {
+  --color-bg: #0b0a0c;
+  --color-surface: #151317;
+  --color-surface-2: #1f1c23;
+  --color-line: #2c2831;
+  --color-ink: #f5f3f7;
+  --color-ink-muted: #a8a2b3;
+  --color-ink-faint: #7b7586;
+  --color-accent: #ffffff;
+  --color-accent-ink: #0b0a0c;
+  /* Semántica: entradas verde suave, pendientes ámbar, anulados gris. Las salidas son neutras. */
+  --color-in: #8fd6a8;
+  --color-pending: #f2b84b;
+  --color-void: #7b7586;
+  --color-danger: #f29c9c;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-sans);
+
+  --radius-control: 0.875rem;
+  --radius-card: 1.25rem;
+  --radius-sheet: 1.75rem;
+
+  --animate-sheet-in: sheet-in 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-out: sheet-out 0.2s ease-in;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fade-out: fade-out 0.2s ease-in;
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 16 px mínimo en inputs: evita el zoom automático de iOS */
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}

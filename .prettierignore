@@ -1,0 +1,13 @@
+pnpm-lock.yaml
+dist/
+dev-dist/
+supabase/.temp/
+supabase/.branches/
+apps/web/src/routeTree.gen.ts
+apps/web/src/lib/database.types.ts
+apps/web/playwright-report/
+apps/web/test-results/
+docs/PRD.md
+docs/PLAN.md
+CLAUDE.md
+00-PROMPT-INICIAL.md
