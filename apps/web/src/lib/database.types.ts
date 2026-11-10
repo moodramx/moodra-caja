@@ -122,6 +122,12 @@ isOneToOne: false
       referencedRelation: "v_show_pnl"
       referencedColumns: ["show_id"]
     },{
+      foreignKeyName: "app_settings_active_show_fkey"
+      columns: ["active_show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
+      referencedColumns: ["show_id"]
+    },{
       foreignKeyName: "app_settings_updated_by_fkey"
       columns: ["updated_by"]
 isOneToOne: false
@@ -376,6 +382,12 @@ isOneToOne: false
       columns: ["show_id"]
 isOneToOne: false
       referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
       referencedColumns: ["show_id"]
     },{
       foreignKeyName: "events_void_entry_id_fkey"
@@ -736,6 +748,12 @@ isOneToOne: false
       columns: ["show_id"]
 isOneToOne: false
       referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "journal_lines_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
       referencedColumns: ["show_id"]
     },{
       foreignKeyName: "journal_lines_variant_fkey"
@@ -1243,6 +1261,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_show_pnl"
       referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "show_advances_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
+      referencedColumns: ["show_id"]
     }
                   ]
                 },"show_settlements": {
@@ -1304,6 +1328,12 @@ isOneToOne: false
       columns: ["show_id"]
 isOneToOne: false
       referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "show_settlements_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
       referencedColumns: ["show_id"]
     }
                   ]
@@ -1500,6 +1530,14 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_alerts": {
+                  Row: {
+                    "amount": number | null,"kind": string | null,"ref": string | null,"since": string | null,"title": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_cash_position": {
                   Row: {
                     "balance_cents": number | null,"kind": string | null,"member_id": string | null,"name": string
@@ -1585,6 +1623,12 @@ isOneToOne: false
       columns: ["show_id"]
 isOneToOne: false
       referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
       referencedColumns: ["show_id"]
     },{
       foreignKeyName: "fund_movements_member_id_fkey"
@@ -1744,6 +1788,26 @@ isOneToOne: false
       referencedColumns: ["project_id"]
     }
                   ]
+                },"v_show_report": {
+                  Row: {
+                    "city": string | null,"commission_cents": number | null,"costs_cents": number | null,"date": string,"deal_type": Database["public"]['Enums']["deal_type"],"expected_income_cents": number,"expected_tickets": number,"fee_cents": number,"gross_cents": number | null,"income_cents": number | null,"merch_cost_cents": number | null,"merch_revenue_cents": number | null,"name": string,"net_cents": number | null,"other_income_cents": number | null,"pending": boolean | null,"percentage": number,"project_id": string,"show_id": string,"show_income_cents": number | null,"status": Database["public"]['Enums']["show_status"],"ticket_price_cents": number,"tickets_sold": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    }
+                  ]
                 },"v_trial_balance": {
                   Row: {
                     "account_id": string,"balance_cents": number | null,"code": string,"credit_cents": number | null,"debit_cents": number | null,"member_id": string | null,"name": string,"nature": Database["public"]['Enums']["account_nature"],"type": Database["public"]['Enums']["account_type"]
@@ -1876,6 +1940,26 @@ isOneToOne: false
                            },
 "post_venta":
 { Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"report_account_totals":
+{ Args: { "p_from"?: string,"p_project"?: string,"p_show"?: string,"p_to"?: string }; Returns: {
+              "account_id": string,"code": string,"credit_cents": number,"debit_cents": number,"member_id": string,"name": string,"nature": Database["public"]['Enums']["account_nature"],"type": Database["public"]['Enums']["account_type"]
+            }[]
+                           },
+"report_cash_flow":
+{ Args: { "p_from"?: string,"p_project"?: string,"p_to"?: string }; Returns: {
+              "detail": string,"inflow_cents": number,"kind": string,"net_cents": number,"outflow_cents": number
+            }[]
+                           },
+"report_ledger":
+{ Args: { "p_account": string,"p_from"?: string,"p_to"?: string }; Returns: {
+              "credit_cents": number,"date": string,"debit_cents": number,"description": string,"entry_number": number,"line_id": string
+            }[]
+                           },
+"report_merch":
+{ Args: { "p_from"?: string,"p_to"?: string }; Returns: {
+              "avg_cost_cents": number,"category": Database["public"]['Enums']["merch_category"],"cost_cents": number,"gift_cost_cents": number,"gift_qty": number,"label": string,"price_cents": number,"product_name": string,"revenue_cents": number,"sold_qty": number,"stock_qty": number,"stock_value_cents": number,"variant_id": string
+            }[]
                            },
 "resolve_accounting_date":
 { Args: { "p_date": string }; Returns: Record<string, unknown>
