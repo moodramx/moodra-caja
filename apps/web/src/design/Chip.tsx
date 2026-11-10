@@ -16,7 +16,7 @@ export function Chip({ emoji, selected = false, className, children, ...props }:
         'inline-flex min-h-12 items-center gap-2 rounded-full border px-4 text-base font-medium',
         'transition-colors duration-100 select-none',
         selected
-          ? 'border-accent bg-accent text-accent-ink'
+          ? 'border-ink bg-ink text-bg'
           : 'border-line bg-surface text-ink active:bg-surface-2',
         className,
       )}

@@ -22,7 +22,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <header className="flex items-center justify-between px-4 pt-safe">
-        <p className="pt-4 font-display text-lg font-bold tracking-[0.3em]">MOODRA $$</p>
+        <p className="flex items-end gap-2 pt-4">
+          <img
+            src="/moodra-logo.webp"
+            alt="Moodra"
+            width="480"
+            height="293"
+            className="h-9 w-auto"
+          />
+          <span className="label-mono pb-0.5 text-sm text-accent">$$</span>
+        </p>
       </header>
       <main className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]">{children}</main>
       <nav

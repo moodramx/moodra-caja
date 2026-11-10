@@ -7,7 +7,7 @@ test.describe('sin sesión', () => {
   test('manda al login y muestra el formulario', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveURL(/\/login$/)
-    await expect(page.getByRole('heading', { name: 'MOODRA $$' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Moodra $$' })).toBeVisible()
     await expect(page.getByLabel('Usuario')).toBeVisible()
     await expect(page.getByLabel('Contraseña')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Entrar' })).toBeDisabled()
@@ -42,7 +42,7 @@ test.describe('integrante', () => {
 
   test('ve el Inicio vacío con la identidad de Moodra', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByText('MOODRA $$', { exact: true })).toBeVisible()
+    await expect(page.getByRole('img', { name: 'Moodra' })).toBeVisible()
     await expect(page.getByRole('heading', { name: /01 — Inicio/ })).toBeVisible()
     await expect(page.getByText('Qué onda, Pepe')).toBeVisible()
     for (const label of ['Gasté', 'Cobré', 'Vendí merch', 'Pasé efectivo']) {

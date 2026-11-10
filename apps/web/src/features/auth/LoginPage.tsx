@@ -30,7 +30,16 @@ export function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-10 px-6 py-10">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-[0.3em]">MOODRA $$</h1>
+        <h1 className="flex items-end gap-3">
+          <img
+            src="/moodra-logo.webp"
+            alt="Moodra"
+            width="480"
+            height="293"
+            className="h-24 w-auto"
+          />
+          <span className="label-mono pb-2 text-xl text-accent">$$</span>
+        </h1>
         <p className="mt-2 text-ink-muted">La lana de la banda, al día.</p>
       </div>
 

@@ -25,7 +25,7 @@ export function AmountKeypad({ value, onChange, label = 'Monto' }: AmountKeypadP
       <output
         aria-label={label}
         className={cx(
-          'block truncate py-4 text-center font-display text-6xl font-semibold tabular-nums',
+          'block truncate py-4 text-center display text-7xl tabular-nums',
           value === '' && 'text-ink-faint',
         )}
       >

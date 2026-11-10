@@ -17,7 +17,7 @@ export function InicioPage() {
 
   return (
     <Page number="01" title="Inicio">
-      <p className="text-2xl font-semibold">
+      <p className="display text-4xl">
         {profile ? `Qué onda, ${profile.display_name} ${profile.emoji}` : 'Qué onda'}
       </p>
 
@@ -29,9 +29,7 @@ export function InicioPage() {
 
       <Card>
         <p className="text-ink-muted">Traes de la banda</p>
-        <p className="mt-1 font-display text-5xl font-semibold tabular-nums">
-          {formatMXNShort(0n)}
-        </p>
+        <p className="mt-1 display text-6xl tabular-nums">{formatMXNShort(0n)}</p>
         <p className="mt-2 text-ink-muted">Todavía no hay nada registrado.</p>
       </Card>
 

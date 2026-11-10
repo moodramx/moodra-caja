@@ -11,7 +11,7 @@ interface PageProps {
 export function Page({ number, title, children }: PageProps) {
   return (
     <div className="space-y-5 px-4 pt-6 pb-8">
-      <h1 className="font-display text-sm font-medium tracking-[0.2em] text-ink-muted uppercase">
+      <h1 className="label-mono text-ink-muted">
         <span className="tabular-nums">{number}</span> — {title}
       </h1>
       {children}
