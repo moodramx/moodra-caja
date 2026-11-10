@@ -79,6 +79,7 @@ export function CobreFlow({ onDone }: { onDone: () => void }) {
     category_id: category.id,
     destination,
     project_id: target.projectId,
+    show_id: target.showId,
   }
 
   return (

@@ -25,6 +25,7 @@ import { PaseFlow } from '../captura/PaseFlow'
 import { PuseFlow } from '../captura/PuseFlow'
 import { Feed, useFeedIsEmpty } from '../feed/Feed'
 import { ProjectList } from '../proyectos/Proyectos'
+import { ShowsToClose } from '../shows/ShowsExtras'
 import { InstallBanner } from '../pwa/InstallGuide'
 
 type FlowName = 'gaste' | 'cobre' | 'pase' | 'puse'
@@ -54,17 +55,18 @@ function useOnline(): boolean {
 
 /** "Estamos en…": chip con el contexto activo; tocarlo permite cambiarlo. */
 function ContextChip() {
-  const { id, project } = useActiveProject()
+  const { id, project, show } = useActiveProject()
   const projects = useProjects()
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
 
-  const choose = async (projectId: string | null) => {
+  const choose = async (projectId: string | null, showId: string | null = null) => {
     setOpen(false)
     // El tipo generado no admite null, pero la función sí (null = operación general).
     const { error } = await supabase.rpc('set_active_context', {
       p_project_id: projectId as string,
+      p_show_id: showId as string,
     })
     if (error) toast({ message: 'No se pudo cambiar. Revisa tu conexión.' })
     else void queryClient.invalidateQueries()
@@ -83,7 +85,7 @@ function ContextChip() {
       >
         <span aria-hidden="true">{project?.type?.emoji ?? '🏠'}</span>
         <span className="truncate">
-          {project ? project.name : id ? 'Proyecto' : 'Operación general'}
+          {show ? show.name : project ? project.name : id ? 'Proyecto' : 'Operación general'}
         </span>
         <span aria-hidden="true" className="text-ink-muted">
           ▾
@@ -95,7 +97,12 @@ function ContextChip() {
         title="¿En qué andamos?"
         description="Lo que registre la banda se etiqueta con esto."
       >
-        {open && <ProjectList onSelect={(next) => void choose(next?.id ?? null)} />}
+        {open && (
+          <ProjectList
+            onSelect={(next) => void choose(next?.id ?? null)}
+            onSelectShow={(next) => void choose(next.project_id, next.id)}
+          />
+        )}
       </BottomSheet>
     </>
   )
@@ -313,6 +320,7 @@ export function InicioPage() {
       <InstallBanner />
       <ContextChip />
       <Pendientes />
+      <ShowsToClose />
       <BalanceCard />
       <BandCard />
 

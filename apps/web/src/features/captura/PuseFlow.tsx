@@ -108,6 +108,7 @@ export function PuseFlow({ onDone }: { onDone: () => void }) {
     holder_member_id: holder?.id,
     kind,
     project_id: target.projectId,
+    show_id: target.showId,
   }
 
   return (

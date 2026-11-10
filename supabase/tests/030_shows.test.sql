@@ -44,13 +44,19 @@ $$ select status::text from public.shows where id = pg_temp.id(p_k) $$;
 -- ---------------------------------------------------------------------------
 select is((select count(*)::int from public.ticket_platforms where name in ('Passline', 'Plataforma propia (amigo)')), 2,
   'las dos plataformas vienen sembradas');
-select is((select commission_pct::text || '/' || settlement_days from public.ticket_platforms where name = 'Passline'),
-  '0.00/0', 'Passline arranca sin comisión ni plazo: por configurar');
+select public.save_ticket_platform(jsonb_build_object('name', 'Boletera pgTAP'));
+select is((select commission_pct::text || '/' || settlement_days || '/' || bearer
+           from public.ticket_platforms where name = 'Boletera pgTAP'),
+  '0.00/0/publico', 'una boletera nueva arranca sin comisión ni plazo: por configurar');
 insert into ids select 'passline', id from public.ticket_platforms where name = 'Passline';
 create function pg_temp.cta_passline() returns text language sql as
 $$ select a.code from public.ticket_platforms p join public.accounts a on a.id = p.account_id
    where p.name = 'Passline' $$;
 select matches(pg_temp.cta_passline(), '^1\.3\.02\.[0-9]{2}$', 'cada plataforma tiene su subcuenta por cobrar');
+create function pg_temp.debe_passline() returns bigint language sql as
+$$ select public.account_balance((select account_id from public.ticket_platforms where name = 'Passline')) $$;
+create temp table antes as select pg_temp.debe_passline() as passline;
+grant all on antes to public;
 
 select pg_temp.act('pepe');
 select throws_ok($$ select public.save_ticket_platform(jsonb_build_object('name', 'Otra')) $$, '42501', null,
@@ -134,7 +140,7 @@ insert into ids select 'c-B', pg_temp.ev('cierre_show', jsonb_build_object('show
   'share_cents', 1050000, 'tickets_sold', 75));
 select is(pg_temp.asiento(pg_temp.id('c-B')), '1.3.01 D1050000 | 4.1.02 C1050000',
   '% de taquilla sin cobrar: queda por cobrar al venue');
-select throws_ok($$ select pg_temp.ev('cobro_pendiente', jsonb_build_object('amount_cents', 9999999,
+select throws_ok($$ select pg_temp.ev('cobro_pendiente', jsonb_build_object('amount_cents', 99999999999,
     'destination', 'cuenta_banda')) $$, 'P0001', null, 'no se cobra más de lo pendiente');
 select is(pg_temp.asiento(pg_temp.ev('cobro_pendiente', jsonb_build_object('amount_cents', 1050000,
     'destination', 'cuenta_banda'))),
@@ -153,7 +159,7 @@ select is((select pending::text || '/' || coalesce(destination::text, 'sin-desti
            from public.show_settlements where event_id = pg_temp.id('c-C')), 'true/sin-destino',
   'lo de la boletera queda pendiente aunque se haya indicado un destino');
 select is((select balance_cents from public.v_receivables where platform_id = pg_temp.id('passline')),
-  1320000::bigint, 'aparece en lo que está por cobrar');
+  (select passline from antes) + 1320000, 'aparece en lo que está por cobrar');
 select throws_ok($$ select pg_temp.ev('cobro_pendiente', jsonb_build_object('amount_cents', 1320000,
     'platform_id', pg_temp.id('passline'))) $$, '42501', null,
   'la liquidación de una boletera la registra el contador');
@@ -162,8 +168,7 @@ select is(pg_temp.asiento(pg_temp.ev('cobro_pendiente', jsonb_build_object('amou
     'platform_id', pg_temp.id('passline')))),
   '1.2.01 D1320000 | ' || pg_temp.cta_passline() || ' C1320000',
   'llega la liquidación de Passline a la cuenta');
-select is((select count(*)::int from public.v_receivables where platform_id = pg_temp.id('passline')), 0,
-  'el por cobrar de la boletera queda saldado');
+select is(pg_temp.debe_passline(), (select passline from antes), 'el por cobrar de la boletera queda saldado');
 
 -- ---------------------------------------------------------------------------
 -- G. Fee + porcentaje, sin pago y boletaje en puerta

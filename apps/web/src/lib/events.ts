@@ -13,6 +13,8 @@ interface Base {
   /** Centavos. Viaja como número JSON (seguro hasta 2^53). */
   amount_cents: number
   project_id?: string | null
+  /** Show al que corresponde (si no va, el servidor lo deduce del proyecto). */
+  show_id?: string | null
   description?: string
 }
 
@@ -65,6 +67,7 @@ export interface VentaPayload {
   channel_note?: string
   collected_by?: string
   project_id?: string | null
+  show_id?: string | null
 }
 
 export interface CompraPayload {
@@ -76,6 +79,7 @@ export interface CompraPayload {
   settlement_pref?: SettlementPref
   description?: string
   project_id?: string | null
+  show_id?: string | null
 }
 
 /** Regalo fuera de venta o merma. */
@@ -85,6 +89,7 @@ export interface SalidaPayload {
   qty: number
   note?: string
   project_id?: string | null
+  show_id?: string | null
 }
 
 export interface AjustePayload {
@@ -103,6 +108,9 @@ export type SubmitPayload =
   | CompraPayload
   | SalidaPayload
   | AjustePayload
+  | CierrePayload
+  | AnticipoPayload
+  | CobroPendientePayload
 
 export type InventoryRow = Database['public']['Views']['v_inventory']['Row']
 
@@ -111,3 +119,33 @@ export type MemberBalance = Database['public']['Views']['v_member_balances']['Ro
 export type Category = Database['public']['Tables']['categories']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']
 export type ProjectType = Database['public']['Tables']['project_types']['Row']
+
+export type DealType = Enums['deal_type']
+
+/** Cierre de show: lo que les pagaron según el trato y dónde quedó. */
+export interface CierrePayload {
+  show_id: string
+  fee_cents?: number
+  /** Parte de la taquilla que le tocó a la banda. */
+  share_cents?: number
+  /** Boletaje propio, bruto. */
+  gross_cents?: number
+  tickets_sold?: number
+  commission_cents?: number
+  platform_id?: string | null
+  /** null = quedó pendiente de cobro. */
+  destination?: MoneyPlace | null
+}
+
+export interface AnticipoPayload {
+  show_id: string
+  amount_cents: number
+  destination: MoneyPlace
+}
+
+/** Llegó dinero que estaba por cobrar (venue o boletera). */
+export interface CobroPendientePayload {
+  amount_cents: number
+  platform_id?: string
+  destination: MoneyPlace
+}

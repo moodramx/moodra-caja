@@ -300,6 +300,7 @@ export function CompraFlow({
       ? { opening: true }
       : { paid_with: paidWith!, settlement_pref: paidWith === 'mi_dinero' ? pref : undefined }),
     project_id: context.id,
+    show_id: context.showId,
   }
   const how = opening
     ? 'No sale dinero: es lo que la banda ya tenía.'
@@ -363,6 +364,7 @@ export function SalidaFlow({
     qty,
     note: note.trim() || undefined,
     project_id: context.id,
+    show_id: context.showId,
   }
   const before = stateOf(picked.variant)
   const cost = costOfExit(before, qty)

@@ -1,4 +1,6 @@
 import type {
+  AnticipoPayload,
+  CierrePayload,
   CompraPayload,
   EntregaPayload,
   GastoPayload,
@@ -79,6 +81,20 @@ export function pendingEffects(
         if (p.payment_method === 'efectivo' && (p.collected_by ?? userId) === userId) {
           cash += cartTotals(p.lines).total
         }
+        break
+      }
+      case 'cierre_show': {
+        // Lo que se cobró en efectivo queda en manos de quien cerró el show.
+        const p = op.payload as CierrePayload
+        if (p.destination === 'efectivo_integrante' && !p.platform_id) {
+          cash += BigInt((p.fee_cents ?? 0) + (p.share_cents ?? 0) + (p.gross_cents ?? 0))
+        }
+        break
+      }
+      case 'anticipo_show':
+      case 'cobro_pendiente': {
+        const p = op.payload as AnticipoPayload
+        if (p.destination === 'efectivo_integrante') cash += amount
         break
       }
       case 'compra_merch': {

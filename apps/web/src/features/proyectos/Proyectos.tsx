@@ -9,7 +9,15 @@ import { Chip } from '../../design/Chip'
 import { Card, EmptyState, Page } from '../../design/Page'
 import { useToast } from '../../design/Toast'
 import type { Project } from '../../lib/events'
-import { useActiveProject, useProjects, useProjectTypes } from '../../lib/queries'
+import { formatMXNShort } from '../../lib/money'
+import {
+  useActiveProject,
+  useProjectPnl,
+  useProjects,
+  useProjectTypes,
+  useShows,
+  type ShowRow,
+} from '../../lib/queries'
 import { supabase } from '../../lib/supabase'
 import { fieldClass, Option } from '../captura/parts'
 
@@ -85,8 +93,18 @@ export function NewProjectForm({ onCreated }: { onCreated: (project: Project) =>
 }
 
 /** Lista para elegir proyecto (o ninguno), con alta rápida al final. */
-export function ProjectList({ onSelect }: { onSelect: (project: Project | null) => void }) {
+export function ProjectList({
+  onSelect,
+  onSelectShow,
+}: {
+  onSelect: (project: Project | null) => void
+  /** Si se da, las giras con varios shows listan cada uno para elegirlo. */
+  onSelectShow?: (show: ShowRow) => void
+}) {
   const projects = useProjects()
+  const shows = useShows()
+  const showsOf = (projectId: string) =>
+    (shows.data ?? []).filter((s) => s.project_id === projectId && s.status !== 'cancelado')
   const [creating, setCreating] = useState(false)
 
   if (creating) {
@@ -109,13 +127,26 @@ export function ProjectList({ onSelect }: { onSelect: (project: Project | null) 
         onClick={() => onSelect(null)}
       />
       {projects.data?.map((project) => (
-        <Option
-          key={project.id}
-          emoji={project.type?.emoji ?? '📁'}
-          label={project.name}
-          hint={project.type?.name}
-          onClick={() => onSelect(project)}
-        />
+        <div key={project.id} className="space-y-2">
+          <Option
+            emoji={project.type?.emoji ?? '📁'}
+            label={project.name}
+            hint={project.type?.name}
+            onClick={() => onSelect(project)}
+          />
+          {onSelectShow &&
+            showsOf(project.id).length > 1 &&
+            showsOf(project.id).map((show) => (
+              <div key={show.id} className="pl-6">
+                <Option
+                  emoji="🎸"
+                  label={show.name}
+                  hint="Show de esta gira"
+                  onClick={() => onSelectShow(show)}
+                />
+              </div>
+            ))}
+        </div>
       ))}
       <Option
         emoji="➕"
@@ -138,6 +169,8 @@ export function useCaptureProject() {
   const projectId = override === undefined ? context.id : override
   return {
     projectId,
+    // El show del contexto solo aplica mientras no se cambie el proyecto a mano.
+    showId: override === undefined ? context.showId : null,
     project: projects.data?.find((p) => p.id === projectId) ?? null,
     setProjectId: setOverride,
   }
@@ -183,6 +216,23 @@ export function ProjectPicker({
   )
 }
 
+/** Cuánto ha dejado la gira o el proyecto: lo de sus shows, su merch y sus gastos. */
+function ProjectNet({ projectId }: { projectId: string }) {
+  const pnl = useProjectPnl()
+  const row = pnl.data?.find((p) => p.project_id === projectId)
+  const net = BigInt(row?.net_cents ?? 0)
+  if (!row || (net === 0n && !row.show_income_cents && !row.costs_cents)) return null
+  return (
+    <span
+      aria-label={`Resultado de ${row.name}`}
+      className={`shrink-0 font-semibold tabular-nums ${net > 0n ? 'text-in' : net < 0n ? 'text-danger' : ''}`}
+    >
+      {net >= 0n ? '+' : '−'}
+      {formatMXNShort(net < 0n ? -net : net)}
+    </span>
+  )
+}
+
 /** Pantalla de proyectos (en Más), para todos. */
 export function ProyectosPage() {
   const projects = useProjects()
@@ -205,10 +255,11 @@ export function ProyectosPage() {
               <span aria-hidden="true" className="text-2xl">
                 {project.type?.emoji}
               </span>
-              <span>
+              <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{project.name}</span>
                 <span className="block text-sm text-ink-muted">{project.type?.name}</span>
               </span>
+              <ProjectNet projectId={project.id} />
             </div>
           ))}
         </Card>

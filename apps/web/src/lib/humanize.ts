@@ -200,6 +200,22 @@ export function feedText(row: FeedRow, nameOf: (id: string | null) => string): F
       return row.stock_kind === 'merma'
         ? { emoji: '🗑️', title: `Se dieron de baja ${pieces(row.pieces)} de merch`, badge }
         : { emoji: '🎁', title: `${who} regaló ${pieces(row.pieces)} de merch`, badge }
+    case 'cierre_show':
+      return {
+        emoji: '🎤',
+        title: row.amount_cents
+          ? `${who} cerró ${row.show_name ?? 'un show'} · ${amount}${row.show_pending ? ' por cobrar' : ''}`
+          : `${who} cerró ${row.show_name ?? 'un show'} sin pago`,
+        badge,
+      }
+    case 'anticipo_show':
+      return {
+        emoji: '🤝',
+        title: `${who} recibió ${amount} de anticipo de ${row.show_name ?? 'un show'}`,
+        badge,
+      }
+    case 'cobro_pendiente':
+      return { emoji: '💵', title: `Llegaron ${amount} que nos debían`, badge }
     case 'ajuste_inventario':
       return { emoji: '🔢', title: `${who} contó el merch y corrigió ${pieces(row.pieces)}`, badge }
     case 'regreso_dinero':

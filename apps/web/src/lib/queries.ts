@@ -70,8 +70,63 @@ export function useSettings() {
 export function useActiveProject() {
   const settings = useSettings()
   const projects = useProjects()
+  const shows = useShows()
   const id = settings.data?.active_project_id ?? null
-  return { id, project: projects.data?.find((p) => p.id === id) ?? null }
+  const showId = settings.data?.active_show_id ?? null
+  return {
+    id,
+    project: projects.data?.find((p) => p.id === id) ?? null,
+    showId,
+    show: shows.data?.find((s) => s.id === showId) ?? null,
+  }
+}
+
+/** Shows con su gira o proyecto y su boletera, del más reciente al más viejo. */
+export function useShows() {
+  return useQuery({
+    queryKey: ['shows'],
+    queryFn: () =>
+      unwrap(
+        supabase
+          .from('shows')
+          .select(
+            '*, project:projects(id, name, type:project_types(code, emoji)), platform:ticket_platforms(id, name)',
+          )
+          .order('date', { ascending: false }),
+      ),
+  })
+}
+export type ShowRow = NonNullable<ReturnType<typeof useShows>['data']>[number]
+
+export function useShowPnl() {
+  return useQuery({
+    queryKey: ['show-pnl'],
+    queryFn: () => unwrap(supabase.from('v_show_pnl').select('*')),
+  })
+}
+
+export function usePlatforms() {
+  return useQuery({
+    queryKey: ['platforms'],
+    queryFn: () => unwrap(supabase.from('ticket_platforms').select('*').order('created_at')),
+    staleTime: 5 * 60_000,
+  })
+}
+
+/** Resultado de cada gira o proyecto, con todo lo de sus shows y su merch. */
+export function useProjectPnl() {
+  return useQuery({
+    queryKey: ['project-pnl'],
+    queryFn: () => unwrap(supabase.from('v_project_pnl').select('*')),
+  })
+}
+
+/** Lo que nos deben (venues, boleteras) y anticipos sin aplicar. */
+export function useReceivables() {
+  return useQuery({
+    queryKey: ['receivables'],
+    queryFn: () => unwrap(supabase.from('v_receivables').select('*').order('code')),
+  })
 }
 
 export function useBalances() {
@@ -230,6 +285,7 @@ export function useRealtimeRefresh(enabled: boolean) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shows' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, refresh)
       .subscribe()
     return () => {

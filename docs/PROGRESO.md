@@ -1,6 +1,63 @@
 # PROGRESO — Moodra $$
 
-## Fase 2 — Merch, POS e inventario · 2026-11-10 · **publicada, en revisión de Diego**
+## Fase 3 — Shows, giras y proyectos · 2026-11-10 · **lista en local, sin publicar**
+
+Vive en la rama `fase-3`. No está en `main`, ni en Netlify, ni en la base de la nube.
+
+### Hecho y verificado en la compu
+
+- **Shows** (Más → Shows): alta con nombre, fecha, ciudad, gira opcional y trato: pago fijo, % de taquilla, fijo + %, boletos nuestros o sin pago. Calcula el ingreso esperado.
+- **Boleteras** (contador): Passline y "Plataforma propia (amigo)" sembradas en ceros; se configura comisión %, fijo por boleto, quién la absorbe y días a liquidar.
+- **Cierre de show**: cuánto les pagaron según el trato → dónde quedó (efectivo, cuenta, caja o pendiente) → pagos a terceros opcionales → guardar.
+- **Anticipos**: se registran al recibirlos y se descuentan solos al cerrar el show.
+- **Por cobrar** (Más → Saldos de la banda → "Nos deben"): venues y boleteras, con "Ya llegó". La liquidación de una boletera la registra el contador.
+- **Resultado por show** en su detalle: nos pagaron + merch − costo del merch − gastos = "Este show dejó +$X".
+- **Resultado por gira** en Giras y proyectos y en la tarjeta de Inicio, con todos sus shows y su merch.
+- **Contexto**: en "¿En qué andamos?" se puede elegir un show de una gira; lo capturado queda en ese show.
+- **Inicio** avisa de los shows que ya pasaron y nadie ha cerrado.
+- **Punto de venta**: al vender "de Show" se elige entre los shows de estos días.
+
+### Pruebas (todas en verde)
+
+| Suite                                                 | Resultado |
+| ----------------------------------------------------- | --------- |
+| pgTAP (271 en total; 53 de shows)                     | 271/271   |
+| Vitest (77 en total; cálculos de taquilla y comisión) | 77/77     |
+| Playwright con sesión simulada                        | 11/11     |
+| Playwright real contra Supabase local                 | 29/29     |
+| Lint, typecheck, Prettier                             | limpios   |
+
+Criterios de aceptación del plan, cubiertos por `e2e/fase3-real.spec.ts`:
+
+1. Gira con 3 shows de tratos distintos (pago fijo $8,000, 70 % de taquilla, boletos por Passline) y se cierran los tres.
+2. La gira muestra su resultado consolidado con merch: +$31,700 (34,200 de ingresos − 500 gasolina − 1,800 comisión − 200 costo de merch).
+3. Lo que debe Passline ($13,200) se salda al registrar su liquidación.
+
+### Lo que NO está hecho o quedó distinto
+
+1. **No está publicada** ni probada en un celular real.
+2. **Venue como contacto**: el show guarda nombre y ciudad en texto; el catálogo de contactos (venues, proveedores) llega con los catálogos de la Fase 5.
+3. **Antigüedad de lo por cobrar** y el tablero del contador: Fase 5.
+4. **Punto de equilibrio por show** (boletos para no perder): el cálculo ya existe y está probado, pero su reporte es de la Fase 5.
+5. **Aviso a medianoche** para regresar el contexto a "Operación general": Fase 6, con las notificaciones.
+6. **Los "shows sueltos" que ya habías creado** como proyecto reciben su show con trato "Sin pago"; hay que editarles el trato real.
+7. **El resultado de un show** solo cuenta lo capturado con ese show. Un gasto etiquetado solo a la gira aparece en la gira, no en un show.
+
+### Cómo probarlo en la compu
+
+1. `git checkout fase-3`, `pnpm db:start`, `pnpm db:reset`, crea tu contador y entra con `pnpm dev`.
+2. Más → Modo contador → **Boleteras** → Passline: pon comisión, quién la paga y días.
+3. Más → **Giras y proyectos** → crea una gira.
+4. Más → **Shows** → Nuevo show, tres veces, eligiendo la gira y un trato distinto en cada uno.
+5. En Inicio toca "Operación general", elige un show de la gira y registra un gasto.
+6. Shows → toca cada show → **Cerrar show**. Prueba "Todavía no nos pagan" en uno.
+7. Vende merch eligiendo canal Show.
+8. Toca un show cerrado: "Este show dejó +$X" con su desglose. En Giras y proyectos verás el total de la gira.
+9. Más → **Saldos de la banda** → "Nos deben" → "Ya llegó".
+
+---
+
+## Fase 2 — Merch, POS e inventario · aprobada el 2026-11-10
 
 Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celular real.
 

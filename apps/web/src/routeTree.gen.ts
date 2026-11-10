@@ -19,7 +19,9 @@ import { Route as AppMovimientosRouteImport } from './routes/_app/movimientos'
 import { Route as AppProyectosRouteImport } from './routes/_app/proyectos'
 import { Route as AppReportesRouteImport } from './routes/_app/reportes'
 import { Route as AppSaldosRouteImport } from './routes/_app/saldos'
+import { Route as AppShowsRouteImport } from './routes/_app/shows'
 import { Route as AppContadorBalanzaRouteImport } from './routes/_app/contador/balanza'
+import { Route as AppContadorBoleterasRouteImport } from './routes/_app/contador/boleteras'
 import { Route as AppContadorDiarioRouteImport } from './routes/_app/contador/diario'
 import { Route as AppContadorProductosRouteImport } from './routes/_app/contador/productos'
 import { Route as AppContadorUsuariosRouteImport } from './routes/_app/contador/usuarios'
@@ -73,9 +75,19 @@ const AppSaldosRoute = AppSaldosRouteImport.update({
   path: '/saldos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppShowsRoute = AppShowsRouteImport.update({
+  id: '/shows',
+  path: '/shows',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContadorBalanzaRoute = AppContadorBalanzaRouteImport.update({
   id: '/contador/balanza',
   path: '/contador/balanza',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppContadorBoleterasRoute = AppContadorBoleterasRouteImport.update({
+  id: '/contador/boleteras',
+  path: '/contador/boleteras',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContadorDiarioRoute = AppContadorDiarioRouteImport.update({
@@ -104,7 +116,9 @@ export interface FileRoutesByFullPath {
   '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
   '/saldos': typeof AppSaldosRoute
+  '/shows': typeof AppShowsRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
+  '/contador/boleteras': typeof AppContadorBoleterasRoute
   '/contador/diario': typeof AppContadorDiarioRoute
   '/contador/productos': typeof AppContadorProductosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
@@ -118,8 +132,10 @@ export interface FileRoutesByTo {
   '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
   '/saldos': typeof AppSaldosRoute
+  '/shows': typeof AppShowsRoute
   '/': typeof AppIndexRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
+  '/contador/boleteras': typeof AppContadorBoleterasRoute
   '/contador/diario': typeof AppContadorDiarioRoute
   '/contador/productos': typeof AppContadorProductosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
@@ -135,8 +151,10 @@ export interface FileRoutesById {
   '/_app/proyectos': typeof AppProyectosRoute
   '/_app/reportes': typeof AppReportesRoute
   '/_app/saldos': typeof AppSaldosRoute
+  '/_app/shows': typeof AppShowsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/contador/balanza': typeof AppContadorBalanzaRoute
+  '/_app/contador/boleteras': typeof AppContadorBoleterasRoute
   '/_app/contador/diario': typeof AppContadorDiarioRoute
   '/_app/contador/productos': typeof AppContadorProductosRoute
   '/_app/contador/usuarios': typeof AppContadorUsuariosRoute
@@ -153,7 +171,9 @@ export interface FileRouteTypes {
     | '/proyectos'
     | '/reportes'
     | '/saldos'
+    | '/shows'
     | '/contador/balanza'
+    | '/contador/boleteras'
     | '/contador/diario'
     | '/contador/productos'
     | '/contador/usuarios'
@@ -167,8 +187,10 @@ export interface FileRouteTypes {
     | '/proyectos'
     | '/reportes'
     | '/saldos'
+    | '/shows'
     | '/'
     | '/contador/balanza'
+    | '/contador/boleteras'
     | '/contador/diario'
     | '/contador/productos'
     | '/contador/usuarios'
@@ -183,8 +205,10 @@ export interface FileRouteTypes {
     | '/_app/proyectos'
     | '/_app/reportes'
     | '/_app/saldos'
+    | '/_app/shows'
     | '/_app/'
     | '/_app/contador/balanza'
+    | '/_app/contador/boleteras'
     | '/_app/contador/diario'
     | '/_app/contador/productos'
     | '/_app/contador/usuarios'
@@ -267,11 +291,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSaldosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/shows': {
+      id: '/_app/shows'
+      path: '/shows'
+      fullPath: '/shows'
+      preLoaderRoute: typeof AppShowsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/contador/balanza': {
       id: '/_app/contador/balanza'
       path: '/contador/balanza'
       fullPath: '/contador/balanza'
       preLoaderRoute: typeof AppContadorBalanzaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/contador/boleteras': {
+      id: '/_app/contador/boleteras'
+      path: '/contador/boleteras'
+      fullPath: '/contador/boleteras'
+      preLoaderRoute: typeof AppContadorBoleterasRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/contador/diario': {
@@ -306,8 +344,10 @@ interface AppRouteChildren {
   AppProyectosRoute: typeof AppProyectosRoute
   AppReportesRoute: typeof AppReportesRoute
   AppSaldosRoute: typeof AppSaldosRoute
+  AppShowsRoute: typeof AppShowsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppContadorBalanzaRoute: typeof AppContadorBalanzaRoute
+  AppContadorBoleterasRoute: typeof AppContadorBoleterasRoute
   AppContadorDiarioRoute: typeof AppContadorDiarioRoute
   AppContadorProductosRoute: typeof AppContadorProductosRoute
   AppContadorUsuariosRoute: typeof AppContadorUsuariosRoute
@@ -321,8 +361,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppProyectosRoute: AppProyectosRoute,
   AppReportesRoute: AppReportesRoute,
   AppSaldosRoute: AppSaldosRoute,
+  AppShowsRoute: AppShowsRoute,
   AppIndexRoute: AppIndexRoute,
   AppContadorBalanzaRoute: AppContadorBalanzaRoute,
+  AppContadorBoleterasRoute: AppContadorBoleterasRoute,
   AppContadorDiarioRoute: AppContadorDiarioRoute,
   AppContadorProductosRoute: AppContadorProductosRoute,
   AppContadorUsuariosRoute: AppContadorUsuariosRoute,

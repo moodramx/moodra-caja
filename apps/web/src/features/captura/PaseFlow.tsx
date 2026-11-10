@@ -72,6 +72,7 @@ export function PaseFlow({ onDone }: { onDone: () => void }) {
     to_kind: target.to_kind,
     to_member: target.to_kind === 'integrante' ? target.to_member : undefined,
     project_id: captureProject.projectId,
+    show_id: captureProject.showId,
   }
   const needsDiego = target.to_kind !== 'integrante' && profile?.role !== 'contador'
 

@@ -9,6 +9,7 @@ import { describeRegreso } from '../../lib/humanize'
 import { entryToCents, formatMXNShort } from '../../lib/money'
 import { useBalances, useCashPosition } from '../../lib/queries'
 import { AmountStep, Confirm, Option, Step, useCapture } from '../captura/parts'
+import { PorCobrar } from '../shows/ShowsExtras'
 
 const money = (cents: bigint | number | null) => formatMXNShort(BigInt(cents ?? 0))
 
@@ -133,6 +134,8 @@ export function SaldosPage() {
           </p>
         </div>
       </Card>
+
+      <PorCobrar />
 
       {balances.isPending && <p className="text-ink-muted">Afinando…</p>}
 

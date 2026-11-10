@@ -40,6 +40,7 @@ export function GasteFlow({ onDone }: { onDone: () => void }) {
           paid_with: paidWith,
           settlement_pref: paidWith === 'mi_dinero' ? pref : undefined,
           project_id: target.projectId,
+          show_id: target.showId,
           description: description.trim() || undefined,
         }
       : null

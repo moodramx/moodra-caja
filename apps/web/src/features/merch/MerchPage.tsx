@@ -16,6 +16,7 @@ import type {
   VentaPayload,
 } from '../../lib/events'
 import { describeVenta } from '../../lib/humanize'
+import { showsForSale } from '../../lib/shows'
 import {
   addToCart,
   cartTotals,
@@ -32,10 +33,10 @@ import {
   useInventory,
   useMerchToday,
   useProfiles,
-  useProjects,
+  useShows,
 } from '../../lib/queries'
 import { fieldClass, useCapture } from '../captura/parts'
-import { NewProjectForm } from '../proyectos/Proyectos'
+import { QuickShowForm } from '../shows/ShowsExtras'
 import {
   ChangeCalculator,
   CostNote,
@@ -128,7 +129,7 @@ export function MerchPage() {
   const [showId, setShowId] = useState<string | null>(null)
   const [creatingShow, setCreatingShow] = useState(false)
   const [channelNote, setChannelNote] = useState('')
-  const projects = useProjects()
+  const allShows = useShows().data ?? []
   const [done, setDone] = useState<string | null>(null)
   const [tool, setTool] = useState<Tool | null>(null)
 
@@ -159,10 +160,13 @@ export function MerchPage() {
     )
   }
   // Por default: Show si andamos en una gira o show; si no, Otro.
-  const activeChannel = channel ?? (context.project?.type?.is_show ? 'show' : 'otro')
-  // Shows, giras y festivales entre los que elegir cuando la venta es de show.
-  const shows = (projects.data ?? []).filter((p) => p.type?.is_show)
-  const activeShow = showId ?? (context.project?.type?.is_show ? context.id : null)
+  const activeChannel =
+    channel ?? (context.showId || context.project?.type?.is_show ? 'show' : 'otro')
+  const contextShows = allShows.filter((s) => s.project_id === context.id)
+  const activeShow =
+    showId ?? context.showId ?? (contextShows.length === 1 ? (contextShows[0]?.id ?? null) : null)
+  // Shows entre los que elegir: los de estos días (y siempre el ya elegido).
+  const shows = showsForSale(allShows, activeShow)
   const needsShow = activeChannel === 'show' && !activeShow
 
   const charge = () => {
@@ -172,7 +176,8 @@ export function MerchPage() {
       channel: activeChannel,
       channel_note: activeChannel === 'otro' ? channelNote.trim() || undefined : undefined,
       collected_by: collector ?? profile?.id,
-      project_id: activeChannel === 'show' ? activeShow : context.id,
+      project_id: activeChannel === 'show' ? undefined : context.id,
+      show_id: activeChannel === 'show' ? activeShow : context.showId,
     }
     void capture('venta_merch', payload, 'Venta guardada ✓')
     setDone(totals.total > 0n ? money(totals.total) : '🎁')
@@ -431,9 +436,9 @@ export function MerchPage() {
               <p className="text-sm text-ink-muted">¿De qué show?</p>
               {creatingShow ? (
                 <div className="space-y-3 rounded-card border border-line bg-bg p-3">
-                  <NewProjectForm
-                    onCreated={(project) => {
-                      setShowId(project.id)
+                  <QuickShowForm
+                    onCreated={(id) => {
+                      setShowId(id)
                       setCreatingShow(false)
                     }}
                   />
@@ -446,7 +451,7 @@ export function MerchPage() {
                   {shows.map((show) => (
                     <Chip
                       key={show.id}
-                      emoji={show.type?.emoji}
+                      emoji="🎸"
                       selected={activeShow === show.id}
                       onClick={() => setShowId(show.id)}
                     >
