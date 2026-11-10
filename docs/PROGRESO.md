@@ -1,8 +1,8 @@
 # PROGRESO — Moodra $$
 
-## Fase 3 — Shows, giras y proyectos · 2026-11-10 · **lista en local, sin publicar**
+## Fase 3 — Shows, giras y proyectos · 2026-11-10 · **publicada, en revisión de Diego**
 
-Vive en la rama `fase-3`. No está en `main`, ni en Netlify, ni en la base de la nube.
+Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celular real.
 
 ### Hecho y verificado en la compu
 
@@ -35,7 +35,7 @@ Criterios de aceptación del plan, cubiertos por `e2e/fase3-real.spec.ts`:
 
 ### Lo que NO está hecho o quedó distinto
 
-1. **No está publicada** ni probada en un celular real.
+1. **No se ha probado en un celular real.**
 2. **Venue como contacto**: el show guarda nombre y ciudad en texto; el catálogo de contactos (venues, proveedores) llega con los catálogos de la Fase 5.
 3. **Antigüedad de lo por cobrar** y el tablero del contador: Fase 5.
 4. **Punto de equilibrio por show** (boletos para no perder): el cálculo ya existe y está probado, pero su reporte es de la Fase 5.
