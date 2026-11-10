@@ -1,4 +1,10 @@
-import type { EntregaPayload, GastoPayload, IngresoPayload, PuseDineroPayload } from '../events'
+import type {
+  EntregaPayload,
+  GastoPayload,
+  IngresoPayload,
+  PuseDineroPayload,
+  RegresoPayload,
+} from '../events'
 import type { OutboxOp } from './db'
 
 export interface PendingEffects {
@@ -43,6 +49,12 @@ export function pendingEffects(
         if (p.destination === 'efectivo_integrante' && (p.holder_member_id ?? userId) === userId) {
           cash += amount
         }
+        break
+      }
+      case 'regreso_dinero': {
+        const p = op.payload as RegresoPayload
+        if (p.member_id === userId) owed -= amount
+        if (p.origin === 'efectivo_integrante') cash -= amount
         break
       }
       case 'entrega_efectivo': {

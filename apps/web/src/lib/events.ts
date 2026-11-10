@@ -40,7 +40,14 @@ export interface PuseDineroPayload extends Base {
   kind: 'prestamo' | 'aportacion'
 }
 
-export type SubmitPayload = GastoPayload | IngresoPayload | EntregaPayload | PuseDineroPayload
+/** Regresarle a un integrante dinero que la banda le debe. */
+export interface RegresoPayload extends Base {
+  member_id: string
+  origin: MoneyPlace
+}
+
+export type SubmitPayload =
+  GastoPayload | IngresoPayload | EntregaPayload | PuseDineroPayload | RegresoPayload
 
 export type FeedRow = Database['public']['Views']['v_event_feed']['Row']
 export type MemberBalance = Database['public']['Views']['v_member_balances']['Row']

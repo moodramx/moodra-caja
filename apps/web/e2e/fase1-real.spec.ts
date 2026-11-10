@@ -169,6 +169,30 @@ test('"Deshacer" anula el registro y el saldo regresa', async () => {
   await expect(sync(a)).toContainText('Todo al día', { timeout: 15_000 })
 })
 
+test('el contador le regresa su dinero al integrante y queda a mano', async () => {
+  await expect(a.getByTestId('saldo-por-regresar')).toContainText('$850')
+
+  await nav(b, 'Más')
+  await b.getByRole('link', { name: /Saldos de la banda/ }).click()
+  const card = b.locator('section').filter({ hasText: inte.name })
+  await expect(card).toContainText('Le debemos $850')
+  await card.getByRole('button', { name: /Regresarle dinero/ }).click()
+
+  const sheet = b.getByRole('dialog')
+  await sheet.getByRole('button', { name: 'Poner todo' }).click()
+  await sheet.getByRole('button', { name: 'Continuar' }).click()
+  // Solo el contador puede pagar desde la cuenta.
+  await pick(b, /De la cuenta de la banda/)
+  await expect(sheet).toContainText(
+    `Le regresaste $850 a ${inte.name} desde la cuenta de la banda. Ya estamos a mano con ${inte.name}.`,
+  )
+  await pick(b, 'Guardar')
+
+  await expect(card).toContainText('No se le debe nada.', { timeout: 15_000 })
+  await expect(a.getByTestId('saldo-por-regresar')).toHaveCount(0, { timeout: 15_000 })
+  await nav(b, 'Inicio')
+})
+
 test('el contador ve el libro diario y la balanza cuadra', async () => {
   await nav(b, 'Más')
   await b.getByRole('switch').click()

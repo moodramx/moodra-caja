@@ -89,6 +89,7 @@ function opAsRow(op: OutboxOp, categories: { id: string; name: string; emoji: st
     to_kind: p.to_kind ?? null,
     to_member: p.to_member ?? null,
     fund_kind: p.kind ?? null,
+    fund_member: (p as { member_id?: string }).member_id ?? null,
     captured_at: op.captured_at,
   } as FeedRow
 }

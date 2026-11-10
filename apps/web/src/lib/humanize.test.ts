@@ -5,6 +5,7 @@ import {
   describeGasto,
   describeIngreso,
   describePuse,
+  describeRegreso,
   feedText,
   INCOME_PLACE_OPTIONS,
   PAID_WITH_OPTIONS,
@@ -60,6 +61,19 @@ describe('resúmenes en lenguaje humano', () => {
     expect(
       describePuse({ amount_cents: 700000, destination: 'cuenta_banda', kind: 'prestamo' }),
     ).toBe('Pusiste $7,000 en la cuenta de la banda. Te lo regresamos.')
+  })
+
+  it('regresar dinero', () => {
+    const p = { amount_cents: 50000, member_id: 'p', origin: 'cuenta_banda' } as const
+    expect(describeRegreso(p, 'Pepe', 85000n)).toBe(
+      'Le regresaste $500 a Pepe desde la cuenta de la banda. Todavía le debemos $350.',
+    )
+    expect(describeRegreso({ ...p, amount_cents: 85000 }, 'Pepe', 85000n)).toBe(
+      'Le regresaste $850 a Pepe desde la cuenta de la banda. Ya estamos a mano con Pepe.',
+    )
+    expect(describeRegreso({ ...p, origin: 'efectivo_integrante' }, 'Diego', 50000n, true)).toBe(
+      'Te regresaste $500 con el efectivo de la banda que traes. Ya estás a mano con la banda.',
+    )
   })
 
   it('nunca usa lenguaje contable', () => {
@@ -167,6 +181,14 @@ describe('saldos optimistas', () => {
       op('entrega_efectivo', { amount_cents: 20000, to_kind: 'integrante', to_member: 'x' }),
     ]
     expect(pendingEffects(ops, 'me')).toEqual({ cash: 215000n, owed: 250000n })
+  })
+
+  it('regresar dinero baja lo que se debe y el efectivo de quien paga', () => {
+    const ops = [
+      op('regreso_dinero', { amount_cents: 30000, member_id: 'me', origin: 'efectivo_integrante' }),
+      op('regreso_dinero', { amount_cents: 10000, member_id: 'otro', origin: 'cuenta_banda' }),
+    ]
+    expect(pendingEffects(ops, 'me')).toEqual({ cash: -30000n, owed: -30000n })
   })
 
   it('ignora lo rechazado y lo de otros usuarios', () => {

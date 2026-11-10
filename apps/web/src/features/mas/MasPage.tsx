@@ -66,6 +66,12 @@ export function MasPage() {
       )}
 
       <Card>
+        <Link to="/saldos" className={rowClass}>
+          <span className="font-semibold">💰 Saldos de la banda</span>
+          <span aria-hidden="true" className="text-ink-muted">
+            ›
+          </span>
+        </Link>
         <Link to="/proyectos" className={rowClass}>
           <span className="font-semibold">🚐 Giras y proyectos</span>
           <span aria-hidden="true" className="text-ink-muted">

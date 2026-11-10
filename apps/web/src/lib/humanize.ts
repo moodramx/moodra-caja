@@ -7,6 +7,7 @@ import type {
   IngresoPayload,
   MoneyPlace,
   PuseDineroPayload,
+  RegresoPayload,
 } from './events'
 import { formatMXNShort } from './money'
 
@@ -91,6 +92,33 @@ export function describePuse(payload: PuseDineroPayload, holderName?: string): s
           : 'en efectivo'
   const after = payload.kind === 'prestamo' ? 'Te lo regresamos.' : 'Queda como aportación tuya.'
   return `Pusiste ${money(payload.amount_cents)} ${where}. ${after}`
+}
+
+const originPhrase: Record<MoneyPlace, string> = {
+  efectivo_integrante: 'con el efectivo de la banda que traes',
+  cuenta_banda: 'desde la cuenta de la banda',
+  caja: 'con dinero de la caja',
+}
+
+/** "Le regresaste $500 a Pepe desde la cuenta de la banda. Todavía le debemos $350." */
+export function describeRegreso(
+  payload: RegresoPayload,
+  name: string,
+  owedCents: bigint,
+  isSelf = false,
+): string {
+  const rest = owedCents - BigInt(payload.amount_cents)
+  const whom = isSelf ? 'Te regresaste' : `Le regresaste`
+  const to = isSelf ? '' : ` a ${name}`
+  const after =
+    rest > 0n
+      ? isSelf
+        ? `Todavía te debemos ${money(rest)}.`
+        : `Todavía le debemos ${money(rest)}.`
+      : isSelf
+        ? 'Ya estás a mano con la banda.'
+        : `Ya estamos a mano con ${name}.`
+  return `${whom} ${money(payload.amount_cents)}${to} ${originPhrase[payload.origin]}. ${after}`
 }
 
 export interface FeedText {

@@ -18,6 +18,7 @@ import { Route as AppMerchRouteImport } from './routes/_app/merch'
 import { Route as AppMovimientosRouteImport } from './routes/_app/movimientos'
 import { Route as AppProyectosRouteImport } from './routes/_app/proyectos'
 import { Route as AppReportesRouteImport } from './routes/_app/reportes'
+import { Route as AppSaldosRouteImport } from './routes/_app/saldos'
 import { Route as AppContadorBalanzaRouteImport } from './routes/_app/contador/balanza'
 import { Route as AppContadorDiarioRouteImport } from './routes/_app/contador/diario'
 import { Route as AppContadorUsuariosRouteImport } from './routes/_app/contador/usuarios'
@@ -66,6 +67,11 @@ const AppReportesRoute = AppReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSaldosRoute = AppSaldosRouteImport.update({
+  id: '/saldos',
+  path: '/saldos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContadorBalanzaRoute = AppContadorBalanzaRouteImport.update({
   id: '/contador/balanza',
   path: '/contador/balanza',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/movimientos': typeof AppMovimientosRoute
   '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
+  '/saldos': typeof AppSaldosRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/diario': typeof AppContadorDiarioRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/movimientos': typeof AppMovimientosRoute
   '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
+  '/saldos': typeof AppSaldosRoute
   '/': typeof AppIndexRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/diario': typeof AppContadorDiarioRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_app/movimientos': typeof AppMovimientosRoute
   '/_app/proyectos': typeof AppProyectosRoute
   '/_app/reportes': typeof AppReportesRoute
+  '/_app/saldos': typeof AppSaldosRoute
   '/_app/': typeof AppIndexRoute
   '/_app/contador/balanza': typeof AppContadorBalanzaRoute
   '/_app/contador/diario': typeof AppContadorDiarioRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/movimientos'
     | '/proyectos'
     | '/reportes'
+    | '/saldos'
     | '/contador/balanza'
     | '/contador/diario'
     | '/contador/usuarios'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/movimientos'
     | '/proyectos'
     | '/reportes'
+    | '/saldos'
     | '/'
     | '/contador/balanza'
     | '/contador/diario'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_app/movimientos'
     | '/_app/proyectos'
     | '/_app/reportes'
+    | '/_app/saldos'
     | '/_app/'
     | '/_app/contador/balanza'
     | '/_app/contador/diario'
@@ -236,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/saldos': {
+      id: '/_app/saldos'
+      path: '/saldos'
+      fullPath: '/saldos'
+      preLoaderRoute: typeof AppSaldosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/contador/balanza': {
       id: '/_app/contador/balanza'
       path: '/contador/balanza'
@@ -267,6 +286,7 @@ interface AppRouteChildren {
   AppMovimientosRoute: typeof AppMovimientosRoute
   AppProyectosRoute: typeof AppProyectosRoute
   AppReportesRoute: typeof AppReportesRoute
+  AppSaldosRoute: typeof AppSaldosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppContadorBalanzaRoute: typeof AppContadorBalanzaRoute
   AppContadorDiarioRoute: typeof AppContadorDiarioRoute
@@ -280,6 +300,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMovimientosRoute: AppMovimientosRoute,
   AppProyectosRoute: AppProyectosRoute,
   AppReportesRoute: AppReportesRoute,
+  AppSaldosRoute: AppSaldosRoute,
   AppIndexRoute: AppIndexRoute,
   AppContadorBalanzaRoute: AppContadorBalanzaRoute,
   AppContadorDiarioRoute: AppContadorDiarioRoute,
