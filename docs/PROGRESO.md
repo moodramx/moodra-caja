@@ -9,10 +9,47 @@
 | 2 — Merch, POS e inventario                       | Aprobada                            |
 | 3 — Shows, giras y proyectos                      | Aprobada                            |
 | 4 — Captura inteligente (IA)                      | **Pospuesta por decisión de Diego** |
-| 5 — Contador: reportes, repartos y cierre         | **5a publicada, en revisión**       |
-| 6 — Offline robusto, notificaciones y lanzamiento | Pendiente                           |
+| 5 — Contador: reportes, repartos y cierre         | **Publicada, en revisión**          |
+| 6 — Offline robusto, notificaciones y lanzamiento | **Parcial** (falta producción)      |
 
 Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netlify, dar de alta al becario, configurar las boleteras con sus datos reales y confirmar que el CI de GitHub pasa.
+
+---
+
+## Fases 5b, 5c y 6 · en revisión (2026-11-10)
+
+Hechas de corrido a petición de Diego. Ver `MANUAL-CONTADOR.md`, `MANUAL-INTEGRANTE.md`, `RESPALDOS.md` y `PRODUCCION.md`.
+
+### Hecho y verificado en la compu
+
+- **Operación del mes** (contador): sueldo del becario con un toque, repartos con vista previa y pago, arqueo de efectivo, pagos pendientes a proveedores y reclasificación de saldos.
+- **Asiento manual**: solo entra si cuadra y con motivo.
+- **Cierres**: lista de revisión, cierre y reapertura de mes con motivo, y cierre de año.
+- **Catálogos editables**: cuentas, categorías, tipos de proyecto y contactos.
+- **Liquidación** en Reportes: quién le entrega a quién para quedar en ceros.
+- **Balance corregido**: "Repartos a integrantes" ahora resta del fondo (antes lo sumaba; solo se notaba al haber repartos).
+- **Notificaciones push**: base, función `notify`, activación por dispositivo y tipos silenciables en Más.
+- **Primeros pasos**: tres pantallas la primera vez y en Más → "Cómo se usa".
+- **Trabajos de GitHub**: avisos de cada noche (sirve de keep-alive) y respaldo semanal a Google Drive.
+- **Manuales** del integrante y del contador.
+
+### Pruebas
+
+| Suite                              | Resultado |
+| ---------------------------------- | --------- |
+| pgTAP (426 en total)               | 426/426   |
+| Vitest (109 en total)              | 109/109   |
+| Playwright completo, en serie (58) | 58/58     |
+| ESLint y Prettier                  | Limpios   |
+
+### Pendiente o no verificado
+
+- **Notificaciones**: nunca se ha enviado una real. Falta que Diego corra `node scripts/generar-vapid.mjs` y que alguien las active en un celular.
+- **Avisos diarios y respaldo**: los trabajos están escritos pero no han corrido con secretos reales; no hay todavía un respaldo restaurado.
+- **Producción**: sigue en el proyecto de desarrollo y en el sitio provisional de Netlify. Pasos en `PRODUCCION.md`.
+- **No hecho**: envío en segundo plano en Android (Background Sync) y auditoría Lighthouse.
+- **Revisar con Diego**: la interpretación de "descuéntalo del próximo reparto" (ver `DECISIONES.md`).
+- Nada de esto se ha probado en un celular real.
 
 ---
 
