@@ -199,3 +199,44 @@ export function CostNote({
     </p>
   )
 }
+
+/** Contador de piezas: − cantidad +. Los botones miden 48 px. */
+export function Stepper({
+  count,
+  name,
+  onMinus,
+  onPlus,
+}: {
+  count: number
+  name: string
+  onMinus: () => void
+  onPlus: () => void
+}) {
+  const button =
+    'grid size-12 shrink-0 place-items-center rounded-full border border-line bg-bg text-2xl leading-none select-none active:bg-surface-2 disabled:opacity-35'
+  return (
+    <div className="flex items-center justify-between gap-1">
+      <button
+        type="button"
+        aria-label={`Una menos de ${name}`}
+        disabled={count === 0}
+        onClick={onMinus}
+        className={button}
+      >
+        −
+      </button>
+      <span
+        aria-label={`${count} de ${name} en la cuenta`}
+        className={cx(
+          'min-w-8 text-center text-xl font-bold tabular-nums',
+          count === 0 && 'text-ink-faint',
+        )}
+      >
+        {count}
+      </span>
+      <button type="button" aria-label={`Una más de ${name}`} onClick={onPlus} className={button}>
+        +
+      </button>
+    </div>
+  )
+}

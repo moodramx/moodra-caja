@@ -16,7 +16,15 @@ import type {
   VentaPayload,
 } from '../../lib/events'
 import { describeVenta } from '../../lib/humanize'
-import { addToCart, cartTotals, pendingStock, setQty, toggleGift } from '../../lib/merch'
+import {
+  addToCart,
+  cartTotals,
+  pendingStock,
+  qtyInCart,
+  removeFromCart,
+  setQty,
+  toggleGift,
+} from '../../lib/merch'
 import { formatMXNShort } from '../../lib/money'
 import { useOutbox } from '../../lib/offline/runtime'
 import {
@@ -28,7 +36,14 @@ import {
 } from '../../lib/queries'
 import { fieldClass, useCapture } from '../captura/parts'
 import { NewProjectForm } from '../proyectos/Proyectos'
-import { ChangeCalculator, CostNote, PhotosTool, ProductImage, type Product } from './MerchParts'
+import {
+  ChangeCalculator,
+  CostNote,
+  PhotosTool,
+  ProductImage,
+  Stepper,
+  type Product,
+} from './MerchParts'
 import { CompraFlow, ConteoFlow, SalidaFlow } from './StockFlows'
 
 const money = (cents: bigint | number | null) => formatMXNShort(BigInt(cents ?? 0))
@@ -128,8 +143,11 @@ export function MerchPage() {
       ? `${product.name} · ${variant?.label}`
       : (product?.name ?? '')
   }
-  const inCart = (variantId: string) =>
-    cart.filter((l) => l.variant_id === variantId).reduce((sum, l) => sum + l.qty, 0)
+  const inCart = (variantId: string) => qtyInCart(cart, variantId)
+  const remove = (variantId: string) => {
+    navigator.vibrate?.(8)
+    setCart((lines) => removeFromCart(lines, variantId))
+  }
 
   const add = (variant: InventoryRow) => {
     navigator.vibrate?.(8)
@@ -188,33 +206,53 @@ export function MerchPage() {
           const count = product.variants.reduce((sum, v) => sum + inCart(v.variant_id!), 0)
           const prices = product.variants.map((v) => v.price_cents ?? 0)
           return (
-            <button
+            <div
               key={product.id}
-              type="button"
-              onClick={() => (single ? add(single) : setChoosing(product))}
-              className="relative flex min-h-36 flex-col items-start justify-between rounded-card border border-line bg-surface p-4 text-left transition-transform duration-100 select-none active:scale-[0.98] active:bg-surface-2"
+              className="flex flex-col rounded-card border border-line bg-surface"
             >
-              {count > 0 && (
-                <span className="absolute top-3 right-3 grid size-8 place-items-center rounded-full bg-ink text-sm font-bold text-bg tabular-nums">
-                  {count}
+              <button
+                type="button"
+                onClick={() => (single ? add(single) : setChoosing(product))}
+                className="flex min-h-32 flex-1 flex-col items-start justify-between gap-2 rounded-t-card p-4 pb-2 text-left transition-transform duration-100 select-none active:scale-[0.98] active:bg-surface-2"
+              >
+                <ProductImage product={product} />
+                <span className="w-full">
+                  <span className="block font-semibold">{product.name}</span>
+                  <span className="block text-lg font-semibold tabular-nums">
+                    {money(Math.min(...prices))}
+                    {Math.max(...prices) !== Math.min(...prices) && '+'}
+                  </span>
+                  <span className="block text-sm">
+                    {single ? (
+                      <StockBadge
+                        stock={single.stock}
+                        threshold={single.low_stock_threshold ?? 0}
+                      />
+                    ) : (
+                      <span className="text-ink-muted">{product.variants.length} opciones</span>
+                    )}
+                  </span>
                 </span>
-              )}
-              <ProductImage product={product} />
-              <span className="w-full">
-                <span className="block font-semibold">{product.name}</span>
-                <span className="block text-lg font-semibold tabular-nums">
-                  {money(Math.min(...prices))}
-                  {Math.max(...prices) !== Math.min(...prices) && '+'}
-                </span>
-                <span className="block text-sm">
-                  {single ? (
-                    <StockBadge stock={single.stock} threshold={single.low_stock_threshold ?? 0} />
-                  ) : (
-                    <span className="text-ink-muted">{product.variants.length} opciones</span>
-                  )}
-                </span>
-              </span>
-            </button>
+              </button>
+              <div className="px-3 pb-3">
+                {single ? (
+                  <Stepper
+                    count={count}
+                    name={product.name}
+                    onMinus={() => remove(single.variant_id!)}
+                    onPlus={() => add(single)}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setChoosing(product)}
+                    className="min-h-12 w-full rounded-full border border-line bg-bg px-3 font-semibold active:bg-surface-2"
+                  >
+                    {count > 0 ? `${count} en la cuenta` : 'Elegir'}
+                  </button>
+                )}
+              </div>
+            </div>
           )
         })}
       </div>
@@ -275,31 +313,30 @@ export function MerchPage() {
         open={choosing !== null}
         onOpenChange={(open) => !open && setChoosing(null)}
         title={choosing ? `${choosing.emoji} ${choosing.name}` : ''}
-        description="Toca una opción para agregarla."
+        description="Usa − y + para poner cuántas de cada una."
       >
         <div className="space-y-2">
           {choosing?.variants.map((variant) => (
-            <button
+            <div
               key={variant.variant_id}
-              type="button"
-              onClick={() => add(variant)}
-              className="flex min-h-16 w-full items-center justify-between gap-3 rounded-control border border-line bg-bg px-4 text-left active:bg-surface-2"
+              className="flex min-h-16 items-center justify-between gap-3 rounded-control border border-line bg-bg px-4 py-2"
             >
-              <span>
+              <span className="min-w-0">
                 <span className="block text-lg font-semibold">{variant.label}</span>
                 <span className="block text-sm">
+                  <span className="font-semibold tabular-nums">{money(variant.price_cents)}</span> ·{' '}
                   <StockBadge stock={variant.stock} threshold={variant.low_stock_threshold ?? 0} />
                 </span>
               </span>
-              <span className="flex items-center gap-3">
-                <span className="font-semibold tabular-nums">{money(variant.price_cents)}</span>
-                {inCart(variant.variant_id!) > 0 && (
-                  <span className="grid size-8 place-items-center rounded-full bg-ink text-sm font-bold text-bg tabular-nums">
-                    {inCart(variant.variant_id!)}
-                  </span>
-                )}
+              <span className="w-36 shrink-0">
+                <Stepper
+                  count={inCart(variant.variant_id!)}
+                  name={`${choosing.name} ${variant.label}`}
+                  onMinus={() => remove(variant.variant_id!)}
+                  onPlus={() => add(variant)}
+                />
               </span>
-            </button>
+            </div>
           ))}
           <Button block className="mt-2" onClick={() => setChoosing(null)}>
             Listo

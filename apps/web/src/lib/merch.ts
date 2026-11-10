@@ -140,3 +140,16 @@ export function costOfExit(before: StockState, qty: number): bigint {
 function roundDiv(a: bigint, b: bigint): bigint {
   return (a * 2n + b) / (b * 2n)
 }
+
+/** Cuántas piezas de una variante hay en el carrito (vendidas + de regalo). */
+export function qtyInCart(lines: SaleLine[], variantId: string): number {
+  return lines.filter((l) => l.variant_id === variantId).reduce((sum, l) => sum + l.qty, 0)
+}
+
+/** Quita una pieza de una variante: primero de las que se cobran y, si no hay, de las de regalo. */
+export function removeFromCart(lines: SaleLine[], variantId: string): SaleLine[] {
+  const paid = lines.findIndex((l) => l.variant_id === variantId && !l.is_gift)
+  const index = paid !== -1 ? paid : lines.findIndex((l) => l.variant_id === variantId)
+  if (index === -1) return lines
+  return setQty(lines, index, lines[index]!.qty - 1)
+}

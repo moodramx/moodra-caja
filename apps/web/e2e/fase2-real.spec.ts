@@ -418,3 +418,43 @@ test('venta de show: hay que decir de cuál; venta por otro: se anota a qué se 
   await expect(a.getByRole('dialog')).toContainText('Mercadito de vinilos')
   await a.getByRole('dialog').getByRole('button', { name: 'Cerrar' }).click()
 })
+
+test('contador − / + en cada artículo de la mesa de merch', async () => {
+  await nav(a, 'Merch')
+  const card = a
+    .locator('main div')
+    .filter({ has: a.locator('button', { hasText: playera }) })
+    .last()
+  const plus = card.getByRole('button', { name: `Una más de ${playera}` })
+  const minus = card.getByRole('button', { name: `Una menos de ${playera}` })
+  const count = card.getByLabel(new RegExp(`de ${playera} en la cuenta`))
+  const bar = a.getByRole('button', { name: /Cobrar \$/ })
+
+  await expect(count).toHaveText('0')
+  await expect(minus).toBeDisabled()
+
+  await plus.click()
+  await plus.click()
+  await plus.click()
+  await expect(count).toHaveText('3')
+  await expect(bar).toHaveText('3 pzas · Cobrar $1,050')
+
+  await minus.click()
+  await expect(count).toHaveText('2')
+  await expect(bar).toHaveText('2 pzas · Cobrar $700')
+
+  // Tocar la tarjeta también suma, y el cobro refleja la misma cantidad.
+  await product(a).click()
+  await expect(count).toHaveText('3')
+  await bar.click()
+  await expect(a.getByRole('dialog')).toContainText('Vendiste 3 pzas por $1,050 en efectivo.')
+  await a.getByRole('dialog').getByRole('button', { name: 'Cerrar' }).click()
+
+  // Bajar a cero vacía la cuenta.
+  await minus.click()
+  await minus.click()
+  await minus.click()
+  await expect(count).toHaveText('0')
+  await expect(bar).toHaveCount(0)
+  await expect(minus).toBeDisabled()
+})

@@ -24,6 +24,7 @@ Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celu
 - **Foto por producto**, que sube cualquier integrante.
 - **Correcciones**: al abrir la app se refresca siempre desde el servidor, y el sync reintenta solo.
 - **Canal de la venta**: si es Show hay que elegir cuál; si es Otro se puede anotar a qué se refiere.
+- **Contador − / +** en cada artículo de la mesa de merch y en cada talla.
 
 ### Pruebas (todas en verde)
 

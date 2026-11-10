@@ -8,6 +8,8 @@ import {
   costOfExit,
   pendingStock,
   previewEntry,
+  qtyInCart,
+  removeFromCart,
   setQty,
   suggestedPayments,
   toggleGift,
@@ -76,6 +78,23 @@ describe('carrito', () => {
       { variant_id: 's', unit_price_cents: 5000, qty: 1, is_gift: false },
     ])
     expect(setQty(cart, 1, 4)[1]?.qty).toBe(4)
+  })
+
+  it('el contador − quita de una en una y desaparece la línea al llegar a cero', () => {
+    let cart = addToCart(addToCart(addToCart([], playera), playera), sticker)
+    expect(qtyInCart(cart, 'm')).toBe(2)
+    cart = removeFromCart(cart, 'm')
+    expect(qtyInCart(cart, 'm')).toBe(1)
+    cart = removeFromCart(cart, 'm')
+    expect(cart).toEqual([{ variant_id: 's', unit_price_cents: 5000, qty: 1, is_gift: false }])
+    expect(removeFromCart(cart, 'm')).toBe(cart) // ya no hay: no cambia nada
+  })
+
+  it('el contador − quita primero las que se cobran y deja el regalo al final', () => {
+    let cart = addToCart(addToCart([], playera, true), playera)
+    cart = removeFromCart(cart, 'm')
+    expect(cart).toEqual([{ variant_id: 'm', unit_price_cents: 0, qty: 1, is_gift: true }])
+    expect(removeFromCart(cart, 'm')).toEqual([])
   })
 
   it('solo regalos: no se cobra nada', () => {
