@@ -10,14 +10,16 @@ import { formatMXNShort } from '../../lib/money'
 import { pendingEffects } from '../../lib/offline/effects'
 import { engine, useOutbox } from '../../lib/offline/runtime'
 import {
+  useAccountTotals,
   useActiveProject,
   useBalances,
   useFeed,
-  useMonthResult,
+  useMerchReport,
   useNameOf,
   useProjectResult,
   useProjects,
 } from '../../lib/queries'
+import { balanceOf, periodOf } from '../../lib/reports'
 import { supabase } from '../../lib/supabase'
 import { CobreFlow } from '../captura/CobreFlow'
 import { GasteFlow } from '../captura/GasteFlow'
@@ -166,7 +168,15 @@ function BalanceCard() {
 /** Cómo va la banda: la gira o proyecto activo, o el mes. */
 function BandCard() {
   const { id, project } = useActiveProject()
-  const month = useMonthResult()
+  // Mes en curso, hora de México.
+  const [period] = useState(() =>
+    periodOf(
+      'mes',
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date()),
+    ),
+  )
+  const totals = useAccountTotals(period.from, period.to)
+  const merch = useMerchReport(period.from, period.to)
   const result = useProjectResult(id)
 
   if (id && result.data) {
@@ -182,24 +192,48 @@ function BandCard() {
     )
   }
 
+  const sumOf = (types: string[]) =>
+    (totals.data ?? [])
+      .filter((row) => types.includes(row.type))
+      .reduce((sum, row) => sum + balanceOf(row), 0n)
+  const earned = sumOf(['ingreso'])
+  // "Salió" es solo dinero gastado. El costo de la merch vendida no es dinero
+  // que salga al vender (se pagó al comprarla): va aparte, en su cuadro.
+  const spent = sumOf(['gasto', 'otro'])
+  const merchSold = (merch.data ?? []).reduce((sum, row) => sum + BigInt(row.revenue_cents), 0n)
+  const merchCost = (merch.data ?? []).reduce((sum, row) => sum + BigInt(row.cost_cents), 0n)
+
   return (
-    <Card>
-      <p className="text-ink-muted">Este mes en la banda</p>
-      <div className="mt-2 grid grid-cols-2 gap-3">
-        <p>
-          <span className="block text-sm text-ink-muted">Entró</span>
-          <span className="display text-3xl text-in tabular-nums">
-            {money(BigInt(month.data?.income_cents ?? 0))}
-          </span>
-        </p>
-        <p>
-          <span className="block text-sm text-ink-muted">Salió</span>
-          <span className="display text-3xl tabular-nums">
-            {money(BigInt(month.data?.expense_cents ?? 0))}
-          </span>
-        </p>
-      </div>
-    </Card>
+    <>
+      <Card>
+        <p className="text-ink-muted">Este mes en la banda</p>
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <p>
+            <span className="block text-sm text-ink-muted">Entró</span>
+            <span className="display text-3xl text-in tabular-nums">{money(earned)}</span>
+          </p>
+          <p>
+            <span className="block text-sm text-ink-muted">Salió</span>
+            <span className="display text-3xl tabular-nums">{money(spent)}</span>
+          </p>
+        </div>
+      </Card>
+      {(merchSold > 0n || merchCost > 0n) && (
+        <Card>
+          <p className="text-ink-muted">Merch este mes</p>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <p>
+              <span className="block text-sm text-ink-muted">Vendimos</span>
+              <span className="display text-3xl text-in tabular-nums">{money(merchSold)}</span>
+            </p>
+            <p>
+              <span className="block text-sm text-ink-muted">Nos costó esa merch</span>
+              <span className="display text-3xl tabular-nums">{money(merchCost)}</span>
+            </p>
+          </div>
+        </Card>
+      )}
+    </>
   )
 }
 

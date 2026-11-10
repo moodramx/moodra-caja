@@ -91,11 +91,25 @@ type ReportData = ReturnType<typeof useReportData>
 export function ReportesPage() {
   const { contadorMode } = useMode()
   const [kind, setKind] = useState<PeriodKind>('mes')
+  // Los reportes financieros son para todos; quien no anda en Modo contador
+  // empieza en el resumen y los abre cuando quiere.
+  const [full, setFull] = useState(false)
+  const showFull = contadorMode || full
   const period = useMemo(() => periodOf(kind, todayInMexico()), [kind])
   const data = useReportData(period)
 
   return (
     <Page number="04" title="Reportes">
+      {!contadorMode && (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Vista">
+          <Chip selected={!full} onClick={() => setFull(false)}>
+            Resumen
+          </Chip>
+          <Chip selected={full} onClick={() => setFull(true)}>
+            Reportes financieros
+          </Chip>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2" role="group" aria-label="Periodo">
         {PERIODS.map((option) => (
           <Chip
@@ -116,7 +130,7 @@ export function ReportesPage() {
       )}
       {!data.ready && !data.failed && <p className="text-ink-muted">Afinando…</p>}
       {data.ready &&
-        (contadorMode ? (
+        (showFull ? (
           <ContadorView period={period} data={data} />
         ) : (
           <BandView period={period} data={data} />

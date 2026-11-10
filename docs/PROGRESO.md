@@ -25,6 +25,8 @@ La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b*
 - **Reportes en modo banda** (pestaña Reportes): "Cómo nos fue" del periodo (ganamos, gastamos, quedó), dinero de la banda hoy, de dónde entró, en qué se fue y lo que dejó cada show. Sin palabras de contabilidad.
 - **Tablero del contador** (misma pestaña con Modo contador): dinero de la banda, resultado del periodo, por cobrar, por pagar, inventario y Fondo Moodra; alertas de existencias bajas o negativas, entregas sin confirmar de más de 48 h, shows sin cerrar y registros en mes cerrado.
 - **Diez reportes**: estado de resultados (con mes anterior al lado), balance general, flujo de efectivo, balanza, auxiliar por cuenta, saldos por integrante, rentabilidad por show, punto de equilibrio por show, margen de merch e inventario valuado.
+- **Reportes financieros para todos** (pedido de Diego): cualquier integrante cambia de "Resumen" a "Reportes financieros" y ve lo mismo que el contador, con descargas.
+- **Inicio**: "Salió" es solo dinero gastado; la merch vendida y lo que costó van en su propio cuadro "Merch este mes".
 - **Periodos**: este mes, mes pasado, este año, todo.
 - **Cuadres a la vista**: el balance, el flujo y la balanza dicen en pantalla si cuadran.
 - **Descargas**: cada reporte a Excel y a PDF, y "Descargar todos en Excel" (una hoja por reporte).

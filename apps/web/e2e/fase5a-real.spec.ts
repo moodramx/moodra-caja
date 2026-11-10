@@ -241,4 +241,19 @@ test('el integrante ve un resumen en palabras de todos los días, sin contabilid
   const text = await a.locator('main').innerText()
   for (const word of ['Cargo', 'Abono', 'Balanza', 'Pasivo', 'Activo', 'Auxiliar', 'Excel'])
     expect(text).not.toContain(word)
+
+  // Los reportes financieros completos son para todos: los mismos que ve el contador.
+  await pick(a, 'Vista', 'Reportes financieros')
+  await expect(a.getByLabel('Tablero')).toContainText('Dinero de la banda')
+  await pick(a, 'Reporte', 'Balance')
+  await expect(a.getByRole('status').filter({ hasText: 'Activo = Pasivo + Fondo ✓' })).toBeVisible()
+  await pick(a, 'Reporte', 'Resultados')
+  expect(await resultOnScreen(a)).toBe(await resultOnScreen(b))
+  await expect(a.getByRole('button', { name: 'Excel', exact: true })).toBeEnabled()
+
+  // Inicio: lo que salió es solo dinero gastado; la merch va en su propio cuadro.
+  await nav(a, 'Inicio')
+  await expect(a.getByText('Salió', { exact: true })).toBeVisible()
+  if (process.env.CAPTURAS)
+    await a.screenshot({ path: '../../docs/capturas/fase5a-inicio.png', fullPage: true })
 })
