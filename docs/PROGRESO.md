@@ -1,6 +1,22 @@
 # PROGRESO — Moodra $$
 
-## Fase 3 — Shows, giras y proyectos · 2026-11-10 · **publicada, en revisión de Diego**
+## Estado general · 2026-11-10
+
+| Fase                                              | Estado                              |
+| ------------------------------------------------- | ----------------------------------- |
+| 0 — Cimientos                                     | Aprobada                            |
+| 1 — Núcleo contable y captura                     | Aprobada                            |
+| 2 — Merch, POS e inventario                       | Aprobada                            |
+| 3 — Shows, giras y proyectos                      | Aprobada                            |
+| 4 — Captura inteligente (IA)                      | **Pospuesta por decisión de Diego** |
+| 5 — Contador: reportes, repartos y cierre         | Siguiente                           |
+| 6 — Offline robusto, notificaciones y lanzamiento | Pendiente                           |
+
+Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netlify, dar de alta al becario, configurar las boleteras con sus datos reales y confirmar que el CI de GitHub pasa.
+
+---
+
+## Fase 3 — Shows, giras y proyectos · aprobada el 2026-11-10
 
 Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celular real.
 

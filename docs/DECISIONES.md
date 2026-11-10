@@ -214,3 +214,11 @@ Origen: `Moodra Website/site/css/styles.css` y `site/index.html`. Cierra el pend
 | Un show sin pago se cierra sin asiento; sus gastos sí cuentan.                                                                                  | PRD §4.7.                                                                  |
 | Cualquier integrante crea, edita y cancela shows sin cerrar.                                                                                    | Decisión de Diego del 2026-11-10 sobre proyectos y shows.                  |
 | Los "shows sueltos" creados antes como proyecto reciben su show con trato "Sin pago", y sus capturas quedan ligadas a él.                       | Para que aparezcan en Shows y en el cobro; el trato real se edita después. |
+
+## 2026-11-10 — La Fase 4 (captura con IA) queda pospuesta
+
+| Decisión                                                                                                                                                 | Alternativa descartada       | Por qué                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------- |
+| **No se construye nada de IA por ahora**: ni foto de ticket ni "Dime qué pasó". Se sigue con la Fase 5.                                                  | Hacer la Fase 4 en su orden. | Decisión de Diego. La app no depende de la IA: toda captura se hace a mano. |
+| La Fase 3 queda aprobada (Diego: "funciona bien").                                                                                                       | —                            | —                                                                           |
+| Cuando se retome hará falta: una llave de la API de Claude guardada como secreto en Supabase, unos 15 tickets reales en foto y unas 20 frases de prueba. | —                            | Son los insumos del criterio de aceptación de esa fase.                     |
