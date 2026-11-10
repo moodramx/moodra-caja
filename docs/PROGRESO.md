@@ -9,7 +9,7 @@
 | 2 — Merch, POS e inventario                       | Aprobada                            |
 | 3 — Shows, giras y proyectos                      | Aprobada                            |
 | 4 — Captura inteligente (IA)                      | **Pospuesta por decisión de Diego** |
-| 5 — Contador: reportes, repartos y cierre         | **5a en revisión** (sin publicar)   |
+| 5 — Contador: reportes, repartos y cierre         | **5a publicada, en revisión**       |
 | 6 — Offline robusto, notificaciones y lanzamiento | Pendiente                           |
 
 Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netlify, dar de alta al becario, configurar las boleteras con sus datos reales y confirmar que el CI de GitHub pasa.
@@ -18,7 +18,7 @@ Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netl
 
 ## Fase 5a — Tablero del contador y reportes · en revisión (2026-11-10)
 
-La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b** repartos, arqueos, asiento manual, sueldo del becario y cierres de mes y año, **5c** catálogos editables, liquidación de gira y tableros simplificados. La 5a está en la rama `fase-5a`; **todavía no está en `main` ni en la nube**.
+La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b** repartos, arqueos, asiento manual, sueldo del becario y cierres de mes y año, **5c** catálogos editables, liquidación de gira y tableros simplificados. La 5a está en `main` y en la base de desarrollo de la nube desde el 2026-11-10.
 
 ### Hecho y verificado en la compu
 
@@ -41,11 +41,11 @@ La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b*
 
 ### Pendiente o no verificado
 
-- No está publicada. Falta probarla en un celular real, sobre todo que las descargas de Excel y PDF abran bien en el teléfono.
+- Falta probarla en un celular real, sobre todo que las descargas de Excel y PDF abran bien en el teléfono.
 - Las librerías de Excel y PDF (~700 KB comprimidas) no se bajan al instalar la app: se bajan la primera vez que alguien descarga un reporte, así que esa primera descarga necesita señal.
 - Los reportes no filtran todavía por proyecto o show (la base ya lo permite).
 
-### Cómo probarla (cuando esté publicada)
+### Cómo probarla
 
 1. Como integrante: abre **Reportes**. Debes ver "Cómo nos fue" y las barras, sin tablas contables.
 2. Como contador: Más → enciende **Modo contador** → **Reportes**. Revisa el tablero y las alertas.
