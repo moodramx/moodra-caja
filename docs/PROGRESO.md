@@ -18,7 +18,7 @@ Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netl
 
 ## Transporte entre integrantes · en revisión (2026-11-10)
 
-Módulo nuevo pedido por Diego. Está en la rama `transporte`; **no está en `main` ni en la nube**.
+Módulo nuevo pedido por Diego. Está en `main` y en la nube (base, función `route-estimate` y app) desde el 2026-11-10.
 
 ### Hecho y verificado en la compu
 
@@ -46,7 +46,7 @@ Las pruebas reales de Playwright ahora corren una tras otra: comparten una sola 
 ### Pendiente o no verificado
 
 - **La consulta a Google no está probada con una llave real.** Falta que Diego cree la llave y la guarde como secreto; hasta entonces no se sabe si Google devuelve el precio de las casetas de las rutas de la banda.
-- No está publicado ni probado en celular.
+- No está probado en celular.
 - Los precios por litro quedaron con valores de arranque (magna $24, premium $26, diésel $27) y el desgaste en $1.50 por km: hay que ajustarlos.
 - El módulo no cierra el mes solo: los saldos se acumulan hasta que se pagan.
 
