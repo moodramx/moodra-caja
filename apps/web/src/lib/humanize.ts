@@ -224,6 +224,18 @@ export function feedText(row: FeedRow, nameOf: (id: string | null) => string): F
         title: `Se le regresaron ${amount} a ${nameOf(row.fund_member)}`,
         badge,
       }
+    case 'viaje':
+      return {
+        emoji: '🚗',
+        title: `${who} registró un viaje a ${row.trip_dest ?? 'algún lado'} · ${amount}`,
+        badge,
+      }
+    case 'pago_transporte':
+      return {
+        emoji: '🤝',
+        title: `${nameOf(row.pay_from)} le pagó ${amount} de transporte a ${nameOf(row.pay_to)}`,
+        badge,
+      }
     case 'pago_proveedor':
       return { emoji: '✅', title: `${who} pagó ${amount} que estaban pendientes`, badge }
     default:

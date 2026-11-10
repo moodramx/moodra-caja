@@ -4,6 +4,9 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // Las pruebas reales comparten una sola base local: van una tras otra para
+  // que lo que captura una no mueva los números que otra está midiendo.
+  workers: process.env.E2E_REAL === '1' ? 1 : undefined,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',

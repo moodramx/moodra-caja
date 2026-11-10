@@ -165,6 +165,11 @@ function BalanceCard() {
   )
 }
 
+// Cuentas que no son dinero que salga: costo de la merch vendida, regalada o
+// dada de baja (se pagó al comprarla) y el transporte que los integrantes se
+// pagan entre ellos.
+const NOT_CASH = ['5.1', '7.1', '7.2', '5.3.08', '6.11']
+
 /** Cómo va la banda: la gira o proyecto activo, o el mes. */
 function BandCard() {
   const { id, project } = useActiveProject()
@@ -199,7 +204,13 @@ function BandCard() {
   const earned = sumOf(['ingreso'])
   // "Salió" es solo dinero gastado. El costo de la merch vendida no es dinero
   // que salga al vender (se pagó al comprarla): va aparte, en su cuadro.
-  const spent = sumOf(['gasto', 'otro'])
+  const spent = (totals.data ?? [])
+    .filter(
+      (row) =>
+        ['costo', 'gasto', 'otro'].includes(row.type) &&
+        !NOT_CASH.some((code) => row.code === code),
+    )
+    .reduce((sum, row) => sum + balanceOf(row), 0n)
   const merchSold = (merch.data ?? []).reduce((sum, row) => sum + BigInt(row.revenue_cents), 0n)
   const merchCost = (merch.data ?? []).reduce((sum, row) => sum + BigInt(row.cost_cents), 0n)
 

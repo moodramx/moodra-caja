@@ -16,7 +16,10 @@ create type public.fuel_type as enum ('magna', 'premium', 'diesel');
 create type public.trip_purpose as enum ('ensayo', 'show', 'otro');
 
 select public.seed_account('1.6', 'Transporte entre integrantes', 'activo', 'deudora', false);
-select public.seed_account('6.11', 'Transporte a ensayos y traslados', 'gasto', 'deudora', true);
+-- Cuentas propias para estos traslados: no son dinero que salga de la banda,
+-- así que no se mezclan con los gastos de transporte pagados en efectivo.
+select public.seed_account('5.3.08', 'Traslados en autos de integrantes', 'costo', 'deudora', true);
+select public.seed_account('6.11', 'Traslados en autos de integrantes (ensayos y otros)', 'gasto', 'deudora', true);
 
 -- Tarifas: precio por litro y desgaste por km. Se editan desde la app.
 alter table public.app_settings
@@ -401,8 +404,6 @@ as $$
 declare
   t public.trips;
   v_is_show boolean := false;
-  v_fuel_cents bigint;
-  v_toll_cents bigint;
   v_lines jsonb := '[]'::jsonb;
   v_n integer;
   v_base bigint;
@@ -416,20 +417,10 @@ begin
     from public.projects p join public.project_types pt on pt.id = p.type_id
     where p.id = e.project_id;
   end if;
-  select sum(fuel_cents + wear_cents), sum(toll_cents) into v_fuel_cents, v_toll_cents
-  from public.trip_cars where event_id = e.id;
 
-  -- Gasto: en shows va a costos de show (gasolina y casetas aparte); si no, a transporte general.
-  if v_is_show then
-    if v_fuel_cents > 0 then
-      v_lines := v_lines || public.jl(public.account_id('5.3.01'), v_fuel_cents, 0, null, e.project_id);
-    end if;
-    if v_toll_cents > 0 then
-      v_lines := v_lines || public.jl(public.account_id('5.3.02'), v_toll_cents, 0, null, e.project_id);
-    end if;
-  else
-    v_lines := v_lines || public.jl(public.account_id('6.11'), t.total_cents, 0, null, e.project_id);
-  end if;
+  -- Gasto: en shows va a costos de show; si no, a traslados generales.
+  v_lines := v_lines || public.jl(
+    public.account_id(case when v_is_show then '5.3.08' else '6.11' end), t.total_cents, 0, null, e.project_id);
 
   -- Partes iguales; los centavos que sobran se van a los primeros de la lista.
   v_n := cardinality(t.sharers);

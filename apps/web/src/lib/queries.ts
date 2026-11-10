@@ -333,6 +333,45 @@ export function useAlerts() {
   })
 }
 
+// ---------------------------------------------------------------------------
+// Transporte
+// ---------------------------------------------------------------------------
+export function useVehicles() {
+  return useQuery({
+    queryKey: ['vehicles'],
+    queryFn: () => unwrap(supabase.from('vehicles').select('*').order('name')),
+  })
+}
+
+export function usePlaces() {
+  return useQuery({
+    queryKey: ['places'],
+    queryFn: () => unwrap(supabase.from('places').select('*').eq('active', true).order('name')),
+  })
+}
+
+/** Saldo de transporte de cada quien: positivo = debe, negativo = le deben. */
+export function useTransportBalances() {
+  return useQuery({
+    queryKey: ['transport-balances'],
+    queryFn: () => unwrap(supabase.from('v_transport_balances').select('*')),
+  })
+}
+
+export function useTrips(limit = 30) {
+  return useQuery({
+    queryKey: ['trips', limit],
+    queryFn: () =>
+      unwrap(
+        supabase
+          .from('v_trips')
+          .select('*')
+          .order('captured_at', { ascending: false })
+          .limit(limit),
+      ),
+  })
+}
+
 /** Realtime: cuando alguien registra algo o cambia el contexto, se refresca todo. */
 export function useRealtimeRefresh(enabled: boolean) {
   const queryClient = useQueryClient()
@@ -350,6 +389,7 @@ export function useRealtimeRefresh(enabled: boolean) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shows' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, refresh)
       .subscribe()
     return () => {

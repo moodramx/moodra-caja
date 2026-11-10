@@ -16,6 +16,42 @@ Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netl
 
 ---
 
+## Transporte entre integrantes · en revisión (2026-11-10)
+
+Módulo nuevo pedido por Diego. Está en la rama `transporte`; **no está en `main` ni en la nube**.
+
+### Hecho y verificado en la compu
+
+- **Más → Transporte**, para todos los usuarios.
+- **Autos**: alta de autos de cualquier integrante con dueño, combustible (magna, premium o diésel) y rendimiento en km por litro.
+- **Nuevo viaje**: ensayo, show (se elige cuál) u otro; salida y destino (los lugares con dirección se guardan para la próxima); ida y vuelta o solo ida; kilómetros; en qué autos, quién iba en cada uno, casetas de cada auto y de quién es el tag; entre quiénes se reparte (por defecto, los que participan en repartos).
+- **Costo del viaje**: gasolina estimada (km ÷ rendimiento × precio del litro, con un extra por tráfico) + desgaste por km para el dueño del auto + casetas. La pantalla enseña las cuentas antes de guardar.
+- **Cuentas de transporte**: cuánto debe o le deben a cada quien, y "Para quedar a mano": quién le paga a quién con el menor número de pagos, con el botón "Ya se pagó".
+- **Tarifas** editables: precio por litro de cada combustible y desgaste por km.
+- **Contabilidad**: cada viaje genera su asiento (gasto de traslados contra la aportación de cada integrante, y las cuentas "Transporte" entre integrantes, que siempre suman cero). Un pago entre integrantes no toca el dinero de la banda. Los viajes a un show cuentan en el resultado de ese show.
+- **Movimientos** muestra viajes y pagos; un viaje se anula desde ahí como cualquier registro.
+- **Google Maps**: la función `route-estimate` ya está escrita (distancia, tiempo con tráfico y casetas con tag). Sin llave, la app avisa y se capturan km y casetas a mano.
+
+### Pruebas
+
+| Suite                                   | Resultado |
+| --------------------------------------- | --------- |
+| pgTAP (352 en total; 50 de transporte)  | 352/352   |
+| Vitest (105 en total; 10 de transporte) | 105/105   |
+| Playwright completo, en serie           | 49/49     |
+| ESLint y Prettier                       | Limpios   |
+
+Las pruebas reales de Playwright ahora corren una tras otra: comparten una sola base y en paralelo se movían los números entre sí (esa era la falla intermitente de la Fase 3).
+
+### Pendiente o no verificado
+
+- **La consulta a Google no está probada con una llave real.** Falta que Diego cree la llave y la guarde como secreto; hasta entonces no se sabe si Google devuelve el precio de las casetas de las rutas de la banda.
+- No está publicado ni probado en celular.
+- Los precios por litro quedaron con valores de arranque (magna $24, premium $26, diésel $27) y el desgaste en $1.50 por km: hay que ajustarlos.
+- El módulo no cierra el mes solo: los saldos se acumulan hasta que se pagan.
+
+---
+
 ## Fase 5a — Tablero del contador y reportes · en revisión (2026-11-10)
 
 La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b** repartos, arqueos, asiento manual, sueldo del becario y cierres de mes y año, **5c** catálogos editables, liquidación de gira y tableros simplificados. La 5a está en `main` y en la base de desarrollo de la nube desde el 2026-11-10.

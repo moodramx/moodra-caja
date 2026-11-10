@@ -98,6 +98,42 @@ export interface AjustePayload {
   note?: string
 }
 
+/** Un auto de un viaje: quiénes iban, a cuánto el litro y las casetas. */
+export interface TripCarPayload {
+  vehicle_id: string
+  riders: string[]
+  price_per_liter_cents: number
+  toll_cents: number
+  toll_paid_by?: string | null
+}
+
+/** Viaje a un ensayo o a un show; su costo se reparte entre integrantes. */
+export interface ViajePayload {
+  origin_name: string
+  origin_address?: string
+  dest_name: string
+  dest_address?: string
+  purpose: 'ensayo' | 'show' | 'otro'
+  round_trip: boolean
+  /** Metros de un sentido. */
+  distance_m: number
+  duration_s?: number | null
+  traffic_pct: number
+  wear_cents_per_km: number
+  sharers: string[]
+  cars: TripCarPayload[]
+  project_id?: string | null
+  show_id?: string | null
+  note?: string
+}
+
+/** Un integrante le paga a otro lo que le debe de transporte. */
+export interface PagoTransportePayload {
+  amount_cents: number
+  from_member: string
+  to_member: string
+}
+
 export type SubmitPayload =
   | GastoPayload
   | IngresoPayload
@@ -111,6 +147,8 @@ export type SubmitPayload =
   | CierrePayload
   | AnticipoPayload
   | CobroPendientePayload
+  | ViajePayload
+  | PagoTransportePayload
 
 export type InventoryRow = Database['public']['Views']['v_inventory']['Row']
 

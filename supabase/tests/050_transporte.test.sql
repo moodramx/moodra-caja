@@ -161,7 +161,7 @@ select is(pg_temp.bal('c'), 2700::bigint, 'C también');
 select is((select sum(balance_cents) from public.v_transport_balances), 0::numeric, 'y siguen sumando cero');
 
 -- ---------------------------------------------------------------------------
--- Viaje a un show: va a costos de show (gasolina y casetas aparte)
+-- Viaje a un show: va a costos de show, en su propia cuenta
 -- ---------------------------------------------------------------------------
 select pg_temp.act('a');
 insert into ids select 'P', (public.create_project(
@@ -171,8 +171,8 @@ insert into ids select 'v3', pg_temp.ev('viaje', jsonb_build_object(
   'distance_m', 30000, 'wear_cents_per_km', 150, 'sharers', pg_temp.todos(), 'project_id', pg_temp.id('P'),
   'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'), 'price_per_liter_cents', 2400,
     'toll_cents', 10000, 'toll_paid_by', pg_temp.uid('a')))));
-select is(pg_temp.mov(pg_temp.id('v3'), '5.3.01'), 21000::bigint, 'gasolina y desgaste a transporte del show');
-select is(pg_temp.mov(pg_temp.id('v3'), '5.3.02'), 10000::bigint, 'casetas a su cuenta del show');
+select is(pg_temp.mov(pg_temp.id('v3'), '5.3.08'), 31000::bigint, 'el viaje va a costos del show');
+select is(pg_temp.mov(pg_temp.id('v3'), '5.3.01'), 0::bigint, 'sin mezclarse con la gasolina pagada en efectivo');
 select is(pg_temp.mov(pg_temp.id('v3'), '6.11'), 0::bigint, 'y nada a transporte general');
 
 -- Todo sigue cuadrado.
