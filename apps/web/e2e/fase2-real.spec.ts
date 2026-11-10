@@ -361,3 +361,60 @@ test('editar un producto sí guarda: precio y aviso de stock', async () => {
   await nav(b, 'Merch')
   await expect(b.locator('main button', { hasText: gorra })).toContainText('Quedan 4')
 })
+
+test('venta de show: hay que decir de cuál; venta por otro: se anota a qué se refiere', async () => {
+  const foro = `Foro ${run}`
+  await nav(a, 'Merch')
+  await product(a).click()
+  await a.getByRole('button', { name: /1 pza · Cobrar \$350/ }).click()
+  const checkout = a.getByRole('dialog')
+  const charge = checkout.getByRole('button', { name: 'Cobrar $350' })
+
+  // Show: no deja cobrar hasta elegir (o crear) el show.
+  await checkout.getByRole('button', { name: 'Show', exact: true }).click()
+  const shows = checkout.getByRole('region', { name: 'Show de la venta' })
+  await expect(shows).toContainText('Elige el show para poder cobrar.')
+  await expect(charge).toBeDisabled()
+  await shows.getByRole('button', { name: 'Nuevo show' }).click()
+  await shows.getByLabel('Nombre').fill(foro)
+  await shows.getByRole('button', { name: 'Crear', exact: true }).click()
+  await expect(shows.getByRole('button', { name: foro })).toHaveAttribute('aria-pressed', 'true')
+  await expect(charge).toBeEnabled()
+  await charge.click()
+  await expect(a.getByRole('status', { name: 'Venta registrada' })).toBeVisible()
+
+  // La venta quedó en ese show: al ponerlo como contexto, Inicio muestra su resultado.
+  await nav(a, 'Inicio')
+  await expect(sync(a)).toContainText('Todo al día', { timeout: 15_000 })
+  const chip = a.getByRole('button', { name: 'Cambiar en qué andamos' })
+  await chip.click()
+  await a
+    .getByRole('dialog')
+    .getByRole('button', { name: new RegExp(foro) })
+    .click()
+  await expect(a.getByText(`En ${foro} vamos`)).toBeVisible({ timeout: 15_000 })
+  await chip.click()
+  await a
+    .getByRole('dialog')
+    .getByRole('button', { name: /Operación general/ })
+    .click()
+  await expect(chip).toContainText('Operación general')
+
+  // Otro: recuadro para escribir a qué se refiere.
+  await nav(a, 'Merch')
+  await product(a).click()
+  await a.getByRole('button', { name: /1 pza · Cobrar \$350/ }).click()
+  await checkout.getByRole('button', { name: 'Otro', exact: true }).click()
+  await expect(checkout.getByRole('region', { name: 'Show de la venta' })).toHaveCount(0)
+  await checkout.getByLabel(/¿A qué se refiere\?/).fill('Mercadito de vinilos')
+  await checkout.getByRole('button', { name: 'Cobrar $350' }).click()
+  await nav(a, 'Inicio')
+  await expect(sync(a)).toContainText('Todo al día', { timeout: 15_000 })
+  await nav(a, 'Movimientos')
+  await a
+    .getByRole('button', { name: new RegExp(`${inte.name} vendió 1 pza de merch`) })
+    .first()
+    .click()
+  await expect(a.getByRole('dialog')).toContainText('Mercadito de vinilos')
+  await a.getByRole('dialog').getByRole('button', { name: 'Cerrar' }).click()
+})

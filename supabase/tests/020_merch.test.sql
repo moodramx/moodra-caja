@@ -248,6 +248,33 @@ select is((select string_agg(kind::text || ':' || qty || ':' || cost_cents, ' ' 
   'el kardex lista cada movimiento con su costo');
 
 -- ---------------------------------------------------------------------------
+-- G3. Canal de la venta: show elegido o nota de "otro"
+-- ---------------------------------------------------------------------------
+select pg_temp.act('pepe');
+insert into ids select 'foro', (public.create_project('SHW', 'Foro pgTAP')).id;
+insert into ids select 'v-show', pg_temp.ev('venta_merch', jsonb_build_object('channel', 'show',
+  'project_id', pg_temp.id('foro'),
+  'lines', jsonb_build_array(jsonb_build_object('variant_id', pg_temp.id('S'), 'qty', 1))));
+select is((select e.project_id from public.events e where e.id = pg_temp.id('v-show')), pg_temp.id('foro'),
+  'la venta de show queda ligada al show elegido');
+select is((select count(*)::int from public.journal_lines
+           where entry_id = (select journal_entry_id from public.events where id = pg_temp.id('v-show'))
+             and project_id = pg_temp.id('foro')),
+  (select count(*)::int from public.journal_lines
+   where entry_id = (select journal_entry_id from public.events where id = pg_temp.id('v-show'))),
+  'y todas sus líneas llevan ese show');
+select is((select income_cents from public.v_results_by_project where project_id = pg_temp.id('foro')), 5000::bigint,
+  'la venta suma al resultado del show');
+
+insert into ids select 'v-otro', pg_temp.ev('venta_merch', jsonb_build_object('channel', 'otro',
+  'channel_note', '  Mercadito de vinilos  ',
+  'lines', jsonb_build_array(jsonb_build_object('variant_id', pg_temp.id('S'), 'qty', 1))));
+select is((select channel::text || '/' || channel_note from public.sale_details where event_id = pg_temp.id('v-otro')),
+  'otro/Mercadito de vinilos', 'la venta por "otro" guarda a qué se refiere');
+select is((select description from public.v_event_feed where id = pg_temp.id('v-otro')), 'Mercadito de vinilos',
+  'y el feed lo muestra');
+
+-- ---------------------------------------------------------------------------
 -- H. Validaciones
 -- ---------------------------------------------------------------------------
 select throws_ok($$ select pg_temp.ev('venta_merch', '{"lines":[]}'::jsonb) $$, 'P0001', null,

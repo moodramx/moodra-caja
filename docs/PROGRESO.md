@@ -23,6 +23,7 @@ Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celu
 - **Calculadora de cambio** en el cobro en efectivo.
 - **Foto por producto**, que sube cualquier integrante.
 - **Correcciones**: al abrir la app se refresca siempre desde el servidor, y el sync reintenta solo.
+- **Canal de la venta**: si es Show hay que elegir cuál; si es Otro se puede anotar a qué se refiere.
 
 ### Pruebas (todas en verde)
 

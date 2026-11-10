@@ -19,8 +19,15 @@ import { describeVenta } from '../../lib/humanize'
 import { addToCart, cartTotals, pendingStock, setQty, toggleGift } from '../../lib/merch'
 import { formatMXNShort } from '../../lib/money'
 import { useOutbox } from '../../lib/offline/runtime'
-import { useActiveProject, useInventory, useMerchToday, useProfiles } from '../../lib/queries'
-import { useCapture } from '../captura/parts'
+import {
+  useActiveProject,
+  useInventory,
+  useMerchToday,
+  useProfiles,
+  useProjects,
+} from '../../lib/queries'
+import { fieldClass, useCapture } from '../captura/parts'
+import { NewProjectForm } from '../proyectos/Proyectos'
 import { ChangeCalculator, CostNote, PhotosTool, ProductImage, type Product } from './MerchParts'
 import { CompraFlow, ConteoFlow, SalidaFlow } from './StockFlows'
 
@@ -103,6 +110,10 @@ export function MerchPage() {
   const [method, setMethod] = useState<PaymentMethod>('efectivo')
   const [channel, setChannel] = useState<SaleChannel | null>(null)
   const [collector, setCollector] = useState<string | null>(null)
+  const [showId, setShowId] = useState<string | null>(null)
+  const [creatingShow, setCreatingShow] = useState(false)
+  const [channelNote, setChannelNote] = useState('')
+  const projects = useProjects()
   const [done, setDone] = useState<string | null>(null)
   const [tool, setTool] = useState<Tool | null>(null)
 
@@ -131,20 +142,26 @@ export function MerchPage() {
   }
   // Por default: Show si andamos en una gira o show; si no, Otro.
   const activeChannel = channel ?? (context.project?.type?.is_show ? 'show' : 'otro')
+  // Shows, giras y festivales entre los que elegir cuando la venta es de show.
+  const shows = (projects.data ?? []).filter((p) => p.type?.is_show)
+  const activeShow = showId ?? (context.project?.type?.is_show ? context.id : null)
+  const needsShow = activeChannel === 'show' && !activeShow
 
   const charge = () => {
     const payload: VentaPayload = {
       lines: cart,
       payment_method: method,
       channel: activeChannel,
+      channel_note: activeChannel === 'otro' ? channelNote.trim() || undefined : undefined,
       collected_by: collector ?? profile?.id,
-      project_id: context.id,
+      project_id: activeChannel === 'show' ? activeShow : context.id,
     }
     void capture('venta_merch', payload, 'Venta guardada ✓')
     setDone(totals.total > 0n ? money(totals.total) : '🎁')
     setCart([])
     setCheckout(false)
     setCollector(null)
+    setChannelNote('')
     setTimeout(() => setDone(null), 900)
   }
 
@@ -372,6 +389,56 @@ export function MerchPage() {
             ))}
           </div>
 
+          {activeChannel === 'show' && (
+            <section aria-label="Show de la venta" className="space-y-2">
+              <p className="text-sm text-ink-muted">¿De qué show?</p>
+              {creatingShow ? (
+                <div className="space-y-3 rounded-card border border-line bg-bg p-3">
+                  <NewProjectForm
+                    onCreated={(project) => {
+                      setShowId(project.id)
+                      setCreatingShow(false)
+                    }}
+                  />
+                  <Button variant="ghost" block onClick={() => setCreatingShow(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {shows.map((show) => (
+                    <Chip
+                      key={show.id}
+                      emoji={show.type?.emoji}
+                      selected={activeShow === show.id}
+                      onClick={() => setShowId(show.id)}
+                    >
+                      {show.name}
+                    </Chip>
+                  ))}
+                  <Chip emoji="➕" onClick={() => setCreatingShow(true)}>
+                    Nuevo show
+                  </Chip>
+                </div>
+              )}
+              {needsShow && !creatingShow && (
+                <p className="text-sm text-pending">Elige el show para poder cobrar.</p>
+              )}
+            </section>
+          )}
+
+          {activeChannel === 'otro' && (
+            <label className="block space-y-2">
+              <span className="text-sm text-ink-muted">¿A qué se refiere? (opcional)</span>
+              <input
+                className={fieldClass}
+                value={channelNote}
+                maxLength={120}
+                placeholder="Ej. se la vendí a un amigo, mercadito"
+                onChange={(event) => setChannelNote(event.target.value)}
+              />
+            </label>
+          )}
           {totals.total > 0n && method === 'efectivo' && (
             <div>
               <p className="pb-2 text-sm text-ink-muted">¿Quién cobró?</p>
@@ -404,7 +471,7 @@ export function MerchPage() {
             size="lg"
             block
             className="min-h-16 text-xl"
-            disabled={cart.length === 0}
+            disabled={cart.length === 0 || needsShow}
             onClick={charge}
           >
             {totals.total > 0n ? `Cobrar ${money(totals.total)}` : 'Registrar regalo'}

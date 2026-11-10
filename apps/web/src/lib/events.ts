@@ -61,6 +61,8 @@ export interface VentaPayload {
   lines: SaleLine[]
   payment_method: PaymentMethod
   channel: SaleChannel
+  /** Canal "otro": a qué se refiere. */
+  channel_note?: string
   collected_by?: string
   project_id?: string | null
 }

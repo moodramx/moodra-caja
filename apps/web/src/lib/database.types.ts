@@ -951,14 +951,14 @@ isOneToOne: false
                   ]
                 },"sale_details": {
                   Row: {
-                    "channel": Database["public"]['Enums']["sale_channel"],"collected_by": string,"event_id": string,"payment_method": Database["public"]['Enums']["payment_method"],"pieces": number,"total_cents": number
+                    "channel": Database["public"]['Enums']["sale_channel"],"channel_note": string | null,"collected_by": string,"event_id": string,"payment_method": Database["public"]['Enums']["payment_method"],"pieces": number,"total_cents": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "channel": Database["public"]['Enums']["sale_channel"],"collected_by": string,"event_id": string,"payment_method": Database["public"]['Enums']["payment_method"],"pieces": number,"total_cents": number
+                    "channel": Database["public"]['Enums']["sale_channel"],"channel_note"?: string | null,"collected_by": string,"event_id": string,"payment_method": Database["public"]['Enums']["payment_method"],"pieces": number,"total_cents": number
                   }
                   Update: {
-                    "channel"?: Database["public"]['Enums']["sale_channel"],"collected_by"?: string,"event_id"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"pieces"?: number,"total_cents"?: number
+                    "channel"?: Database["public"]['Enums']["sale_channel"],"channel_note"?: string | null,"collected_by"?: string,"event_id"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"pieces"?: number,"total_cents"?: number
                   }
                   Relationships: [
                     {
