@@ -38,6 +38,16 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Excel y PDF pesan ~700 KB comprimidos: no se bajan al instalar, sino la
+        // primera vez que alguien descarga un reporte; de ahí quedan guardadas.
+        globIgnores: ['**/exceljs*.js', '**/react-pdf*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/(exceljs|react-pdf)[^/]*\.js$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'exportar-reportes', expiration: { maxEntries: 6 } },
+          },
+        ],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
       },

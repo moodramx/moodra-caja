@@ -269,6 +269,70 @@ export function useTrialBalance() {
   })
 }
 
+// ---------------------------------------------------------------------------
+// Reportes (Fase 5)
+// ---------------------------------------------------------------------------
+const orUndefined = (value: string | null) => value ?? undefined
+
+/** Cargos y abonos por cuenta en un rango (null = sin límite). */
+export function useAccountTotals(from: string | null, to: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ['report', 'totals', from, to],
+    enabled,
+    queryFn: () =>
+      unwrap(
+        supabase.rpc('report_account_totals', { p_from: orUndefined(from), p_to: orUndefined(to) }),
+      ),
+  })
+}
+
+export function useCashFlow(from: string | null, to: string | null) {
+  return useQuery({
+    queryKey: ['report', 'cash-flow', from, to],
+    queryFn: () =>
+      unwrap(
+        supabase.rpc('report_cash_flow', { p_from: orUndefined(from), p_to: orUndefined(to) }),
+      ),
+  })
+}
+
+export function useMerchReport(from: string | null, to: string | null) {
+  return useQuery({
+    queryKey: ['report', 'merch', from, to],
+    queryFn: () =>
+      unwrap(supabase.rpc('report_merch', { p_from: orUndefined(from), p_to: orUndefined(to) })),
+  })
+}
+
+export function useLedger(accountId: string | null, from: string | null, to: string | null) {
+  return useQuery({
+    queryKey: ['report', 'ledger', accountId, from, to],
+    enabled: accountId !== null,
+    queryFn: () =>
+      unwrap(
+        supabase.rpc('report_ledger', {
+          p_account: accountId!,
+          p_from: orUndefined(from),
+          p_to: orUndefined(to),
+        }),
+      ),
+  })
+}
+
+export function useShowReport() {
+  return useQuery({
+    queryKey: ['report', 'shows'],
+    queryFn: () => unwrap(supabase.from('v_show_report').select('*')),
+  })
+}
+
+export function useAlerts() {
+  return useQuery({
+    queryKey: ['report', 'alerts'],
+    queryFn: () => unwrap(supabase.from('v_alerts').select('*')),
+  })
+}
+
 /** Realtime: cuando alguien registra algo o cambia el contexto, se refresca todo. */
 export function useRealtimeRefresh(enabled: boolean) {
   const queryClient = useQueryClient()

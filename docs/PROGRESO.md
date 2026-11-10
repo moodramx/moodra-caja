@@ -9,10 +9,50 @@
 | 2 — Merch, POS e inventario                       | Aprobada                            |
 | 3 — Shows, giras y proyectos                      | Aprobada                            |
 | 4 — Captura inteligente (IA)                      | **Pospuesta por decisión de Diego** |
-| 5 — Contador: reportes, repartos y cierre         | Siguiente                           |
+| 5 — Contador: reportes, repartos y cierre         | **5a en revisión** (sin publicar)   |
 | 6 — Offline robusto, notificaciones y lanzamiento | Pendiente                           |
 
 Pendientes abiertos que no dependen de una fase: hacer público el sitio de Netlify, dar de alta al becario, configurar las boleteras con sus datos reales y confirmar que el CI de GitHub pasa.
+
+---
+
+## Fase 5a — Tablero del contador y reportes · en revisión (2026-11-10)
+
+La Fase 5 se parte en tres: **5a** tablero y reportes con descarga (esto), **5b** repartos, arqueos, asiento manual, sueldo del becario y cierres de mes y año, **5c** catálogos editables, liquidación de gira y tableros simplificados. La 5a está en la rama `fase-5a`; **todavía no está en `main` ni en la nube**.
+
+### Hecho y verificado en la compu
+
+- **Reportes en modo banda** (pestaña Reportes): "Cómo nos fue" del periodo (ganamos, gastamos, quedó), dinero de la banda hoy, de dónde entró, en qué se fue y lo que dejó cada show. Sin palabras de contabilidad.
+- **Tablero del contador** (misma pestaña con Modo contador): dinero de la banda, resultado del periodo, por cobrar, por pagar, inventario y Fondo Moodra; alertas de existencias bajas o negativas, entregas sin confirmar de más de 48 h, shows sin cerrar y registros en mes cerrado.
+- **Diez reportes**: estado de resultados (con mes anterior al lado), balance general, flujo de efectivo, balanza, auxiliar por cuenta, saldos por integrante, rentabilidad por show, punto de equilibrio por show, margen de merch e inventario valuado.
+- **Periodos**: este mes, mes pasado, este año, todo.
+- **Cuadres a la vista**: el balance, el flujo y la balanza dicen en pantalla si cuadran.
+- **Descargas**: cada reporte a Excel y a PDF, y "Descargar todos en Excel" (una hoja por reporte).
+
+### Pruebas
+
+| Suite                                              | Resultado                                                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| pgTAP (302 en total; 31 de reportes)               | 302/302                                                                                                                   |
+| Vitest (95 en total; 18 de reportes y exportación) | 95/95                                                                                                                     |
+| Playwright real de la 5a                           | 5/5                                                                                                                       |
+| Playwright completo (42)                           | 41/42 en la corrida completa; la que falló (Fase 3, merch en show) pasó 8/8 al repetirla sola: intermitente, no regresión |
+| ESLint y Prettier                                  | Limpios                                                                                                                   |
+
+### Pendiente o no verificado
+
+- No está publicada. Falta probarla en un celular real, sobre todo que las descargas de Excel y PDF abran bien en el teléfono.
+- Las librerías de Excel y PDF (~700 KB comprimidas) no se bajan al instalar la app: se bajan la primera vez que alguien descarga un reporte, así que esa primera descarga necesita señal.
+- Los reportes no filtran todavía por proyecto o show (la base ya lo permite).
+
+### Cómo probarla (cuando esté publicada)
+
+1. Como integrante: abre **Reportes**. Debes ver "Cómo nos fue" y las barras, sin tablas contables.
+2. Como contador: Más → enciende **Modo contador** → **Reportes**. Revisa el tablero y las alertas.
+3. Toca **Balance**, **Flujo de efectivo** y **Balanza**: cada uno debe decir en verde que cuadra.
+4. Cambia de periodo (Mes pasado, Este año, Todo) y revisa que los números cambien.
+5. En **Auxiliar** elige una cuenta y revisa sus movimientos.
+6. Descarga un reporte en **Excel** y en **PDF**, y luego **Descargar todos en Excel**; ábrelos en el teléfono.
 
 ---
 
