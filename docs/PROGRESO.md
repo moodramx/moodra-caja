@@ -81,3 +81,10 @@ Todavía no se puede probar de verdad. Con `pnpm build` y `pnpm preview` puedes 
 - **Pendiente en el panel de Supabase**: apagar el registro público y subir la contraseña mínima a 8 (Authentication → Sign In / Providers).
 - **Pendiente**: crear el usuario contador en la nube y conectar Netlify con las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 - Comandos contra la nube: `pnpm exec supabase db push --remote` y `pnpm exec supabase functions deploy admin-users --remote`.
+
+### Preview y usuarios (2026-11-10, tarde)
+
+- Netlify: `https://fanciful-granita-b043f1.netlify.app`, desplegado desde `main`.
+- **Problema abierto**: el sitio sigue detrás del inicio de sesión de Netlify (todo responde 401 sin sesión de Netlify). Mientras siga así, solo entra quien tenga la cuenta de Netlify de Diego, y el manifest y el service worker no cargan para nadie más.
+- Usuarios en la nube: `diego` (contador), `pepe`, `rams`, `uli`. Falta el becario.
+- Diego reporta que instaló la app y creó los usuarios desde su celular. No se ha verificado en un segundo dispositivo sin sesión de Netlify.
