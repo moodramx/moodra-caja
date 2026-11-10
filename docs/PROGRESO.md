@@ -55,11 +55,11 @@ Compu y celular en el mismo wifi:
 
 ### Comandos
 
-| Qué | Comando |
-|---|---|
-| App en desarrollo | `pnpm dev` |
-| Lint / tipos | `pnpm lint` · `pnpm typecheck` |
-| Vitest | `pnpm test` |
-| Playwright | `pnpm test:e2e` |
-| pgTAP | `pnpm db:test` |
-| Tipos de la BD | `pnpm db:types` |
+| Qué               | Comando                        |
+| ----------------- | ------------------------------ |
+| App en desarrollo | `pnpm dev`                     |
+| Lint / tipos      | `pnpm lint` · `pnpm typecheck` |
+| Vitest            | `pnpm test`                    |
+| Playwright        | `pnpm test:e2e`                |
+| pgTAP             | `pnpm db:test`                 |
+| Tipos de la BD    | `pnpm db:types`                |
