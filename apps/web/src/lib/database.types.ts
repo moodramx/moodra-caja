@@ -23,7 +23,63 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "app_settings": {
+            "accounts": {
+                  Row: {
+                    "active": boolean,"code": string,"created_at": string,"created_by": string | null,"id": string,"is_postable": boolean,"member_id": string | null,"member_kind": Database["public"]['Enums']["member_account_kind"] | null,"name": string,"nature": Database["public"]['Enums']["account_nature"],"parent_id": string | null,"type": Database["public"]['Enums']["account_type"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"code": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_postable"?: boolean,"member_id"?: string | null,"member_kind"?: Database["public"]['Enums']["member_account_kind"] | null,"name": string,"nature": Database["public"]['Enums']["account_nature"],"parent_id"?: string | null,"type": Database["public"]['Enums']["account_type"]
+                  }
+                  Update: {
+                    "active"?: boolean,"code"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_postable"?: boolean,"member_id"?: string | null,"member_kind"?: Database["public"]['Enums']["member_account_kind"] | null,"name"?: string,"nature"?: Database["public"]['Enums']["account_nature"],"parent_id"?: string | null,"type"?: Database["public"]['Enums']["account_type"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "accounts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accounts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "accounts_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accounts_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "accounts_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    }
+                  ]
+                },"app_settings": {
                   Row: {
                     "active_project_id": string | null,"active_show_id": string | null,"cash_alert_days": number,"cash_alert_threshold_cents": number,"id": boolean,"timezone": string,"updated_at": string,"updated_by": string | null,"void_window_hours": number
                   }
@@ -36,11 +92,23 @@ export type Database = {
                   }
                   Relationships: [
                     {
+      foreignKeyName: "app_settings_active_project_fkey"
+      columns: ["active_project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "app_settings_updated_by_fkey"
       columns: ["updated_by"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_settings_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"audit_log": {
@@ -61,6 +129,512 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "audit_log_actor_fkey"
+      columns: ["actor"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"cash_transfers": {
+                  Row: {
+                    "amount_cents": number,"confirmed_at": string | null,"confirmed_by": string | null,"event_id": string,"from_kind": Database["public"]['Enums']["transfer_party"],"from_member": string | null,"note": string | null,"to_kind": Database["public"]['Enums']["transfer_party"],"to_member": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"event_id": string,"from_kind": Database["public"]['Enums']["transfer_party"],"from_member"?: string | null,"note"?: string | null,"to_kind": Database["public"]['Enums']["transfer_party"],"to_member"?: string | null
+                  }
+                  Update: {
+                    "amount_cents"?: number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"event_id"?: string,"from_kind"?: Database["public"]['Enums']["transfer_party"],"from_member"?: string | null,"note"?: string | null,"to_kind"?: Database["public"]['Enums']["transfer_party"],"to_member"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cash_transfers_confirmed_by_fkey"
+      columns: ["confirmed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_confirmed_by_fkey"
+      columns: ["confirmed_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "cash_transfers_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"categories": {
+                  Row: {
+                    "account_general_id": string,"account_show_id": string | null,"active": boolean,"created_at": string,"created_by": string | null,"emoji": string,"id": string,"is_extra": boolean,"kind": Database["public"]['Enums']["category_kind"],"name": string,"slug": string,"sort": number,"visible_to": Database["public"]['Enums']["visible_to"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_general_id": string,"account_show_id"?: string | null,"active"?: boolean,"created_at"?: string,"created_by"?: string | null,"emoji": string,"id"?: string,"is_extra"?: boolean,"kind": Database["public"]['Enums']["category_kind"],"name": string,"slug": string,"sort"?: number,"visible_to"?: Database["public"]['Enums']["visible_to"]
+                  }
+                  Update: {
+                    "account_general_id"?: string,"account_show_id"?: string | null,"active"?: boolean,"created_at"?: string,"created_by"?: string | null,"emoji"?: string,"id"?: string,"is_extra"?: boolean,"kind"?: Database["public"]['Enums']["category_kind"],"name"?: string,"slug"?: string,"sort"?: number,"visible_to"?: Database["public"]['Enums']["visible_to"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "categories_account_general_id_fkey"
+      columns: ["account_general_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "categories_account_general_id_fkey"
+      columns: ["account_general_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_account_general_id_fkey"
+      columns: ["account_general_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_account_show_id_fkey"
+      columns: ["account_show_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "categories_account_show_id_fkey"
+      columns: ["account_show_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_account_show_id_fkey"
+      columns: ["account_show_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "categories_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"contacts": {
+                  Row: {
+                    "city": string | null,"created_at": string,"created_by": string | null,"id": string,"kind": Database["public"]['Enums']["contact_kind"],"name": string,"notes": string | null,"phone": string | null,"razon_social": string | null,"rfc": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["contact_kind"],"name": string,"notes"?: string | null,"phone"?: string | null,"razon_social"?: string | null,"rfc"?: string | null
+                  }
+                  Update: {
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["contact_kind"],"name"?: string,"notes"?: string | null,"phone"?: string | null,"razon_social"?: string | null,"rfc"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "contacts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "contacts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"events": {
+                  Row: {
+                    "captured_at": string,"cfdi_uuid": string | null,"client_id": string,"created_at": string,"created_by": string,"device_info": string | null,"id": string,"journal_entry_id": string | null,"note": string | null,"project_id": string | null,"show_id": string | null,"status": Database["public"]['Enums']["event_status"],"type": Database["public"]['Enums']["event_type"],"void_entry_id": string | null,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "captured_at": string,"cfdi_uuid"?: string | null,"client_id": string,"created_at"?: string,"created_by": string,"device_info"?: string | null,"id"?: string,"journal_entry_id"?: string | null,"note"?: string | null,"project_id"?: string | null,"show_id"?: string | null,"status": Database["public"]['Enums']["event_status"],"type": Database["public"]['Enums']["event_type"],"void_entry_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                  }
+                  Update: {
+                    "captured_at"?: string,"cfdi_uuid"?: string | null,"client_id"?: string,"created_at"?: string,"created_by"?: string,"device_info"?: string | null,"id"?: string,"journal_entry_id"?: string | null,"note"?: string | null,"project_id"?: string | null,"show_id"?: string | null,"status"?: Database["public"]['Enums']["event_status"],"type"?: Database["public"]['Enums']["event_type"],"void_entry_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_journal_entry_id_fkey"
+      columns: ["journal_entry_id"]
+isOneToOne: false
+      referencedRelation: "journal_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_void_entry_id_fkey"
+      columns: ["void_entry_id"]
+isOneToOne: false
+      referencedRelation: "journal_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_voided_by_fkey"
+      columns: ["voided_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_voided_by_fkey"
+      columns: ["voided_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"expense_details": {
+                  Row: {
+                    "ai_raw": Json | null,"amount_cents": number,"category_id": string,"description": string | null,"event_id": string,"paid_with": Database["public"]['Enums']["paid_with"],"payee_contact_id": string | null,"payer_member_id": string,"receipt_path": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ai_raw"?: Json | null,"amount_cents": number,"category_id": string,"description"?: string | null,"event_id": string,"paid_with": Database["public"]['Enums']["paid_with"],"payee_contact_id"?: string | null,"payer_member_id": string,"receipt_path"?: string | null,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null
+                  }
+                  Update: {
+                    "ai_raw"?: Json | null,"amount_cents"?: number,"category_id"?: string,"description"?: string | null,"event_id"?: string,"paid_with"?: Database["public"]['Enums']["paid_with"],"payee_contact_id"?: string | null,"payer_member_id"?: string,"receipt_path"?: string | null,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "expense_details_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expense_details_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expense_details_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expense_details_payee_contact_id_fkey"
+      columns: ["payee_contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expense_details_payer_member_id_fkey"
+      columns: ["payer_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expense_details_payer_member_id_fkey"
+      columns: ["payer_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"fund_movements": {
+                  Row: {
+                    "amount_cents": number,"direction": Database["public"]['Enums']["reclass_direction"] | null,"event_id": string,"holder_member_id": string | null,"kind": Database["public"]['Enums']["fund_kind"],"member_id": string,"place": Database["public"]['Enums']["money_place"] | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"direction"?: Database["public"]['Enums']["reclass_direction"] | null,"event_id": string,"holder_member_id"?: string | null,"kind": Database["public"]['Enums']["fund_kind"],"member_id": string,"place"?: Database["public"]['Enums']["money_place"] | null
+                  }
+                  Update: {
+                    "amount_cents"?: number,"direction"?: Database["public"]['Enums']["reclass_direction"] | null,"event_id"?: string,"holder_member_id"?: string | null,"kind"?: Database["public"]['Enums']["fund_kind"],"member_id"?: string,"place"?: Database["public"]['Enums']["money_place"] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fund_movements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"income_details": {
+                  Row: {
+                    "account_id": string,"amount_cents": number,"category_id": string,"description": string | null,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"amount_cents": number,"category_id": string,"description"?: string | null,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id"?: string | null
+                  }
+                  Update: {
+                    "account_id"?: string,"amount_cents"?: number,"category_id"?: string,"description"?: string | null,"destination"?: Database["public"]['Enums']["money_place"],"event_id"?: string,"holder_member_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "income_details_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "income_details_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "income_details_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "income_details_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "income_details_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "income_details_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "income_details_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "income_details_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"journal_entries": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"date": string,"description": string,"id": string,"is_manual": boolean,"number": number,"period_id": string,"reverses_entry_id": string | null,"source_event_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"date": string,"description": string,"id"?: string,"is_manual"?: boolean,"number"?: never,"period_id": string,"reverses_entry_id"?: string | null,"source_event_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"date"?: string,"description"?: string,"id"?: string,"is_manual"?: boolean,"number"?: never,"period_id"?: string,"reverses_entry_id"?: string | null,"source_event_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "journal_entries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_entries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "journal_entries_period_id_fkey"
+      columns: ["period_id"]
+isOneToOne: false
+      referencedRelation: "periods"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_entries_reverses_entry_id_fkey"
+      columns: ["reverses_entry_id"]
+isOneToOne: true
+      referencedRelation: "journal_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_entries_source_event_fkey"
+      columns: ["source_event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_entries_source_event_fkey"
+      columns: ["source_event_id"]
+isOneToOne: false
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"journal_lines": {
+                  Row: {
+                    "account_id": string,"credit_cents": number,"debit_cents": number,"entry_id": string,"id": string,"member_id": string | null,"memo": string | null,"project_id": string | null,"show_id": string | null,"variant_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"credit_cents"?: number,"debit_cents"?: number,"entry_id": string,"id"?: string,"member_id"?: string | null,"memo"?: string | null,"project_id"?: string | null,"show_id"?: string | null,"variant_id"?: string | null
+                  }
+                  Update: {
+                    "account_id"?: string,"credit_cents"?: number,"debit_cents"?: number,"entry_id"?: string,"id"?: string,"member_id"?: string | null,"memo"?: string | null,"project_id"?: string | null,"show_id"?: string | null,"variant_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "journal_lines_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "journal_lines_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "journal_lines_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "journal_entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "journal_lines_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"periods": {
+                  Row: {
+                    "closed_at": string | null,"closed_by": string | null,"created_at": string,"id": string,"month": number,"reopen_reason": string | null,"status": Database["public"]['Enums']["period_status"],"year": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"id"?: string,"month": number,"reopen_reason"?: string | null,"status"?: Database["public"]['Enums']["period_status"],"year": number
+                  }
+                  Update: {
+                    "closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"id"?: string,"month"?: number,"reopen_reason"?: string | null,"status"?: Database["public"]['Enums']["period_status"],"year"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "periods_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "periods_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"profiles": {
@@ -81,29 +655,348 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "profiles_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"project_types": {
+                  Row: {
+                    "code": string,"emoji": string,"id": string,"is_show": boolean,"name": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"emoji"?: string,"id"?: string,"is_show"?: boolean,"name": string,"sort"?: number
+                  }
+                  Update: {
+                    "code"?: string,"emoji"?: string,"id"?: string,"is_show"?: boolean,"name"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"projects": {
+                  Row: {
+                    "budget_cents": number | null,"code": string,"created_at": string,"created_by": string | null,"end_date": string | null,"id": string,"name": string,"notes": string | null,"start_date": string | null,"status": Database["public"]['Enums']["project_status"],"type_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "budget_cents"?: number | null,"code": string,"created_at"?: string,"created_by"?: string | null,"end_date"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["project_status"],"type_id": string
+                  }
+                  Update: {
+                    "budget_cents"?: number | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"end_date"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["project_status"],"type_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "projects_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "projects_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "projects_type_id_fkey"
+      columns: ["type_id"]
+isOneToOne: false
+      referencedRelation: "project_types"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"supplier_payments": {
+                  Row: {
+                    "amount_cents": number,"contact_id": string | null,"description": string | null,"event_id": string,"holder_member_id": string | null,"origin": Database["public"]['Enums']["money_place"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"contact_id"?: string | null,"description"?: string | null,"event_id": string,"holder_member_id"?: string | null,"origin": Database["public"]['Enums']["money_place"]
+                  }
+                  Update: {
+                    "amount_cents"?: number,"contact_id"?: string | null,"description"?: string | null,"event_id"?: string,"holder_member_id"?: string | null,"origin"?: Database["public"]['Enums']["money_place"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "supplier_payments_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "supplier_payments_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "supplier_payments_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "supplier_payments_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "supplier_payments_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 }
           }
           Views: {
-            [_ in never]: never
+            "v_account_balances": {
+                  Row: {
+                    "account_id": string,"code": string,"credit_cents": number | null,"debit_cents": number | null,"month": number,"name": string,"year": number
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_cash_position": {
+                  Row: {
+                    "balance_cents": number | null,"kind": string | null,"member_id": string | null,"name": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"v_event_feed": {
+                  Row: {
+                    "amount_cents": number | null,"captured_at": string,"category_emoji": string | null,"category_name": string | null,"client_id": string,"created_at": string,"created_by": string,"description": string | null,"direction": Database["public"]['Enums']["reclass_direction"] | null,"from_kind": Database["public"]['Enums']["transfer_party"] | null,"from_member": string | null,"fund_kind": Database["public"]['Enums']["fund_kind"] | null,"fund_member": string | null,"id": string,"note": string | null,"paid_with": Database["public"]['Enums']["paid_with"] | null,"place": Database["public"]['Enums']["money_place"] | null,"project_id": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"status": Database["public"]['Enums']["event_status"],"to_kind": Database["public"]['Enums']["transfer_party"] | null,"to_member": string | null,"type": Database["public"]['Enums']["event_type"],"void_reason": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["fund_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["fund_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"v_member_balances": {
+                  Row: {
+                    "activo": boolean,"cash_cents": number | null,"contributions_cents": number | null,"display_name": string,"distributions_cents": number | null,"distributions_payable_cents": number | null,"emoji": string,"member_id": string,"owed_cents": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_results_by_period": {
+                  Row: {
+                    "expense_cents": number | null,"income_cents": number | null,"month": number,"year": number
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_results_by_project": {
+                  Row: {
+                    "expense_cents": number | null,"income_cents": number | null,"project_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "journal_lines_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"v_trial_balance": {
+                  Row: {
+                    "account_id": string,"balance_cents": number | null,"code": string,"credit_cents": number | null,"debit_cents": number | null,"member_id": string | null,"name": string,"nature": Database["public"]['Enums']["account_nature"],"type": Database["public"]['Enums']["account_type"]
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                }
           }
           Functions: {
-            "is_active_member":
+            "account_balance":
+{ Args: { "p_account": string }; Returns: number
+                           },
+"account_id":
+{ Args: { "p_code": string }; Returns: string
+                           },
+"confirm_cash_transfer":
+{ Args: { "p_accept": boolean,"p_event_id": string }; Returns: Json
+                           },
+"create_project":
+{ Args: { "p_budget_cents"?: number,"p_end"?: string,"p_name": string,"p_notes"?: string,"p_start"?: string,"p_type_code": string }; Returns: {
+              "budget_cents": number | null,
+"code": string,
+"created_at": string,
+"created_by": string | null,
+"end_date": string | null,
+"id": string,
+"name": string,
+"notes": string | null,
+"start_date": string | null,
+"status": Database["public"]['Enums']["project_status"],
+"type_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "projects"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"ensure_member_accounts":
+{ Args: { "p_member": string }; Returns: undefined
+                           },
+"event_result":
+{ Args: { "p_duplicate"?: boolean,"p_event": string }; Returns: Json
+                           },
+"is_active_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "is_contador":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"jl":
+{ Args: { "p_account": string,"p_credit": number,"p_debit": number,"p_member"?: string,"p_project"?: string }; Returns: Json
+                           },
 "log_audit":
 { Args: { "p_action": string,"p_device"?: string,"p_entity": string,"p_entity_id"?: string,"p_payload"?: Json }; Returns: string
                            },
+"member_account":
+{ Args: { "p_kind": Database["public"]['Enums']["member_account_kind"],"p_member": string }; Returns: string
+                           },
+"party_account":
+{ Args: { "p_kind": Database["public"]['Enums']["transfer_party"],"p_member": string }; Returns: string
+                           },
+"place_account":
+{ Args: { "p_member": string,"p_place": Database["public"]['Enums']["money_place"] }; Returns: string
+                           },
+"post_entrega":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_entry":
+{ Args: { "p_date": string,"p_description": string,"p_event": string,"p_lines": Json,"p_manual"?: boolean,"p_period": string,"p_reverses"?: string }; Returns: string
+                           },
+"post_event":
+{ Args: { "p_event": string }; Returns: string
+                           },
+"post_fondo":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_gasto":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_ingreso":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_pago_proveedor":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"resolve_accounting_date":
+{ Args: { "p_date": string }; Returns: Record<string, unknown>
+                           },
+"seed_account":
+{ Args: { "p_code": string,"p_name": string,"p_nature": Database["public"]['Enums']["account_nature"],"p_postable"?: boolean,"p_type": Database["public"]['Enums']["account_type"] }; Returns: string
+                           },
+"set_active_context":
+{ Args: { "p_project_id": string }; Returns: undefined
+                           },
+"submit_event":
+{ Args: { "p_captured_at": string,"p_client_id": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"] }; Returns: Json
+                           },
 "uuid_v7":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"void_event":
+{ Args: { "p_event_id": string,"p_reason": string }; Returns: Json
                            }
           }
           Enums: {
-            "user_role": "integrante"|"contador"
+            "account_nature": "deudora"|"acreedora","account_type": "activo"|"pasivo"|"patrimonio"|"ingreso"|"costo"|"gasto"|"otro","category_kind": "gasto"|"ingreso","contact_kind": "venue"|"proveedor"|"tercero"|"boletera"|"otro","event_status": "registrado"|"pendiente_confirmacion"|"rechazado"|"anulado","event_type": "gasto"|"ingreso"|"entrega_efectivo"|"puse_dinero"|"reclasificacion"|"regreso_dinero"|"pago_proveedor","fund_kind": "prestamo"|"aportacion"|"reclasificacion"|"regreso","member_account_kind": "efectivo"|"por_regresar"|"reparto_por_pagar"|"aportaciones"|"repartos","money_place": "efectivo_integrante"|"caja"|"cuenta_banda","paid_with": "efectivo_banda"|"caja"|"cuenta_banda"|"mi_dinero"|"pendiente","period_status": "abierto"|"cerrado","project_status": "planeado"|"activo"|"cerrado","reclass_direction": "a_aportacion"|"a_prestamo","settlement_pref": "reembolso"|"compensar_reparto"|"aportacion","transfer_party": "integrante"|"caja"|"banco","user_role": "integrante"|"contador","visible_to": "todos"|"contador"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -223,7 +1116,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "user_role": ["integrante", "contador"]
+            "account_nature": ["deudora", "acreedora"],"account_type": ["activo", "pasivo", "patrimonio", "ingreso", "costo", "gasto", "otro"],"category_kind": ["gasto", "ingreso"],"contact_kind": ["venue", "proveedor", "tercero", "boletera", "otro"],"event_status": ["registrado", "pendiente_confirmacion", "rechazado", "anulado"],"event_type": ["gasto", "ingreso", "entrega_efectivo", "puse_dinero", "reclasificacion", "regreso_dinero", "pago_proveedor"],"fund_kind": ["prestamo", "aportacion", "reclasificacion", "regreso"],"member_account_kind": ["efectivo", "por_regresar", "reparto_por_pagar", "aportaciones", "repartos"],"money_place": ["efectivo_integrante", "caja", "cuenta_banda"],"paid_with": ["efectivo_banda", "caja", "cuenta_banda", "mi_dinero", "pendiente"],"period_status": ["abierto", "cerrado"],"project_status": ["planeado", "activo", "cerrado"],"reclass_direction": ["a_aportacion", "a_prestamo"],"settlement_pref": ["reembolso", "compensar_reparto", "aportacion"],"transfer_party": ["integrante", "caja", "banco"],"user_role": ["integrante", "contador"],"visible_to": ["todos", "contador"]
           }
         }
 } as const

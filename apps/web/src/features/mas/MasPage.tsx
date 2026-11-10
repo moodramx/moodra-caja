@@ -6,6 +6,13 @@ import { useAuth } from '../../lib/auth'
 import { useMode } from '../../lib/mode'
 import { InstallButton } from '../pwa/InstallGuide'
 
+const CONTADOR_LINKS = [
+  { to: '/contador/usuarios', label: '👥 Usuarios' },
+  { to: '/contador/proyectos', label: '🚐 Giras y proyectos' },
+  { to: '/contador/diario', label: '📒 Libro diario' },
+  { to: '/contador/balanza', label: '⚖️ Balanza' },
+] as const
+
 const rowClass =
   'flex min-h-14 items-center justify-between gap-3 rounded-control px-3 -mx-3 active:bg-surface-2'
 
@@ -47,14 +54,15 @@ export function MasPage() {
               <Switch.Thumb className="block size-6 translate-x-1 rounded-full bg-ink transition-transform data-[state=checked]:translate-x-7 data-[state=checked]:bg-accent-ink" />
             </Switch.Root>
           </label>
-          {contadorMode && (
-            <Link to="/contador/usuarios" className={rowClass}>
-              <span className="font-semibold">👥 Usuarios</span>
-              <span aria-hidden="true" className="text-ink-muted">
-                ›
-              </span>
-            </Link>
-          )}
+          {contadorMode &&
+            CONTADOR_LINKS.map((link) => (
+              <Link key={link.to} to={link.to} className={rowClass}>
+                <span className="font-semibold">{link.label}</span>
+                <span aria-hidden="true" className="text-ink-muted">
+                  ›
+                </span>
+              </Link>
+            ))}
         </Card>
       )}
 
@@ -73,7 +81,7 @@ export function MasPage() {
         Cerrar sesión
       </Button>
 
-      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 0</p>
+      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 1</p>
     </Page>
   )
 }

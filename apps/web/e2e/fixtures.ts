@@ -51,6 +51,18 @@ export async function signInAs(page: Page, profile: FakeProfile) {
     [JSON.stringify(session), JSON.stringify(row)],
   )
 
+  // Lecturas sin backend: todo vacío, salvo ajustes y perfiles. (Las rutas
+  // registradas después tienen prioridad.)
+  await page.route('**/rest/v1/**', (route) => {
+    const url = route.request().url()
+    const single = route.request().headers()['accept']?.includes('vnd.pgrst.object')
+    if (url.includes('/app_settings')) {
+      return route.fulfill({
+        json: { id: true, active_project_id: null, active_show_id: null, void_window_hours: 24 },
+      })
+    }
+    return route.fulfill({ json: single ? {} : [] })
+  })
   await page.route('**/rest/v1/profiles*', (route) => {
     const single = route.request().headers()['accept']?.includes('vnd.pgrst.object')
     return route.fulfill({ json: single ? row : [row] })

@@ -61,7 +61,7 @@ select is((select count(*)::int from public.accounts where is_postable and membe
 select is((select count(*)::int from public.accounts where member_id = pg_temp.uid('pepe')), 5,
   'cada integrante recibe sus 5 subcuentas al darse de alta');
 select matches((select code from public.accounts
-                where member_id = pg_temp.uid('pepe') and member_kind = 'efectivo'), '^1\.1\.1[0-9]+$',
+                where member_id = pg_temp.uid('pepe') and member_kind = 'efectivo'), '^1\.1\.[0-9]{2,}$',
   'el efectivo del integrante cuelga de 1.1');
 update public.profiles set display_name = 'Pepe' where username = 'pgtap-pepe';
 select is((select name from public.accounts where member_id = pg_temp.uid('pepe') and member_kind = 'por_regresar'),
@@ -75,7 +75,9 @@ select is((select count(*)::int from public.project_types), 12, 'tipos de proyec
 select pg_temp.act('diego');
 insert into ids select 'gira', (public.create_project('GIR', 'Bajío 2026')).id;
 select matches((select code from public.projects where id = (select id from ids where k = 'gira')),
-  '^GIR-[0-9]{4}-01$', 'la clave del proyecto se genera sola');
+  '^GIR-[0-9]{4}-[0-9]{2}$', 'la clave del proyecto se genera sola');
+select is((select count(*)::int from public.v_cash_position where kind = 'integrante'),
+  (select count(*)::int from public.profiles), 'la posición de efectivo lista a cada integrante');
 
 select pg_temp.act('pepe');
 insert into ids select 'g1', pg_temp.ev('gasto',

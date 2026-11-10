@@ -865,7 +865,8 @@ create view public.v_cash_position with (security_invoker = true) as
 select case when t.code = '1.1.01' then 'caja' when t.code = '1.2.01' then 'banco' else 'integrante' end as kind,
        t.member_id, t.name, t.balance_cents
 from public.v_trial_balance t
-where t.code in ('1.1.01', '1.2.01') or t.code like '1.1.1%';
+join public.accounts a on a.id = t.account_id
+where t.code in ('1.1.01', '1.2.01') or a.member_kind = 'efectivo';
 
 create view public.v_results_by_period with (security_invoker = true) as
 select p.year, p.month,
@@ -952,7 +953,8 @@ to authenticated;
 grant execute on function public.uuid_v7() to authenticated;
 
 -- ---------------------------------------------------------------------------
--- Realtime: feed y contexto activo
+-- Realtime: feed, contexto activo y proyectos nuevos
 -- ---------------------------------------------------------------------------
 alter publication supabase_realtime add table public.events;
 alter publication supabase_realtime add table public.app_settings;
+alter publication supabase_realtime add table public.projects;

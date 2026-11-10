@@ -1,90 +1,85 @@
 # PROGRESO — Moodra $$
 
-## Fase 0 — Cimientos · 2026-11-10 · **lista en local; falta GitHub, Netlify y los tokens de moodra.mx**
+## Fase 1 — Núcleo contable + captura básica · 2026-11-10 · **lista en local, sin publicar**
 
-### Hecho y verificado en esta compu
+Vive en la rama `fase-1`. Todavía **no** está en `main`, ni en Netlify, ni en la base de la nube.
 
-- Monorepo pnpm (`apps/web`), Vite 8 + React 19 + TypeScript strict, ESLint y Prettier.
-- PWA: manifest, íconos, service worker y guía de instalación para iOS y Android.
-- Design system: tokens provisionales, botón, chip, hoja inferior, avisos con "Deshacer" (10 s), teclado de monto y layout móvil con navegación inferior.
-- Rutas: Inicio, Movimientos, Merch, Reportes, Más, Modo contador → Usuarios, y `/componentes`.
-- Supabase local (Docker): migraciones aplicadas con `profiles`, `app_settings`, `audit_log` y RLS.
-- Login real con usuario + contraseña (username → `username@caja.moodra.mx`).
-- Edge Function `admin-users`: el contador crea, desactiva, reactiva y cambia contraseñas; un integrante recibe 403 aunque llame a la función directo.
-- Tipos de la base generados con `supabase gen types`.
+### Hecho y verificado en la compu
+
+- **Base**: catálogo de cuentas del PRD §5.1, subcuentas por integrante que se crean solas, periodos mensuales, diario con cuadre obligatorio e inmutable, categorías, tipos de proyecto, proyectos y contactos.
+- **Eventos y RPC**: `submit_event` (idempotente), `confirm_cash_transfer` y `void_event`.
+- **Posteo**: gasto (todas las formas de pago), cobro, entrega de efectivo con confirmación, depósito, puse dinero (préstamo o aportación), reclasificación, regresar dinero y pago a proveedor.
+- **Celular**: outbox en Dexie, sync idempotente con reintentos, saldos optimistas, caché de lecturas para abrir sin señal.
+- **Pantallas**: Gasté, Cobré, Pasé efectivo, Puse dinero; Inicio con saldo personal, resultado del mes o de la gira, pendientes por confirmar, feed en vivo e indicador de sync; Movimientos con detalle y anulación.
+- **Contexto activo**: "¿En qué andamos?" sincronizado en vivo.
+- **Contador**: libro diario, balanza y alta de giras y proyectos.
 
 ### Pruebas (todas en verde)
 
-| Suite                                 | Resultado |
-| ------------------------------------- | --------- |
-| pgTAP                                 | 26/26     |
-| Vitest                                | 23/23     |
-| Playwright con sesión simulada        | 11/11     |
-| Playwright real contra Supabase local | 3/3       |
-| Lint, typecheck, Prettier             | limpios   |
+| Suite                                               | Resultado |
+| --------------------------------------------------- | --------- |
+| pgTAP (asientos, idempotencia, anulación, permisos) | 138/138   |
+| Vitest (dinero, outbox, sync, textos, saldos)       | 50/50     |
+| Playwright con sesión simulada                      | 11/11     |
+| Playwright real contra Supabase local               | 8/8       |
+| Lint, typecheck, Prettier                           | limpios   |
 
-JS de la ruta de inicio: ~153 KB gzip el archivo principal (límite del PRD: 200 KB en total).
+Los tres criterios de aceptación del plan están cubiertos por la prueba real `e2e/fase1-real.spec.ts`:
 
-### Lo que NO está hecho
+1. Gasto con mi dinero en modo avión → al volver la señal se sincroniza una sola vez y aparece en el otro celular sin recargar.
+2. Una entrega de efectivo no mueve saldos hasta que el receptor confirma.
+3. La balanza cuadra.
 
-1. **CI en GitHub Actions**: el workflow está escrito pero nunca ha corrido; no hay repo en GitHub.
-2. **Deploy de preview en Netlify**: `netlify.toml` está listo, sin cuenta ni sitio.
-3. **Instalar la PWA en iPhone y Android**: requiere HTTPS, o sea el deploy. No se ha probado en ningún celular.
-4. **Tokens de diseño de moodra.mx**: siguen los provisionales.
-5. **Los 5 usuarios reales**: solo se probó con usuarios de prueba locales.
+### Lo que NO está hecho o quedó distinto
 
-### Qué necesito de Diego
+1. **No está publicado**: falta pasar `fase-1` a `main`, subir las migraciones a la nube y que Netlify despliegue.
+2. **No se ha probado en un celular real**, solo en navegador con tamaño de celular.
+3. **Regresar dinero, pagar a proveedor y reclasificar** funcionan en la base y están probados, pero aún no tienen pantalla (el plan solo pide cuatro flujos en esta fase).
+4. **Peso de Inicio: ~224 KB gzip de JS**, arriba del límite de 200 KB del PRD. Queda para la auditoría de rendimiento de la Fase 6.
+5. **"Pago de un show" y "Vendí merch"** llegan en las Fases 3 y 2.
+6. **Cambiar el contexto activo** necesita internet (lo demás funciona sin señal).
 
-1. Cuenta y repo en **GitHub** (privado) → subo el código y corre el CI.
-2. Cuenta en **Netlify** conectada a ese repo → deploy de preview.
-3. Un proyecto en **Supabase en la nube** (desarrollo) → para que el preview y tu celular tengan backend.
-4. La **ruta o repo de la web moodra.mx** → tokens definitivos.
+### Cómo probarlo en la compu
 
-### Cómo probarlo hoy en la compu
+1. Docker Desktop abierto; en `C:\dev\moodra-caja`: `git checkout fase-1` y `pnpm db:start`.
+2. `pnpm db:reset` para empezar limpio (borra los datos locales de prueba).
+3. Crea tu contador como en la Fase 0 (`pnpm crear-contador`) y entra con `pnpm dev` en `http://localhost:5173`.
+4. Crea otro usuario en Más → Modo contador → Usuarios, y ábrelo en una ventana de incógnito para tener "dos celulares".
+5. Prueba, en orden:
+   - **Gasté** → $850 → Transporte → Mi dinero → Regrésenmelo → Guardar. Debe decir "Te debemos $850".
+   - **Deshacer** en el aviso de un gasto nuevo: el saldo regresa.
+   - **Cobré** → Patrocinio → $500 → Lo traigo yo en efectivo.
+   - **Pasé efectivo** → $200 → al otro usuario. En la otra ventana aparece "¿Lo recibiste?"; los saldos cambian hasta que diga Sí.
+   - **Modo avión**: en las herramientas del navegador (F12 → Network → Offline) registra un gasto; dirá "Sin señal · 1 guardado en tu celular". Quita el modo avión y debe decir "Todo al día ✓".
+   - **Movimientos** → toca un registro → Anular (pide motivo). Queda tachado.
+   - **Más → Modo contador → Balanza**: "La balanza cuadra ✓". **Libro diario**: un asiento por registro.
+   - **Giras y proyectos** → crea una gira → en Inicio toca "Operación general" y elígela.
 
-1. Abre Docker Desktop y espera a que diga "Engine running".
-2. En `C:\dev\moodra-caja`: `pnpm db:start` (ya no descarga nada; tarda ~1 minuto).
-3. Crea tu usuario contador (PowerShell). La llave sale de `pnpm exec supabase status -o env`, renglón `SERVICE_ROLE_KEY`:
-   - `$env:SUPABASE_URL="http://127.0.0.1:54321"`
-   - `$env:SUPABASE_SERVICE_ROLE_KEY="<SERVICE_ROLE_KEY>"`
-   - `$env:CONTADOR_PASSWORD="<tu contraseña, 8+ caracteres>"`
-   - `pnpm crear-contador`
-4. `pnpm dev` → abre `http://localhost:5173` y entra como `diego`.
-5. Más → enciende **Modo contador** → **Usuarios** → crea a Pepe, Ram, Uli y al becario (a este quítale "Participa en repartos").
-6. Cierra sesión y entra con uno de ellos: no debe ver el Modo contador.
-7. Más → **Probar componentes**: teclado de monto, hoja inferior y aviso con "Deshacer".
+### Cómo se probará en el celular
 
-`apps/web/.env.local` ya apunta al Supabase local. Para apagar todo: `pnpm db:stop`.
-
-### En el celular
-
-Todavía no se puede probar de verdad. Con `pnpm build` y `pnpm preview` puedes abrir la dirección "Network" desde el celular en el mismo wifi y ver el login, pero no entrar (el backend local solo escucha en la compu) ni instalarla (falta HTTPS). Eso llega con Netlify + Supabase en la nube.
+Cuando se publique: abrir `https://fanciful-granita-b043f1.netlify.app`, entrar y repetir los pasos de arriba con dos celulares. El modo avión real es la prueba que más importa.
 
 ### Comandos
 
-| Qué                     | Comando                            |
-| ----------------------- | ---------------------------------- |
-| App en desarrollo       | `pnpm dev`                         |
-| Supabase local          | `pnpm db:start` · `pnpm db:stop`   |
-| Lint / tipos            | `pnpm lint` · `pnpm typecheck`     |
-| Vitest                  | `pnpm test`                        |
-| Playwright (simulado)   | `pnpm test:e2e`                    |
-| Playwright + login real | `$env:E2E_REAL='1'; pnpm test:e2e` |
-| pgTAP                   | `pnpm db:test`                     |
-| Tipos de la BD          | `pnpm db:types`                    |
-| Borrar datos locales    | `pnpm db:reset`                    |
+| Qué                   | Comando                               |
+| --------------------- | ------------------------------------- |
+| App en desarrollo     | `pnpm dev`                            |
+| Supabase local        | `pnpm db:start` · `pnpm db:stop`      |
+| Lint / tipos          | `pnpm lint` · `pnpm typecheck`        |
+| Vitest                | `pnpm test`                           |
+| Playwright (simulado) | `pnpm test:e2e`                       |
+| Playwright + real     | `$env:E2E_REAL='1'; pnpm test:e2e`    |
+| pgTAP                 | `pnpm db:test`                        |
+| Tipos de la BD        | `pnpm db:types`                       |
+| Borrar datos locales  | `pnpm db:reset`                       |
+| Subir migraciones     | `pnpm exec supabase db push --remote` |
 
-### Nube (2026-11-10)
+---
 
-- Repo: `github.com/moodramx/moodra-caja` (privado).
-- Supabase de desarrollo: proyecto `moodra-caja-dev` (`ndoxwuqqrwiagnzfvsms`, región us-west-2). Migraciones aplicadas y función `admin-users` publicada; sin sesión responde 401.
-- **Pendiente en el panel de Supabase**: apagar el registro público y subir la contraseña mínima a 8 (Authentication → Sign In / Providers).
-- **Pendiente**: crear el usuario contador en la nube y conectar Netlify con las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
-- Comandos contra la nube: `pnpm exec supabase db push --remote` y `pnpm exec supabase functions deploy admin-users --remote`.
+## Fase 0 — Cimientos · aprobada el 2026-11-10
 
-### Preview y usuarios (2026-11-10, tarde)
-
-- Netlify: `https://fanciful-granita-b043f1.netlify.app`, desplegado desde `main`.
-- **Problema abierto**: el sitio sigue detrás del inicio de sesión de Netlify (todo responde 401 sin sesión de Netlify). Mientras siga así, solo entra quien tenga la cuenta de Netlify de Diego, y el manifest y el service worker no cargan para nadie más.
+- Monorepo, PWA, design system con la identidad de moodra.mx en tema claro, login, usuarios y Supabase local y en la nube.
+- Repo: `github.com/moodramx/moodra-caja`. Supabase de desarrollo: `moodra-caja-dev` (`ndoxwuqqrwiagnzfvsms`). Netlify: `fanciful-granita-b043f1.netlify.app`.
 - Usuarios en la nube: `diego` (contador), `pepe`, `rams`, `uli`. Falta el becario.
-- Diego reporta que instaló la app y creó los usuarios desde su celular. No se ha verificado en un segundo dispositivo sin sesión de Netlify.
+- **Pendiente abierto**: el sitio de Netlify sigue detrás del inicio de sesión de Netlify; hay que quitarlo antes de compartirlo con la banda, y solo entonces se puede probar la instalación completa y el uso sin señal en un celular.
+- **Sin confirmar**: si el CI de GitHub Actions pasa.

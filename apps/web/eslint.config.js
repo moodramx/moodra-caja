@@ -23,7 +23,15 @@ export default tseslint.config(
   // Los archivos de ruta exportan `Route` además del componente.
   // Los proveedores de contexto exportan su hook junto al componente.
   {
-    files: ['src/routes/**/*.tsx', 'src/design/Toast.tsx', 'src/lib/auth.tsx', 'src/lib/mode.tsx'],
+    files: [
+      'src/routes/**/*.tsx',
+      'src/design/Toast.tsx',
+      'src/lib/auth.tsx',
+      'src/lib/mode.tsx',
+      'src/features/feed/Feed.tsx',
+      'src/features/captura/parts.tsx',
+      'src/main.tsx',
+    ],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   // Playwright: `use` es de sus fixtures, no un hook de React.
