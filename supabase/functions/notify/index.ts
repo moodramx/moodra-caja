@@ -278,8 +278,8 @@ Deno.serve(async (req) => {
   const publicKey = Deno.env.get('VAPID_PUBLIC_KEY')
   const privateKey = Deno.env.get('VAPID_PRIVATE_KEY')
   const configured = Boolean(publicKey && privateKey)
-  if (req.method === 'GET') return json(200, { configured, publicKey: publicKey ?? null })
-  if (req.method !== 'POST') return json(405, { error: 'Método no permitido' })
+  if (req.method !== 'GET' && req.method !== 'POST')
+    return json(405, { error: 'Método no permitido' })
 
   const url = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -287,6 +287,13 @@ Deno.serve(async (req) => {
   const admin = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
+
+  // GET: la llave pública para suscribirse. De paso toca la base, así el
+  // trabajo nocturno la mantiene despierta aunque no haya secretos puestos.
+  if (req.method === 'GET') {
+    const { error } = await admin.from('app_settings').select('id').single()
+    return json(200, { configured, publicKey: publicKey ?? null, db: !error })
+  }
 
   let body: { daily?: boolean } = {}
   try {

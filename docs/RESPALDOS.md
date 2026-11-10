@@ -25,6 +25,8 @@ En GitHub → repositorio → **Settings → Secrets and variables → Actions �
 | `SUPABASE_URL` | `https://<proyecto>.supabase.co`    |
 | `CRON_SECRET`  | el que imprimió `generar-vapid.mjs` |
 
+El keep-alive funciona aunque no pongas ningún secreto; sin `CRON_SECRET` el trabajo solo deja una advertencia y no manda avisos. `SUPABASE_URL` es opcional mientras se use el proyecto de desarrollo.
+
 Para probarlo: pestaña **Actions → Diario → Run workflow**.
 
 ## 3. Respaldo semanal (`.github/workflows/respaldo.yml`)
@@ -34,7 +36,7 @@ Cada domingo sube a Google Drive un archivo `moodra-AAAA-MM-DD.tar.gz` con:
 - `base.dump`: respaldo completo (`pg_dump`, formato custom).
 - `diario.csv`, `balanza.csv`, `saldos.csv`, `inventario.csv`: se abren en Excel sin restaurar nada.
 
-Se conservan 12 semanas. En el plan gratis de Supabase este es el único respaldo descargable.
+Se conservan 12 semanas. En el plan gratis de Supabase este es el único respaldo descargable. **Mientras no pongas sus secretos, este trabajo falla cada domingo y GitHub te manda un correo: es a propósito, para que no se quede sin respaldo en silencio.**
 
 Secretos en GitHub:
 

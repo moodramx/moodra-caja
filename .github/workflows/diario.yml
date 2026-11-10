@@ -4,9 +4,10 @@ name: Diario (avisos y keep-alive)
 # efectivo alto, entregas viejas) y de paso mantiene despierta la base de
 # Supabase, que en el plan gratis se pausa tras 7 días sin actividad.
 #
-# Secretos del repositorio (Settings → Secrets and variables → Actions):
-#   SUPABASE_URL   https://<proyecto>.supabase.co
+# El keep-alive funciona sin configurar nada. Para los avisos hacen falta los
+# secretos del repositorio (Settings → Secrets and variables → Actions):
 #   CRON_SECRET    el mismo valor guardado en los secrets de Supabase
+#   SUPABASE_URL   https://<proyecto>.supabase.co (si falta, usa el de desarrollo)
 on:
   schedule:
     - cron: '30 3 * * *' # 03:30 UTC = 21:30 en Ciudad de México
@@ -22,12 +23,16 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$CRON_SECRET" ]; then
-            echo "::error::Faltan los secretos SUPABASE_URL y CRON_SECRET (ver docs/RESPALDOS.md)."
-            exit 1
+          URL="${SUPABASE_URL:-https://ndoxwuqqrwiagnzfvsms.supabase.co}"
+          # Keep-alive: esta consulta toca la base y no necesita secretos.
+          curl --fail-with-body --silent --show-error "$URL/functions/v1/notify"
+          echo
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::warning::Falta el secreto CRON_SECRET: no se mandaron los avisos del día (ver docs/RESPALDOS.md)."
+            exit 0
           fi
           curl --fail-with-body --silent --show-error \
-            -X POST "$SUPABASE_URL/functions/v1/notify" \
+            -X POST "$URL/functions/v1/notify" \
             -H "Content-Type: application/json" \
             -H "x-cron-secret: $CRON_SECRET" \
             -d '{"daily": true}'
