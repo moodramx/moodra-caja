@@ -73,3 +73,11 @@ Todavía no se puede probar de verdad. Con `pnpm build` y `pnpm preview` puedes 
 | pgTAP                   | `pnpm db:test`                     |
 | Tipos de la BD          | `pnpm db:types`                    |
 | Borrar datos locales    | `pnpm db:reset`                    |
+
+### Nube (2026-11-10)
+
+- Repo: `github.com/moodramx/moodra-caja` (privado).
+- Supabase de desarrollo: proyecto `moodra-caja-dev` (`ndoxwuqqrwiagnzfvsms`, región us-west-2). Migraciones aplicadas y función `admin-users` publicada; sin sesión responde 401.
+- **Pendiente en el panel de Supabase**: apagar el registro público y subir la contraseña mínima a 8 (Authentication → Sign In / Providers).
+- **Pendiente**: crear el usuario contador en la nube y conectar Netlify con las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+- Comandos contra la nube: `pnpm exec supabase db push --remote` y `pnpm exec supabase functions deploy admin-users --remote`.
