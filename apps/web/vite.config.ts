@@ -5,7 +5,15 @@ import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Fecha de construcción, visible en Más para saber qué versión trae cada quien.
+const build = new Intl.DateTimeFormat('es-MX', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'America/Mexico_City',
+}).format(new Date())
+
 export default defineConfig({
+  define: { __BUILD__: JSON.stringify(build) },
   plugins: [
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),

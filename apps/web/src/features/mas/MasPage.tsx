@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Switch } from 'radix-ui'
 import { Button } from '../../design/Button'
 import { Card, Page } from '../../design/Page'
+import { useToast } from '../../design/Toast'
 import { useAuth } from '../../lib/auth'
 import { useMode } from '../../lib/mode'
+import { BUILD_LABEL, checkForUpdate } from '../../lib/update'
 import { InstallButton } from '../pwa/InstallGuide'
 
 const CONTADOR_LINKS = [
@@ -16,6 +19,31 @@ const CONTADOR_LINKS = [
 
 const rowClass =
   'flex min-h-14 items-center justify-between gap-3 rounded-control px-3 -mx-3 active:bg-surface-2'
+
+function UpdateButton() {
+  const { toast } = useToast()
+  const [busy, setBusy] = useState(false)
+  const look = async () => {
+    setBusy(true)
+    const found = await checkForUpdate()
+    setBusy(false)
+    toast({
+      message: found
+        ? 'Hay versión nueva: se instala sola en unos segundos.'
+        : navigator.onLine
+          ? 'Ya tienes la última versión.'
+          : 'Sin señal: no se pudo buscar.',
+    })
+  }
+  return (
+    <div className="text-center">
+      <p className="text-sm text-ink-faint">Moodra $$ · versión del {BUILD_LABEL}</p>
+      <Button variant="ghost" disabled={busy} onClick={() => void look()}>
+        {busy ? 'Buscando…' : 'Buscar actualización'}
+      </Button>
+    </div>
+  )
+}
 
 export function MasPage() {
   const { profile, signOut } = useAuth()
@@ -100,7 +128,7 @@ export function MasPage() {
         Cerrar sesión
       </Button>
 
-      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 3</p>
+      <UpdateButton />
     </Page>
   )
 }

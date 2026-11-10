@@ -4,10 +4,10 @@ import { QueryClient } from '@tanstack/react-query'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
-import { registerSW } from 'virtual:pwa-register'
 import { ToastProvider } from './design/Toast'
 import { AuthProvider } from './lib/auth'
 import { db } from './lib/offline/db'
+import { startUpdates } from './lib/update'
 import { routeTree } from './routeTree.gen'
 import './index.css'
 
@@ -38,7 +38,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-registerSW({ immediate: true })
+startUpdates()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
