@@ -43,13 +43,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label="Secciones"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 pb-safe backdrop-blur"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-6">
+        {/* Cada pestaña toma el ancho de su texto ("Movimientos" necesita más que "Más");
+            con seis casillas iguales no cabían en celulares de 360 px. */}
+        <ul className="mx-auto flex max-w-md">
           {NAV.map((item) => (
-            <li key={item.to}>
+            <li key={item.to} className="min-w-12 flex-auto">
               <Link
                 to={item.to}
                 activeOptions={{ exact: item.to === '/' }}
-                className="flex min-h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] tracking-tight text-ink-muted aria-[current=page]:font-semibold aria-[current=page]:text-ink"
+                className="flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-[0.6875rem] whitespace-nowrap tracking-tight text-ink-muted aria-[current=page]:font-semibold aria-[current=page]:text-ink"
               >
                 <svg
                   aria-hidden="true"

@@ -71,10 +71,12 @@ test.describe('integrante', () => {
   })
 
   test('las seis pestañas caben sin encimarse en un celular angosto', async ({ page }) => {
-    await page.setViewportSize({ width: 360, height: 740 })
+    await page.setViewportSize({ width: 320, height: 640 })
     await page.goto('/')
     const links = page.getByRole('navigation', { name: 'Secciones' }).getByRole('link')
     await expect(links).toHaveCount(6)
+    const list = page.getByRole('navigation', { name: 'Secciones' }).getByRole('list')
+    expect(await list.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true)
     for (const link of await links.all()) {
       const fits = await link.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)
       expect(fits, await link.innerText()).toBe(true)
