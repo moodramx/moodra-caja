@@ -83,6 +83,19 @@ select is(pg_temp.stock('M'), '15/195000/13000', 'el costo promedio se recalcula
 -- ---------------------------------------------------------------------------
 -- C. Venta con una pieza de regalo (criterio de aceptación de la Fase 2)
 -- ---------------------------------------------------------------------------
+-- Resumen de hoy antes de vender (la base puede traer ventas de otras pruebas).
+create temp table antes as
+select coalesce(sum(pieces), 0)::int as pieces, coalesce(sum(gift_pieces), 0)::int as gifts,
+       coalesce(sum(revenue_cents), 0)::bigint as revenue, coalesce(sum(cost_cents), 0)::bigint as cost
+from public.v_merch_daily where day = (now() at time zone 'America/Mexico_City')::date;
+grant all on antes to public;
+create function pg_temp.hoy() returns text language sql as
+$$ select (coalesce(sum(d.pieces), 0) - a.pieces) || '/' || (coalesce(sum(d.gift_pieces), 0) - a.gifts) || '/'
+          || (coalesce(sum(d.revenue_cents), 0) - a.revenue) || '/' || (coalesce(sum(d.cost_cents), 0) - a.cost)
+   from antes a left join public.v_merch_daily d
+     on d.day = (now() at time zone 'America/Mexico_City')::date
+   group by a.pieces, a.gifts, a.revenue, a.cost $$;
+
 insert into ids values ('cid', gen_random_uuid());
 insert into ids select 'v1', (public.submit_event(pg_temp.id('cid'), 'venta_merch', jsonb_build_object(
   'payment_method', 'efectivo', 'channel', 'show',
@@ -98,10 +111,7 @@ select is((select total_cents || '/' || pieces from public.sale_details where ev
 select is((select count(*)::int from public.journal_lines
            where entry_id = (select journal_entry_id from public.events where id = pg_temp.id('v1'))
              and variant_id = pg_temp.id('M')), 5, 'las líneas de ingreso, costo e inventario llevan la variante');
-select is((select pieces || '/' || gift_pieces || '/' || revenue_cents || '/' || cost_cents
-           from public.v_merch_daily
-           where day = (now() at time zone 'America/Mexico_City')::date and project_id is null),
-  '3/1/70000/26000', 'resumen de la noche: piezas, regalos, venta y costo');
+select is(pg_temp.hoy(), '3/1/70000/26000', 'resumen de la noche: piezas, regalos, venta y costo');
 
 -- Idempotencia: reenviar la venta no vuelve a mover inventario.
 select is((public.submit_event(pg_temp.id('cid'), 'venta_merch', '{"lines":[]}'::jsonb, now()) ->> 'duplicate')::boolean,
@@ -179,8 +189,9 @@ select is(pg_temp.stock('M'), '12/156000/13000',
   'el inventario se repone al costo original de la venta (3 piezas, $390)');
 select is((select count(*)::int from public.inventory_movements
            where event_id = pg_temp.id('v1') and kind = 'anulacion'), 2, 'queda el rastro de la reposición');
-select is((select count(*)::int from public.v_merch_daily
-           where day = (now() at time zone 'America/Mexico_City')::date and pieces = 3), 0,
+-- Después de v1 hubo otras ventas en esta prueba; lo que importa es que v1 ya no cuenta.
+select is((select count(*)::int from public.sale_lines s join public.events e on e.id = s.event_id
+           where e.id = pg_temp.id('v1') and e.status = 'registrado'), 0,
   'la venta anulada sale del resumen de la noche');
 
 select pg_temp.act('diego');

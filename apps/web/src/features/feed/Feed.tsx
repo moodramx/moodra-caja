@@ -73,6 +73,19 @@ function Row({
   )
 }
 
+function merchLines(
+  op: OutboxOp,
+): { qty: number; unit_price_cents?: number; unit_cost_cents?: number; is_gift?: boolean }[] {
+  const payload = op.payload as { lines?: []; qty?: number } | undefined
+  return payload?.lines ?? (payload?.qty ? [{ qty: payload.qty }] : [])
+}
+const merchPieces = (op: OutboxOp) => merchLines(op).reduce((sum, l) => sum + l.qty, 0) || null
+const merchAmount = (op: OutboxOp) =>
+  merchLines(op).reduce(
+    (sum, l) => sum + (l.is_gift ? 0 : (l.unit_price_cents ?? l.unit_cost_cents ?? 0)) * l.qty,
+    0,
+  )
+
 /** Convierte una captura local en un renglón con la misma forma que el feed. */
 function opAsRow(op: OutboxOp, categories: { id: string; name: string; emoji: string }[]): FeedRow {
   const p = op.payload as Partial<
@@ -83,7 +96,9 @@ function opAsRow(op: OutboxOp, categories: { id: string; name: string; emoji: st
     type: op.type ?? null,
     status: 'registrado',
     created_by: op.user_id,
-    amount_cents: p.amount_cents ?? 0,
+    amount_cents: p.amount_cents ?? merchAmount(op),
+    pieces: merchPieces(op),
+    stock_kind: (op.payload as { kind?: string } | undefined)?.kind ?? null,
     category_name: category?.name ?? null,
     category_emoji: category?.emoji ?? null,
     to_kind: p.to_kind ?? null,

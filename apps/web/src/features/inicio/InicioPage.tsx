@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { BottomSheet } from '../../design/BottomSheet'
 import { Button } from '../../design/Button'
 import { Card, EmptyState, Page } from '../../design/Page'
@@ -298,7 +299,7 @@ function ActionButton({
 
 export function InicioPage() {
   const { profile } = useAuth()
-  const { toast } = useToast()
+  const navigate = useNavigate()
   const [flow, setFlow] = useState<FlowName | null>(null)
   const empty = useFeedIsEmpty(15)
   const close = () => setFlow(null)
@@ -321,7 +322,7 @@ export function InicioPage() {
         <ActionButton
           emoji="👕"
           label="Vendí merch"
-          onClick={() => toast({ message: 'La venta de merch llega en la siguiente etapa.' })}
+          onClick={() => void navigate({ to: '/merch' })}
         />
         <ActionButton {...FLOWS.pase} onClick={() => setFlow('pase')} />
       </div>

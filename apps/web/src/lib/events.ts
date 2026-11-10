@@ -46,8 +46,60 @@ export interface RegresoPayload extends Base {
   origin: MoneyPlace
 }
 
+export type PaymentMethod = Enums['payment_method']
+export type SaleChannel = Enums['sale_channel']
+
+export interface SaleLine {
+  variant_id: string
+  qty: number
+  /** Precio al que se cobró (el de la caché al momento de vender). */
+  unit_price_cents: number
+  is_gift: boolean
+}
+
+export interface VentaPayload {
+  lines: SaleLine[]
+  payment_method: PaymentMethod
+  channel: SaleChannel
+  collected_by?: string
+  project_id?: string | null
+}
+
+export interface CompraPayload {
+  lines: { variant_id: string; qty: number; unit_cost_cents: number }[]
+  paid_with: PaidWith
+  settlement_pref?: SettlementPref
+  description?: string
+  project_id?: string | null
+}
+
+/** Regalo fuera de venta o merma. */
+export interface SalidaPayload {
+  kind: 'regalo' | 'merma'
+  variant_id: string
+  qty: number
+  note?: string
+  project_id?: string | null
+}
+
+export interface AjustePayload {
+  variant_id: string
+  counted_qty: number
+  note?: string
+}
+
 export type SubmitPayload =
-  GastoPayload | IngresoPayload | EntregaPayload | PuseDineroPayload | RegresoPayload
+  | GastoPayload
+  | IngresoPayload
+  | EntregaPayload
+  | PuseDineroPayload
+  | RegresoPayload
+  | VentaPayload
+  | CompraPayload
+  | SalidaPayload
+  | AjustePayload
+
+export type InventoryRow = Database['public']['Views']['v_inventory']['Row']
 
 export type FeedRow = Database['public']['Views']['v_event_feed']['Row']
 export type MemberBalance = Database['public']['Views']['v_member_balances']['Row']

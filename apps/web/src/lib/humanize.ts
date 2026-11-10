@@ -121,6 +121,19 @@ export function describeRegreso(
   return `${whom} ${money(payload.amount_cents)}${to} ${originPhrase[payload.origin]}. ${after}`
 }
 
+const pieces = (n: number | null) => `${n ?? 0} ${n === 1 ? 'pza' : 'pzas'}`
+
+/** "Vendiste 3 pzas por $700 en efectivo (1 de regalo)." */
+export function describeVenta(
+  totals: { pieces: number; giftPieces: number; total: bigint },
+  method: 'efectivo' | 'transferencia',
+): string {
+  const paid = totals.pieces - totals.giftPieces
+  const gift = totals.giftPieces ? ` (${totals.giftPieces} de regalo)` : ''
+  if (paid === 0) return `Regalaste ${pieces(totals.pieces)}.`
+  return `Vendiste ${pieces(totals.pieces)} por ${money(totals.total)} ${method === 'efectivo' ? 'en efectivo' : 'por transferencia'}${gift}.`
+}
+
 export interface FeedText {
   emoji: string
   title: string
@@ -171,6 +184,24 @@ export function feedText(row: FeedRow, nameOf: (id: string | null) => string): F
         title: `${who} puso ${amount}${row.fund_kind === 'aportacion' ? ' como aportación' : ''}`,
         badge,
       }
+    case 'venta_merch':
+      return {
+        emoji: '👕',
+        title: `${who} vendió ${pieces(row.pieces)} de merch · ${amount}`,
+        badge,
+      }
+    case 'compra_merch':
+      return {
+        emoji: '📦',
+        title: `${who} metió ${pieces(row.pieces)} de merch · ${amount}`,
+        badge,
+      }
+    case 'salida_merch':
+      return row.stock_kind === 'merma'
+        ? { emoji: '🗑️', title: `Se dieron de baja ${pieces(row.pieces)} de merch`, badge }
+        : { emoji: '🎁', title: `${who} regaló ${pieces(row.pieces)} de merch`, badge }
+    case 'ajuste_inventario':
+      return { emoji: '🔢', title: `${who} contó el merch y corrigió ${pieces(row.pieces)}`, badge }
     case 'regreso_dinero':
       return {
         emoji: '↩️',

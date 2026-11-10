@@ -8,6 +8,7 @@ import { InstallButton } from '../pwa/InstallGuide'
 
 const CONTADOR_LINKS = [
   { to: '/contador/usuarios', label: '👥 Usuarios' },
+  { to: '/contador/productos', label: '🏷️ Productos y precios' },
   { to: '/contador/diario', label: '📒 Libro diario' },
   { to: '/contador/balanza', label: '⚖️ Balanza' },
 ] as const
@@ -92,7 +93,7 @@ export function MasPage() {
         Cerrar sesión
       </Button>
 
-      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 1</p>
+      <p className="text-center text-sm text-ink-faint">Moodra $$ · Fase 2</p>
     </Page>
   )
 }

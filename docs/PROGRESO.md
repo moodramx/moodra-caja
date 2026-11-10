@@ -1,6 +1,56 @@
 # PROGRESO — Moodra $$
 
-## Fase 1 — Núcleo contable + captura básica · 2026-11-10 · **publicada, en revisión de Diego**
+## Fase 2 — Merch, POS e inventario · 2026-11-10 · **lista en local, sin publicar**
+
+Vive en la rama `fase-2`. No está en `main`, ni en Netlify, ni en la base de la nube.
+
+### Hecho y verificado en la compu
+
+- **Catálogo** (contador): productos con variantes (talla, color), precio y aviso de stock bajo. Más → Modo contador → Productos y precios.
+- **Inventario a costo promedio ponderado** por variante, recalculado en cada entrada, en "Bodega Apnea". El valor se lleva en centavos exactos, así que inventario y diario coinciden al centavo.
+- **Punto de venta** (pestaña Merch y botón "Vendí merch"): mesa de productos, selector de variante, carrito con +/−, regalo por línea, efectivo o transferencia, quién cobró y canal. Botón "Cobrar $X" y pantalla de éxito.
+- **Sin señal**: precios y existencias salen de la caché; lo vendido ya descuenta del stock que se ve y suma al efectivo de quien cobró.
+- **Entró merch** (compra), **Regalé**, y para el contador **Se dañó** (merma) y **Conté** (ajuste por conteo).
+- **Resumen de la noche**: lo vendido hoy, piezas y lo que queda después del costo.
+- **Alertas**: "Quedan N", "Agotado" y "Faltan N". El stock puede quedar negativo; nunca bloquea una venta y deja aviso en la bitácora.
+- **Anular una venta** repone el inventario a su costo original.
+
+### Pruebas (todas en verde)
+
+| Suite                                                    | Resultado |
+| -------------------------------------------------------- | --------- |
+| pgTAP (203 en total; 60 de merch)                        | 203/203   |
+| Vitest (61 en total; carrito, stock y saldos optimistas) | 61/61     |
+| Playwright con sesión simulada                           | 11/11     |
+| Playwright real contra Supabase local                    | 15/15     |
+| Lint, typecheck, Prettier                                | limpios   |
+
+Criterios de aceptación del plan, cubiertos por `e2e/fase2-real.spec.ts`:
+
+1. Vender 3 playeras (una de regalo) sin señal → al sincronizar: inventario 7 piezas a $120, costo de venta $240, merch regalado $120 y efectivo $700, con la balanza cuadrada.
+2. Anular la venta → 10 piezas, efectivo $0, balanza cuadrada.
+
+### Lo que NO está hecho o quedó distinto
+
+1. **No está publicada** ni probada en un celular real.
+2. **Los productos no tienen foto**, solo emoji. El plan pedía foto; requiere almacenamiento y compresión de imágenes, que llegan con la foto de tickets (Fase 4).
+3. **Una sola variante por movimiento** en Entró merch, Regalé, Se dañó y Conté (la base ya acepta varias líneas por compra).
+4. **Canal "Tienda web"** existe en la base pero no se muestra (PRD: futuro).
+5. **Las alertas de stock** se ven en la mesa de merch y en el catálogo; el tablero de alertas del contador llega en la Fase 5 y las notificaciones en la Fase 6.
+
+### Cómo probarlo en la compu
+
+1. `git checkout fase-2`, `pnpm db:start`, `pnpm db:reset`, crea tu contador y entra con `pnpm dev`.
+2. Más → Modo contador → **Productos y precios** → Nuevo producto (ej. Playera Logo, variantes S/M/L a 350).
+3. **Merch** → 📦 Entró merch → la playera M → 10 piezas → $120 cada una → Cuenta de la banda.
+4. Toca la playera, elige M, y **Cobrar**. En el cobro prueba +/−, 🎁 Regalo, Transferencia y quién cobró.
+5. Modo avión (F12 → Network → Offline): vende; el stock baja y en Inicio dice "Sin señal · 1 guardado". Quita el modo avión.
+6. Movimientos → toca la venta → Anular: el stock regresa.
+7. Más → Productos y precios: revisa existencias, costo promedio e inventario valuado. Balanza: debe cuadrar.
+
+---
+
+## Fase 1 — Núcleo contable + captura básica · aprobada el 2026-11-10
 
 Está en `main` y en la base de desarrollo de la nube. Falta comprobarla en un celular con la app instalada (el sitio de Netlify sigue protegido).
 

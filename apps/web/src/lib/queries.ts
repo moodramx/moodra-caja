@@ -142,6 +142,43 @@ export function useProjectResult(projectId: string | null) {
   })
 }
 
+/** Catálogo de merch con existencias (sirve offline desde la caché). */
+export function useInventory() {
+  return useQuery({
+    queryKey: ['inventory'],
+    queryFn: () =>
+      unwrap(
+        supabase
+          .from('v_inventory')
+          .select('*')
+          .order('product_sort')
+          .order('product_name')
+          .order('variant_sort'),
+      ),
+  })
+}
+
+/** Ventas de merch de hoy (hora de México), todas las giras juntas. */
+export function useMerchToday() {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(
+    new Date(),
+  )
+  return useQuery({
+    queryKey: ['merch-today', day],
+    queryFn: async () => {
+      const rows = await unwrap(supabase.from('v_merch_daily').select('*').eq('day', day))
+      return rows.reduce(
+        (sum, row) => ({
+          pieces: sum.pieces + (row.pieces ?? 0),
+          revenue: sum.revenue + (row.revenue_cents ?? 0),
+          cost: sum.cost + (row.cost_cents ?? 0),
+        }),
+        { pieces: 0, revenue: 0, cost: 0 },
+      )
+    },
+  })
+}
+
 export function useJournal(limit = 100) {
   return useQuery({
     queryKey: ['journal', limit],
@@ -181,6 +218,7 @@ export function useRealtimeRefresh(enabled: boolean) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, refresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, refresh)
       .subscribe()
     return () => {
       clearTimeout(timer)

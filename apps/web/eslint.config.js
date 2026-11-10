@@ -31,6 +31,7 @@ export default tseslint.config(
       'src/features/feed/Feed.tsx',
       'src/features/captura/parts.tsx',
       'src/features/proyectos/Proyectos.tsx',
+      'src/features/merch/MerchPage.tsx',
       'src/main.tsx',
     ],
     rules: { 'react-refresh/only-export-components': 'off' },

@@ -1,10 +1,13 @@
 import type {
+  CompraPayload,
   EntregaPayload,
   GastoPayload,
   IngresoPayload,
   PuseDineroPayload,
   RegresoPayload,
+  VentaPayload,
 } from '../events'
+import { cartTotals } from '../merch'
 import type { OutboxOp } from './db'
 
 export interface PendingEffects {
@@ -29,7 +32,7 @@ export function pendingEffects(
   for (const op of ops) {
     if (op.kind !== 'submit' || op.state !== 'pending' || op.user_id !== userId || !op.payload)
       continue
-    const amount = BigInt(op.payload.amount_cents)
+    const amount = 'amount_cents' in op.payload ? BigInt(op.payload.amount_cents) : 0n
 
     switch (op.type) {
       case 'gasto': {
@@ -68,6 +71,24 @@ export function pendingEffects(
         ) {
           cash -= amount
         }
+        break
+      }
+      case 'venta_merch': {
+        // El efectivo de la venta queda en manos de quien cobró.
+        const p = op.payload as VentaPayload
+        if (p.payment_method === 'efectivo' && (p.collected_by ?? userId) === userId) {
+          cash += cartTotals(p.lines).total
+        }
+        break
+      }
+      case 'compra_merch': {
+        const p = op.payload as CompraPayload
+        const total = p.lines.reduce(
+          (sum, l) => sum + BigInt(l.unit_cost_cents) * BigInt(l.qty),
+          0n,
+        )
+        if (p.paid_with === 'efectivo_banda') cash -= total
+        if (p.paid_with === 'mi_dinero' && p.settlement_pref !== 'aportacion') owed += total
         break
       }
     }
