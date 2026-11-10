@@ -54,14 +54,15 @@ test.describe('integrante', () => {
     expect(background).toBe('rgb(255, 255, 255)')
   })
 
-  test('navega por las cinco secciones', async ({ page }) => {
+  test('navega por las seis secciones', async ({ page }) => {
     await page.goto('/')
     const nav = page.getByRole('navigation', { name: 'Secciones' })
     for (const [label, heading] of [
       ['Movimientos', /02 — Movimientos/],
       ['Merch', /03 — Merch/],
-      ['Reportes', /04 — Reportes/],
-      ['Más', /05 — Más/],
+      ['Transporte', /04 — Transporte/],
+      ['Reportes', /05 — Reportes/],
+      ['Más', /06 — Más/],
       ['Inicio', /01 — Inicio/],
     ] as const) {
       await nav.getByRole('link', { name: label }).click()
@@ -69,10 +70,21 @@ test.describe('integrante', () => {
     }
   })
 
+  test('las seis pestañas caben sin encimarse en un celular angosto', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 })
+    await page.goto('/')
+    const links = page.getByRole('navigation', { name: 'Secciones' }).getByRole('link')
+    await expect(links).toHaveCount(6)
+    for (const link of await links.all()) {
+      const fits = await link.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)
+      expect(fits, await link.innerText()).toBe(true)
+    }
+  })
+
   test('los targets de navegación miden al menos 48 px', async ({ page }) => {
     await page.goto('/')
     const links = page.getByRole('navigation', { name: 'Secciones' }).getByRole('link')
-    await expect(links).toHaveCount(5)
+    await expect(links).toHaveCount(6)
     for (const link of await links.all()) {
       const box = await link.boundingBox()
       expect(box!.height).toBeGreaterThanOrEqual(48)
@@ -89,7 +101,7 @@ test.describe('integrante', () => {
       /última versión|versión nueva/,
     )
     await expect(page.getByText(/versión del \d/)).toBeVisible()
-    for (const path of ['/', '/movimientos', '/merch', '/reportes', '/mas']) {
+    for (const path of ['/', '/movimientos', '/merch', '/transporte', '/reportes', '/mas']) {
       await page.goto(path)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       const text = (await page.locator('body').innerText()).toLowerCase()

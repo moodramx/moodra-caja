@@ -62,7 +62,18 @@ const errorText = (error: unknown) =>
 
 function useRates(): Rates | null {
   const settings = useSettings()
-  return settings.data ?? null
+  const data = settings.data
+  // La configuración guardada en el celular puede ser de una versión anterior,
+  // sin tarifas: se espera a la nueva en vez de hacer cuentas con datos a medias.
+  if (
+    !data ||
+    typeof data.fuel_magna_cents !== 'number' ||
+    typeof data.fuel_premium_cents !== 'number' ||
+    typeof data.fuel_diesel_cents !== 'number' ||
+    typeof data.wear_cents_per_km !== 'number'
+  )
+    return null
+  return data
 }
 
 export function TransportePage() {
@@ -76,7 +87,7 @@ export function TransportePage() {
   const cars = (vehicles.data ?? []).filter((v) => v.active)
 
   return (
-    <Page number="T1" title="Transporte">
+    <Page number="04" title="Transporte">
       <Balances nameOf={nameOf} />
 
       <Button
@@ -524,12 +535,22 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
       const { data, error } = await supabase.functions.invoke('route-estimate', {
         body: { origin: origin.address, destination: dest.address },
       })
-      const result = (data ?? {}) as {
+      // Cuando la función responde con error, el motivo viene en el cuerpo de la respuesta.
+      let failure: unknown = null
+      if (error) {
+        try {
+          failure = await (error as { context?: Response }).context?.json()
+        } catch {
+          failure = null
+        }
+      }
+      const result = (data ?? failure ?? {}) as {
         configured?: boolean
         distance_m?: number
         duration_s?: number | null
         static_duration_s?: number | null
         has_tolls?: boolean
+        tolls_unavailable?: string | null
         toll_cents?: number | null
         error?: string
       }
@@ -556,9 +577,11 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
           `Ruta de Google: ${metersToKm(result.distance_m)} km por sentido${minutes}.` +
             (toll > 0
               ? ` Casetas estimadas: ${formatMXN(BigInt(toll))}${first ? ' (puestas en el primer auto; corrígelas con lo que cobró el tag).' : '.'}`
-              : result.has_tolls
-                ? ' Hay casetas pero Google no sabe el precio: ponlas a mano.'
-                : ' Sin casetas.'),
+              : result.tolls_unavailable
+                ? ` Google no dejó consultar casetas (${result.tolls_unavailable}): ponlas a mano.`
+                : result.has_tolls
+                  ? ' Hay casetas pero Google no sabe el precio: ponlas a mano.'
+                  : ' Sin casetas.'),
         )
       }
     } catch {

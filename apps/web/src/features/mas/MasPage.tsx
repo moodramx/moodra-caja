@@ -50,7 +50,7 @@ export function MasPage() {
   const { contadorMode, canUseContadorMode, setContadorMode } = useMode()
 
   return (
-    <Page number="05" title="Más">
+    <Page number="06" title="Más">
       <Card>
         <div className="flex items-center gap-3">
           <span
@@ -104,12 +104,6 @@ export function MasPage() {
         </Link>
         <Link to="/shows" className={rowClass}>
           <span className="font-semibold">🎸 Shows</span>
-          <span aria-hidden="true" className="text-ink-muted">
-            ›
-          </span>
-        </Link>
-        <Link to="/transporte" className={rowClass}>
-          <span className="font-semibold">🚗 Transporte</span>
           <span aria-hidden="true" className="text-ink-muted">
             ›
           </span>

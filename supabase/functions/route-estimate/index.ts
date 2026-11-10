@@ -29,6 +29,23 @@ const seconds = (value: unknown) => {
   return Number.isFinite(n) ? n : null
 }
 
+/** Motivo que da Google al rechazar una consulta (nunca incluye la llave). */
+async function googleError(response: Response): Promise<string> {
+  const text = await response.text()
+  try {
+    const body = JSON.parse(text) as {
+      error?: { message?: string; status?: string; details?: { reason?: string }[] }
+    }
+    const reason = body.error?.details?.find((d) => d.reason)?.reason
+    return [body.error?.status, reason, body.error?.message]
+      .filter(Boolean)
+      .join(' · ')
+      .slice(0, 400)
+  } catch {
+    return text.slice(0, 300)
+  }
+}
+
 interface Money {
   currencyCode?: string
   units?: string
@@ -70,34 +87,54 @@ Deno.serve(async (req) => {
   const parsed = Body.safeParse(raw)
   if (!parsed.success) return json(400, { error: 'Faltan las direcciones' })
 
-  const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Goog-Api-Key': key,
-      'X-Goog-FieldMask':
-        'routes.distanceMeters,routes.duration,routes.staticDuration,routes.travelAdvisory.tollInfo',
-    },
-    body: JSON.stringify({
-      origin: { address: parsed.data.origin },
-      destination: { address: parsed.data.destination },
-      travelMode: 'DRIVE',
-      routingPreference: 'TRAFFIC_AWARE',
-      extraComputations: ['TOLLS'],
-      routeModifiers: {
-        vehicleInfo: { emissionType: 'GASOLINE' },
-        tollPasses: ['MX_TAG_IAVE', 'MX_PASE', 'MX_TAG_TELEVIA'],
+  const ask = (withTolls: boolean) =>
+    fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask':
+          'routes.distanceMeters,routes.duration,routes.staticDuration' +
+          (withTolls ? ',routes.travelAdvisory.tollInfo' : ''),
       },
-      regionCode: 'mx',
-      languageCode: 'es-419',
-      units: 'METRIC',
-    }),
-  })
+      body: JSON.stringify({
+        origin: { address: parsed.data.origin },
+        destination: { address: parsed.data.destination },
+        travelMode: 'DRIVE',
+        routingPreference: 'TRAFFIC_AWARE',
+        ...(withTolls
+          ? {
+              extraComputations: ['TOLLS'],
+              routeModifiers: {
+                vehicleInfo: { emissionType: 'GASOLINE' },
+                tollPasses: ['MX_TAG_IAVE', 'MX_PASE', 'MX_TAG_TELEVIA'],
+              },
+            }
+          : {}),
+        regionCode: 'mx',
+        languageCode: 'es-419',
+        units: 'METRIC',
+      }),
+    })
 
+  // Primero con casetas; si Google la rechaza, se reintenta sin casetas para
+  // al menos traer distancia y tráfico, y se avisa por qué.
+  let tollsAsked = true
+  let response = await ask(true)
+  let firstError = ''
   if (!response.ok) {
-    const detail = await response.text()
-    console.error('Routes API', response.status, detail.slice(0, 500))
-    return json(502, { configured: true, error: 'Google no pudo calcular la ruta' })
+    firstError = await googleError(response)
+    console.error('Routes API (con casetas)', response.status, firstError)
+    tollsAsked = false
+    response = await ask(false)
+  }
+  if (!response.ok) {
+    const reason = await googleError(response)
+    console.error('Routes API (sin casetas)', response.status, reason)
+    return json(502, {
+      configured: true,
+      error: `Google rechazó la consulta (${response.status}): ${reason}`,
+    })
   }
   const data = (await response.json()) as {
     routes?: {
@@ -129,5 +166,7 @@ Deno.serve(async (req) => {
     // Hay casetas en la ruta, pero Google no siempre sabe el precio.
     has_tolls: Boolean(tollInfo),
     toll_cents: tollCents,
+    // Si Google no dejó consultar casetas, se dice por qué.
+    tolls_unavailable: tollsAsked ? null : firstError,
   })
 })

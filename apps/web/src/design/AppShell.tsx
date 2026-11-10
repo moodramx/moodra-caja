@@ -13,6 +13,11 @@ const NAV = [
     label: 'Merch',
     icon: 'M8 4 3 7l2 4 2-1v10h10V10l2 1 2-4-5-3a4 4 0 0 1-8 0z',
   },
+  {
+    to: '/transporte',
+    label: 'Transporte',
+    icon: 'M4 16v-3l2-5h12l2 5v3M4 16h16M7 16v2.5M17 16v2.5M7.5 13h.01M16.5 13h.01',
+  },
   { to: '/reportes', label: 'Reportes', icon: 'M5 20V10m7 10V4m7 16v-7' },
   { to: '/mas', label: 'Más', icon: 'M5 12h.01M12 12h.01M19 12h.01' },
 ] as const
@@ -38,13 +43,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label="Secciones"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 pb-safe backdrop-blur"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-5">
+        <ul className="mx-auto grid max-w-md grid-cols-6">
           {NAV.map((item) => (
             <li key={item.to}>
               <Link
                 to={item.to}
                 activeOptions={{ exact: item.to === '/' }}
-                className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs text-ink-muted aria-[current=page]:font-semibold aria-[current=page]:text-ink"
+                className="flex min-h-16 flex-col items-center justify-center gap-1 text-[0.6875rem] tracking-tight text-ink-muted aria-[current=page]:font-semibold aria-[current=page]:text-ink"
               >
                 <svg
                   aria-hidden="true"

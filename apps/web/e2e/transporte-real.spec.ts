@@ -43,8 +43,7 @@ async function openAs(browser: Browser, user: typeof conta): Promise<Page> {
 const nav = (page: Page, name: string) =>
   page.getByRole('navigation', { name: 'Secciones' }).getByRole('link', { name }).click()
 const transporte = async (page: Page) => {
-  await nav(page, 'Más')
-  await page.getByRole('link', { name: /Transporte/ }).click()
+  await nav(page, 'Transporte')
   await expect(page.getByText('Cuentas de transporte')).toBeVisible()
 }
 const sheet = (page: Page) => page.getByRole('dialog')

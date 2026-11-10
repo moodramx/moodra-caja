@@ -99,7 +99,7 @@ export function ReportesPage() {
   const data = useReportData(period)
 
   return (
-    <Page number="04" title="Reportes">
+    <Page number="05" title="Reportes">
       {!contadorMode && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Vista">
           <Chip selected={!full} onClick={() => setFull(false)}>
