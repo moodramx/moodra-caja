@@ -1,6 +1,6 @@
 # PROGRESO — Moodra $$
 
-## Fase 0 — Cimientos · 2026-11-09 · **incompleta: falta verificar el backend y desplegar**
+## Fase 0 — Cimientos · 2026-11-10 · **lista en local; falta GitHub, Netlify y los tokens de moodra.mx**
 
 ### Hecho y verificado en esta compu
 
@@ -8,58 +8,68 @@
 - PWA: manifest, íconos, service worker y guía de instalación para iOS y Android.
 - Design system: tokens provisionales, botón, chip, hoja inferior, avisos con "Deshacer" (10 s), teclado de monto y layout móvil con navegación inferior.
 - Rutas: Inicio, Movimientos, Merch, Reportes, Más, Modo contador → Usuarios, y `/componentes`.
-- Login con usuario + contraseña (username → `username@caja.moodra.mx`).
-- Pruebas en verde: **Vitest 23/23**, **Playwright 11/11** (390×844, con sesión simulada), lint y typecheck limpios.
+- Supabase local (Docker): migraciones aplicadas con `profiles`, `app_settings`, `audit_log` y RLS.
+- Login real con usuario + contraseña (username → `username@caja.moodra.mx`).
+- Edge Function `admin-users`: el contador crea, desactiva, reactiva y cambia contraseñas; un integrante recibe 403 aunque llame a la función directo.
+- Tipos de la base generados con `supabase gen types`.
 
-### Escrito pero SIN ejecutar (falta Docker)
+### Pruebas (todas en verde)
 
-- Migración `supabase/migrations/20261109000000_cimientos.sql`: enum `user_role`, `profiles`, `app_settings`, `audit_log`, RLS y trigger de alta.
-- Pruebas pgTAP `supabase/tests/000_cimientos.test.sql` (27 casos).
-- Edge Function `supabase/functions/admin-users` (crear, desactivar/reactivar, cambiar contraseña, editar).
-- `scripts/crear-contador.mjs` para el primer contador.
-- CI `.github/workflows/ci.yml` (no ha corrido: aún no hay repo en GitHub).
+| Suite                                 | Resultado |
+| ------------------------------------- | --------- |
+| pgTAP                                 | 26/26     |
+| Vitest                                | 23/23     |
+| Playwright con sesión simulada        | 11/11     |
+| Playwright real contra Supabase local | 3/3       |
+| Lint, typecheck, Prettier             | limpios   |
 
-Nada de esto se ha probado contra una base real. Puede necesitar ajustes al correrlo.
+JS de la ruta de inicio: ~153 KB gzip el archivo principal (límite del PRD: 200 KB en total).
 
-### Pendiente para cerrar la fase
+### Lo que NO está hecho
 
-1. **Docker Desktop** (Diego) → correr Supabase local, pgTAP, generar tipos y probar el login real y el alta de los 5 usuarios.
-2. **Repo o ruta de moodra.mx** (Diego) → tokens de diseño definitivos.
-3. **GitHub + Netlify** (Diego crea las cuentas y el repo) → CI y deploy de preview.
-4. **Proyecto Supabase en la nube** (Diego) → necesario para probar en el celular fuera de casa y para el preview de Netlify.
+1. **CI en GitHub Actions**: el workflow está escrito pero nunca ha corrido; no hay repo en GitHub.
+2. **Deploy de preview en Netlify**: `netlify.toml` está listo, sin cuenta ni sitio.
+3. **Instalar la PWA en iPhone y Android**: requiere HTTPS, o sea el deploy. No se ha probado en ningún celular.
+4. **Tokens de diseño de moodra.mx**: siguen los provisionales.
+5. **Los 5 usuarios reales**: solo se probó con usuarios de prueba locales.
 
-### Cómo probar hoy en tu celular (solo interfaz, sin entrar)
+### Qué necesito de Diego
 
-Compu y celular en el mismo wifi:
+1. Cuenta y repo en **GitHub** (privado) → subo el código y corre el CI.
+2. Cuenta en **Netlify** conectada a ese repo → deploy de preview.
+3. Un proyecto en **Supabase en la nube** (desarrollo) → para que el preview y tu celular tengan backend.
+4. La **ruta o repo de la web moodra.mx** → tokens definitivos.
 
-1. En `C:\dev\moodra-caja`: `pnpm build` y luego `pnpm preview`.
-2. La terminal muestra una dirección "Network", tipo `http://192.168.x.x:4173`. Ábrela en el celular.
-3. Verás el login con la identidad de Moodra y la guía de instalación. **No podrás entrar**: todavía no hay backend.
-4. Instalar como app y el modo sin señal requieren HTTPS, o sea el deploy de Netlify. En esa dirección local no funcionan.
+### Cómo probarlo hoy en la compu
 
-### Cómo probar completo cuando tengas Docker
-
-1. Abre Docker Desktop y espera a que diga "running".
-2. `pnpm db:start` (la primera vez tarda varios minutos).
-3. `pnpm db:test` → deben pasar los 27 casos de pgTAP.
-4. `pnpm exec supabase status` → copia la URL y la llave pública a `apps/web/.env.local` (plantilla en `apps/web/.env.example`).
-5. Crea tu usuario contador (PowerShell):
+1. Abre Docker Desktop y espera a que diga "Engine running".
+2. En `C:\dev\moodra-caja`: `pnpm db:start` (ya no descarga nada; tarda ~1 minuto).
+3. Crea tu usuario contador (PowerShell). La llave sale de `pnpm exec supabase status -o env`, renglón `SERVICE_ROLE_KEY`:
    - `$env:SUPABASE_URL="http://127.0.0.1:54321"`
-   - `$env:SUPABASE_SERVICE_ROLE_KEY="<llave secreta de supabase status>"`
-   - `$env:CONTADOR_PASSWORD="<tu contraseña>"`
+   - `$env:SUPABASE_SERVICE_ROLE_KEY="<SERVICE_ROLE_KEY>"`
+   - `$env:CONTADOR_PASSWORD="<tu contraseña, 8+ caracteres>"`
    - `pnpm crear-contador`
-6. En otra terminal: `pnpm functions:serve`.
-7. `pnpm dev` → abre `http://localhost:5173`, entra como `diego`.
-8. Más → enciende **Modo contador** → **Usuarios** → crea a Pepe, Ram, Uli y al becario (a este último quítale "Participa en repartos").
-9. Cierra sesión y entra con uno de ellos: no debe ver el Modo contador.
+4. `pnpm dev` → abre `http://localhost:5173` y entra como `diego`.
+5. Más → enciende **Modo contador** → **Usuarios** → crea a Pepe, Ram, Uli y al becario (a este quítale "Participa en repartos").
+6. Cierra sesión y entra con uno de ellos: no debe ver el Modo contador.
+7. Más → **Probar componentes**: teclado de monto, hoja inferior y aviso con "Deshacer".
+
+`apps/web/.env.local` ya apunta al Supabase local. Para apagar todo: `pnpm db:stop`.
+
+### En el celular
+
+Todavía no se puede probar de verdad. Con `pnpm build` y `pnpm preview` puedes abrir la dirección "Network" desde el celular en el mismo wifi y ver el login, pero no entrar (el backend local solo escucha en la compu) ni instalarla (falta HTTPS). Eso llega con Netlify + Supabase en la nube.
 
 ### Comandos
 
-| Qué               | Comando                        |
-| ----------------- | ------------------------------ |
-| App en desarrollo | `pnpm dev`                     |
-| Lint / tipos      | `pnpm lint` · `pnpm typecheck` |
-| Vitest            | `pnpm test`                    |
-| Playwright        | `pnpm test:e2e`                |
-| pgTAP             | `pnpm db:test`                 |
-| Tipos de la BD    | `pnpm db:types`                |
+| Qué                     | Comando                            |
+| ----------------------- | ---------------------------------- |
+| App en desarrollo       | `pnpm dev`                         |
+| Supabase local          | `pnpm db:start` · `pnpm db:stop`   |
+| Lint / tipos            | `pnpm lint` · `pnpm typecheck`     |
+| Vitest                  | `pnpm test`                        |
+| Playwright (simulado)   | `pnpm test:e2e`                    |
+| Playwright + login real | `$env:E2E_REAL='1'; pnpm test:e2e` |
+| pgTAP                   | `pnpm db:test`                     |
+| Tipos de la BD          | `pnpm db:types`                    |
+| Borrar datos locales    | `pnpm db:reset`                    |

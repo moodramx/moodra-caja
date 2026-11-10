@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import type { Profile } from './database.types'
+import type { Profile } from './types'
 import { usernameToEmail } from './username'
 
 const PROFILE_CACHE_KEY = 'moodra-caja-profile'

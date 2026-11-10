@@ -110,14 +110,13 @@ Deno.serve(async (req) => {
   // 3. Ejecutar.
   switch (body.action) {
     case 'create': {
-      const { password: pw, action: _action, ...meta } = body
-      // El trigger on_auth_user_created crea el perfil desde app_metadata,
-      // en la misma transacción que el usuario.
+      const { password: pw, action: _action, username: newUsername, ...details } = body
+      // El trigger on_auth_user_created crea el perfil (como integrante, el
+      // menor privilegio) en la misma transacción que el usuario.
       const { data, error } = await admin.auth.admin.createUser({
-        email: `${body.username}@${EMAIL_DOMAIN}`,
+        email: `${newUsername}@${EMAIL_DOMAIN}`,
         password: pw,
         email_confirm: true,
-        app_metadata: { ...meta, created_by: callerProfile.id },
       })
       if (error || !data.user) {
         const duplicate = /already|registered|duplicate|exists/i.test(error?.message ?? '')
@@ -125,7 +124,19 @@ Deno.serve(async (req) => {
           error: duplicate ? 'Ese usuario ya existe' : (error?.message ?? 'No se pudo crear'),
         })
       }
-      await audit('user.create', data.user.id, meta)
+      // Después se completan nombre, rol, emoji, etc.
+      const { error: profileError } = await admin
+        .from('profiles')
+        .update({ ...details, created_by: callerProfile.id })
+        .eq('id', data.user.id)
+      if (profileError) {
+        await audit('user.create_incompleto', data.user.id, { error: profileError.message })
+        return json(500, {
+          error:
+            'El usuario se creó, pero no se guardaron sus datos. Avísale a quien mantiene la app.',
+        })
+      }
+      await audit('user.create', data.user.id, { username: newUsername, ...details })
       return json(200, { user_id: data.user.id })
     }
 

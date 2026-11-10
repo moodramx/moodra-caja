@@ -1,5 +1,5 @@
 begin;
-select plan(27);
+select plan(26);
 
 -- ---------------------------------------------------------------------------
 -- Estructura
@@ -27,37 +27,39 @@ select matches(public.uuid_v7()::text, '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[8
 select ok(public.uuid_v7() < (select public.uuid_v7() from pg_sleep(0.002)), 'uuid_v7 es ordenable por tiempo');
 
 -- ---------------------------------------------------------------------------
--- Alta de usuarios: el trigger crea el perfil desde app_metadata
+-- Alta de usuarios: el trigger crea el perfil a partir del email interno,
+-- con los valores de menor privilegio. admin-users completa el resto.
 -- ---------------------------------------------------------------------------
-insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data)
+insert into auth.users (id, instance_id, aud, role, email)
 values
   ('00000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated',
-   'authenticated', 'diego@caja.moodra.mx',
-   '{"username":"diego","display_name":"Diego","role":"contador","emoji":"🥁"}', '{}'),
+   'authenticated', 'pgtap-diego@caja.moodra.mx'),
   ('00000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated',
-   'authenticated', 'pepe@caja.moodra.mx',
-   '{"username":"pepe","display_name":"Pepe","created_by":"00000000-0000-4000-8000-000000000001"}', '{}'),
+   'authenticated', 'pgtap-pepe@caja.moodra.mx'),
   ('00000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated',
-   'authenticated', 'becario@caja.moodra.mx',
-   '{"username":"becario","display_name":"Becario","participa_reparto":false}', '{}');
+   'authenticated', 'pgtap-becario@caja.moodra.mx');
 
-select is((select count(*)::int from public.profiles), 3, 'el trigger crea un perfil por usuario');
-select is((select role::text from public.profiles where username = 'diego'), 'contador', 'rol tomado de app_metadata');
-select is((select role::text from public.profiles where username = 'pepe'), 'integrante', 'rol default integrante');
-select is((select participa_reparto from public.profiles where username = 'becario'), false,
-  'el becario no participa en reparto');
+select is((select count(*)::int from public.profiles where username like 'pgtap-%'), 3, 'el trigger crea un perfil por usuario');
+select is((select username from public.profiles where id = '00000000-0000-4000-8000-000000000002'),
+  'pgtap-pepe', 'el username sale del email interno');
+select is((select count(*)::int from public.profiles where username like 'pgtap-%' and role = 'integrante'), 3,
+  'todo perfil nace como integrante (menor privilegio)');
+
+-- Lo que hace admin-users con service role después del alta.
+update public.profiles set role = 'contador', display_name = 'Diego' where username = 'pgtap-diego';
+update public.profiles set participa_reparto = false where username = 'pgtap-becario';
 
 select throws_ok(
-  $$insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data)
+  $$insert into auth.users (id, instance_id, aud, role, email)
     values ('00000000-0000-4000-8000-000000000009', '00000000-0000-0000-0000-000000000000',
-            'authenticated', 'authenticated', 'x@caja.moodra.mx', '{}')$$,
-  'P0001', null, 'no se puede crear un usuario sin username en app_metadata'
+            'authenticated', 'authenticated', 'alguien@gmail.com')$$,
+  'P0001', null, 'no se puede crear un usuario con email fuera del dominio interno'
 );
 
 select throws_ok(
-  $$insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data)
+  $$insert into auth.users (id, instance_id, aud, role, email)
     values ('00000000-0000-4000-8000-000000000008', '00000000-0000-0000-0000-000000000000',
-            'authenticated', 'authenticated', 'y@caja.moodra.mx', '{"username":"Pepe Grillo"}')$$,
+            'authenticated', 'authenticated', 'Pepe Grillo@caja.moodra.mx')$$,
   '23514', null, 'username inválido es rechazado'
 );
 
@@ -67,7 +69,7 @@ select throws_ok(
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}';
 
-select is((select count(*)::int from public.profiles), 3, 'integrante ve todos los perfiles');
+select is((select count(*)::int from public.profiles where username like 'pgtap-%'), 3, 'integrante ve todos los perfiles');
 select is(public.is_contador(), false, 'pepe no es contador');
 
 select throws_ok(
@@ -76,7 +78,7 @@ select throws_ok(
   '42501', null, 'integrante no puede insertar perfiles'
 );
 select throws_ok(
-  $$update public.profiles set role = 'contador' where username = 'pepe'$$,
+  $$update public.profiles set role = 'contador' where username = 'pgtap-pepe'$$,
   '42501', null, 'integrante no puede ascenderse a contador'
 );
 select throws_ok(

@@ -9,8 +9,8 @@ import { Chip } from '../../design/Chip'
 import { Card, Page } from '../../design/Page'
 import { useToast } from '../../design/Toast'
 import { useAuth } from '../../lib/auth'
-import type { Profile, UserRole } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
+import type { Profile, UserRole } from '../../lib/types'
 import { isValidUsername, normalizeUsername } from '../../lib/username'
 
 const inputClass =
