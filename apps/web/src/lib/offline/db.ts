@@ -29,9 +29,16 @@ export interface KV {
   value: string
 }
 
+/** Foto guardada para verse sin señal. */
+export interface Photo {
+  path: string
+  blob: Blob
+}
+
 export class MoodraDB extends Dexie {
   outbox!: Table<OutboxOp, string>
   kv!: Table<KV, string>
+  photos!: Table<Photo, string>
 
   constructor(name = 'moodra-caja') {
     super(name)
@@ -39,6 +46,7 @@ export class MoodraDB extends Dexie {
       outbox: 'client_id, created_at, state, user_id',
       kv: 'key',
     })
+    this.version(2).stores({ photos: 'path' })
   }
 }
 

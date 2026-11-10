@@ -67,7 +67,10 @@ export interface VentaPayload {
 
 export interface CompraPayload {
   lines: { variant_id: string; qty: number; unit_cost_cents: number }[]
-  paid_with: PaidWith
+  /** Con qué se pagó. No aplica al saldo inicial. */
+  paid_with?: PaidWith
+  /** Saldo inicial: lo que la banda ya tenía antes de usar la app (solo contador). */
+  opening?: boolean
   settlement_pref?: SettlementPref
   description?: string
   project_id?: string | null

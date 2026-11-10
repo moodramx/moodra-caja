@@ -214,6 +214,40 @@ select pg_temp.ev('venta_merch', jsonb_build_object(
 select is(pg_temp.stock('S'), '0/0/3333', 'al vender la última pieza el valor queda exactamente en cero');
 
 -- ---------------------------------------------------------------------------
+-- G2. Saldo inicial, kardex y foto
+-- ---------------------------------------------------------------------------
+select pg_temp.act('pepe');
+select throws_ok($$ select pg_temp.ev('compra_merch', jsonb_build_object('opening', true,
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', pg_temp.id('S'), 'qty', 1, 'unit_cost_cents', 100)))) $$,
+  '42501', null, 'un integrante no registra saldo inicial');
+select throws_ok($$ select pg_temp.ev('compra_merch', jsonb_build_object(
+    'lines', jsonb_build_array(jsonb_build_object('variant_id', pg_temp.id('S'), 'qty', 1, 'unit_cost_cents', 100)))) $$,
+  'P0001', null, 'una compra exige decir con qué se pagó');
+select lives_ok($$ select public.set_product_photo(pg_temp.id('sticker'), pg_temp.id('sticker')::text || '/foto.webp') $$,
+  'cualquier integrante le pone foto a un producto');
+select is((select photo_path from public.v_inventory where variant_id = pg_temp.id('S')),
+  pg_temp.id('sticker')::text || '/foto.webp', 'la foto aparece en el inventario');
+select throws_ok($$ select public.set_product_photo(pg_temp.id('sticker'), 'otra-carpeta/foto.webp') $$,
+  'P0001', null, 'la foto debe estar en la carpeta de su producto');
+
+select pg_temp.act('diego');
+insert into ids select 'ini', pg_temp.ev('compra_merch', jsonb_build_object('opening', true,
+  'lines', jsonb_build_array(jsonb_build_object('variant_id', pg_temp.id('S'), 'qty', 20, 'unit_cost_cents', 800))));
+select is(pg_temp.asiento(pg_temp.id('ini')), '1.4.03 D16000 | 3.3 C16000',
+  'saldo inicial: entra al inventario contra el fondo acumulado, sin salida de dinero');
+select is(pg_temp.stock('S'), '20/16000/800', '20 piezas a $8');
+select is((select description from public.journal_entries
+           where id = (select journal_entry_id from public.events where id = pg_temp.id('ini'))),
+  'Saldo inicial de merch (20 pzas)', 'el asiento dice que es saldo inicial');
+select is((select kind::text || '/' || qty || '/' || unit_cost_cents || '/' || cost_cents || '/' || is_opening
+           from public.v_kardex where event_id = pg_temp.id('ini')),
+  'compra/20/800/16000/true', 'el kardex muestra piezas, costo unitario, costo total y que fue saldo inicial');
+select is((select string_agg(kind::text || ':' || qty || ':' || cost_cents, ' ' order by movement_id)
+           from public.v_kardex where variant_id = pg_temp.id('S')),
+  'compra:3:9999 venta:-2:-6666 venta:-1:-3333 compra:20:16000',
+  'el kardex lista cada movimiento con su costo');
+
+-- ---------------------------------------------------------------------------
 -- H. Validaciones
 -- ---------------------------------------------------------------------------
 select throws_ok($$ select pg_temp.ev('venta_merch', '{"lines":[]}'::jsonb) $$, 'P0001', null,

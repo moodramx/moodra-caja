@@ -15,15 +15,24 @@ Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celu
 - **Alertas**: "Quedan N", "Agotado" y "Faltan N". El stock puede quedar negativo; nunca bloquea una venta y deja aviso en la bitácora.
 - **Anular una venta** repone el inventario a su costo original.
 
+### Ajustes posteriores (2026-11-10)
+
+- **Editar producto**: casillas rotuladas; las existencias se corrigen con un conteo desde la variante.
+- **Entró merch**: compra nueva o saldo inicial, con la cuenta completa antes de guardar.
+- **Movimientos por variante**: dónde se revisa el costo, renglón por renglón.
+- **Calculadora de cambio** en el cobro en efectivo.
+- **Foto por producto**, que sube cualquier integrante.
+- **Correcciones**: al abrir la app se refresca siempre desde el servidor, y el sync reintenta solo.
+
 ### Pruebas (todas en verde)
 
-| Suite                                                    | Resultado |
-| -------------------------------------------------------- | --------- |
-| pgTAP (203 en total; 60 de merch)                        | 203/203   |
-| Vitest (61 en total; carrito, stock y saldos optimistas) | 61/61     |
-| Playwright con sesión simulada                           | 11/11     |
-| Playwright real contra Supabase local                    | 15/15     |
-| Lint, typecheck, Prettier                                | limpios   |
+| Suite                                              | Resultado |
+| -------------------------------------------------- | --------- |
+| pgTAP (213 en total; 70 de merch)                  | 213/213   |
+| Vitest (69 en total; carrito, stock, costo y sync) | 69/69     |
+| Playwright con sesión simulada                     | 11/11     |
+| Playwright real contra Supabase local              | 19/19     |
+| Lint, typecheck, Prettier                          | limpios   |
 
 Criterios de aceptación del plan, cubiertos por `e2e/fase2-real.spec.ts`:
 
@@ -33,10 +42,9 @@ Criterios de aceptación del plan, cubiertos por `e2e/fase2-real.spec.ts`:
 ### Lo que NO está hecho o quedó distinto
 
 1. **No se ha probado en un celular real.**
-2. **Los productos no tienen foto**, solo emoji. El plan pedía foto; requiere almacenamiento y compresión de imágenes, que llegan con la foto de tickets (Fase 4).
-3. **Una sola variante por movimiento** en Entró merch, Regalé, Se dañó y Conté (la base ya acepta varias líneas por compra).
-4. **Canal "Tienda web"** existe en la base pero no se muestra (PRD: futuro).
-5. **Las alertas de stock** se ven en la mesa de merch y en el catálogo; el tablero de alertas del contador llega en la Fase 5 y las notificaciones en la Fase 6.
+2. **Una sola variante por movimiento** en Entró merch, Regalé, Se dañó y Conté (la base ya acepta varias líneas por compra).
+3. **Canal "Tienda web"** existe en la base pero no se muestra (PRD: futuro).
+4. **Las alertas de stock** se ven en la mesa de merch y en el catálogo; el tablero de alertas del contador llega en la Fase 5 y las notificaciones en la Fase 6.
 
 ### Cómo probarlo en la compu
 

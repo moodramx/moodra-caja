@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import type { SaleLine } from './events'
 import { describeVenta, feedText } from './humanize'
-import { addToCart, cartTotals, pendingStock, setQty, toggleGift } from './merch'
+import {
+  addToCart,
+  cartTotals,
+  changeDue,
+  costOfExit,
+  pendingStock,
+  previewEntry,
+  setQty,
+  suggestedPayments,
+  toggleGift,
+} from './merch'
 import { pendingEffects } from './offline/effects'
 import type { OutboxOp } from './offline/db'
 
@@ -141,5 +151,51 @@ describe('feed de merch', () => {
     expect(
       feedText(row({ type: 'salida_merch', stock_kind: 'merma', pieces: 2 }), nameOf).title,
     ).toBe('Se dieron de baja 2 pzas de merch')
+  })
+})
+
+describe('calculadora de cambio', () => {
+  it('calcula el cambio o lo que falta', () => {
+    expect(changeDue(70000n, 100000n)).toBe(30000n)
+    expect(changeDue(70000n, 70000n)).toBe(0n)
+    expect(changeDue(70000n, 50000n)).toBe(-20000n)
+  })
+
+  it('sugiere el monto exacto y los billetes siguientes', () => {
+    expect(suggestedPayments(70000n)).toEqual([70000n, 80000n, 100000n])
+    expect(suggestedPayments(66000n)).toEqual([66000n, 70000n, 80000n, 100000n])
+    expect(suggestedPayments(3000n)).toEqual([3000n, 5000n, 10000n, 20000n, 50000n])
+    expect(suggestedPayments(0n)).toEqual([])
+  })
+})
+
+describe('costo promedio (mismos números que pgTAP)', () => {
+  const vacio = { stock: 0, valueCents: 0n, avgCostCents: 0n }
+
+  it('dos compras: 10 a $120 y 5 a $150 → promedio $130', () => {
+    const primera = previewEntry(vacio, 10, 12000n)
+    expect(primera).toEqual({ stock: 10, valueCents: 120000n, avgCostCents: 12000n })
+    expect(previewEntry(primera, 5, 15000n)).toEqual({
+      stock: 15,
+      valueCents: 195000n,
+      avgCostCents: 13000n,
+    })
+  })
+
+  it('salidas a costo promedio', () => {
+    const hay = { stock: 15, valueCents: 195000n, avgCostCents: 13000n }
+    expect(costOfExit(hay, 2)).toBe(26000n)
+    expect(costOfExit({ stock: 13, valueCents: 169000n, avgCostCents: 13000n }, 1)).toBe(13000n)
+  })
+
+  it('sin residuos: 3 piezas a $33.33', () => {
+    const hay = previewEntry(vacio, 3, 3333n)
+    expect(costOfExit(hay, 2)).toBe(6666n)
+    expect(costOfExit({ stock: 1, valueCents: 3333n, avgCostCents: 3333n }, 1)).toBe(3333n)
+  })
+
+  it('vender más de lo que hay usa el último costo promedio', () => {
+    expect(costOfExit({ stock: 2, valueCents: 26000n, avgCostCents: 13000n }, 3)).toBe(39000n)
+    expect(costOfExit({ stock: -1, valueCents: 0n, avgCostCents: 0n }, 1)).toBe(0n)
   })
 })

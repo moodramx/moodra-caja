@@ -44,10 +44,23 @@ const nav = (page: Page, name: string) =>
 const sync = (page: Page) => page.getByRole('status', { name: 'Sincronización' })
 const cash = (page: Page) => page.getByTestId('saldo-efectivo')
 // La tarjeta del producto en la mesa de merch (no los botones del cobro).
+/** Lee el resumen "Hoy vendimos": [vendido, piezas, lo que queda] (0 si aún no hay ventas). */
+async function readToday(page: Page): Promise<[number, number, number]> {
+  const card = page.locator('section').filter({ hasText: 'Hoy vendimos' })
+  if ((await card.count()) === 0) return [0, 0, 0]
+  const text = (await card.innerText()).replace(/,/g, '')
+  const amounts = [...text.matchAll(/\$(\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]))
+  return [amounts[0] ?? 0, Number(/(\d+) piezas?/.exec(text)?.[1] ?? 0), amounts[1] ?? 0]
+}
+let todayBefore: [number, number, number] = [0, 0, 0]
+
 const product = (page: Page) => page.locator('main button', { hasText: playera })
 /** Renglón de la variante M en el catálogo del contador: "M $350 $costo existencias". */
-const catalogRow = (page: Page) =>
-  page.locator('section').filter({ hasText: playera }).getByRole('row', { name: /^M / })
+const catalogRow = (page: Page, name = playera) =>
+  page
+    .locator('section')
+    .filter({ hasText: name })
+    .getByRole('button', { name: /^(M|Única) \$/ })
 
 test.beforeAll(async ({ browser, request }) => {
   const supabase = localSupabase()
@@ -104,13 +117,17 @@ test('el contador da de alta una playera y registra que entraron 10 a $120', asy
   await b.getByRole('button', { name: /Entró merch/ }).click()
   const sheet = b.getByRole('dialog')
   await sheet.getByRole('button', { name: new RegExp(playera) }).click()
+  await sheet.getByRole('button', { name: /Es una compra nueva/ }).click()
   await sheet.getByLabel('Cantidad').fill('10')
   await sheet.getByRole('button', { name: 'Continuar' }).click()
   for (const digit of '120') await sheet.getByRole('button', { name: digit, exact: true }).click()
   await sheet.getByRole('button', { name: 'Continuar' }).click()
   await sheet.getByRole('button', { name: /Cuenta de la banda/ }).click()
-  await expect(sheet).toContainText('Entraron 10 piezas')
-  await expect(sheet).toContainText('$1,200 en total')
+  // La cuenta completa antes de guardar.
+  await expect(sheet).toContainText('Entran 10 piezas × $120.00')
+  await expect(sheet).toContainText('10 piezas · $1,200.00')
+  await expect(sheet).toContainText('ahora $120.00')
+  await expect(sheet).toContainText('Compra: 10 piezas por $1,200.00')
   await sheet.getByRole('button', { name: 'Guardar' }).click()
 
   await expect(product(b)).toContainText('10 pzas', { timeout: 15_000 })
@@ -119,6 +136,7 @@ test('el contador da de alta una playera y registra que entraron 10 a $120', asy
 test('vender 3 playeras (una de regalo) sin señal: todo cuadra al centavo', async () => {
   await nav(a, 'Merch')
   await expect(product(a)).toContainText('10 pzas', { timeout: 15_000 })
+  todayBefore = await readToday(a)
 
   await a.context().setOffline(true)
 
@@ -170,10 +188,12 @@ test('vender 3 playeras (una de regalo) sin señal: todo cuadra al centavo', asy
 
 test('el resumen de la noche muestra lo vendido y lo que queda después del costo', async () => {
   await nav(a, 'Merch')
-  const summary = a.locator('section').filter({ hasText: 'Hoy vendimos' })
-  await expect(summary).toContainText('$700')
-  await expect(summary).toContainText('3 piezas')
-  await expect(summary).toContainText('$460') // 700 − 240 de costo
+  // Respecto a antes de la venta: +$700 vendidos, +3 piezas y +$460 después del costo (700 − 240).
+  await expect
+    .poll(async () => (await readToday(a)).map((value, i) => value - todayBefore[i]!), {
+      timeout: 15_000,
+    })
+    .toEqual([700, 3, 460])
 })
 
 test('anular la venta deja todo como estaba', async () => {
@@ -215,4 +235,129 @@ test('stock bajo y venta sin existencias: avisa pero nunca bloquea', async () =>
   await nav(a, 'Inicio')
   await expect(sync(a)).toContainText('Todo al día', { timeout: 15_000 })
   await expect(cash(a)).toHaveText('$1,050')
+})
+
+test('la calculadora de cambio dice cuánto devolver', async () => {
+  await nav(a, 'Merch')
+  await product(a).click()
+  await a.getByRole('button', { name: /1 pza · Cobrar \$350/ }).click()
+  const checkout = a.getByRole('dialog')
+  const change = checkout.getByRole('status', { name: 'Cambio' })
+
+  await checkout.getByLabel('¿Con cuánto te pagan?').fill('500')
+  await expect(change).toContainText('Dale de cambio')
+  await expect(change).toContainText('$150')
+  await checkout.getByRole('button', { name: 'Exacto' }).click()
+  await expect(change).toContainText('Pago exacto')
+  await checkout.getByLabel('¿Con cuánto te pagan?').fill('300')
+  await expect(change).toContainText('Todavía faltan')
+  await expect(change).toContainText('$50')
+
+  // No era una venta: se vacía el carrito.
+  await checkout.getByRole('button', { name: /Quitar una de/ }).click()
+  await checkout.getByRole('button', { name: 'Cerrar' }).click()
+})
+
+test('cualquier integrante le pone foto a un producto', async () => {
+  await nav(a, 'Merch')
+  await a.getByRole('button', { name: /Fotos de productos/ }).click()
+  const sheet = a.getByRole('dialog')
+  // PNG de 2×2 px generado aquí mismo.
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP8z8Dwn4GBgYGJAQoAHxcCAk+Uzr4AAAAASUVORK5CYII=',
+    'base64',
+  )
+  await sheet
+    .getByLabel(`Foto de ${playera}`)
+    .setInputFiles({ name: 'playera.png', mimeType: 'image/png', buffer: png })
+  await expect(
+    sheet.locator('li').filter({ hasText: playera }).getByText('Cambiar foto'),
+  ).toBeVisible({
+    timeout: 15_000,
+  })
+  await sheet.getByRole('button', { name: 'Cerrar' }).click()
+  await expect(a.getByRole('img', { name: `Foto de ${playera}` })).toBeVisible()
+
+  // Al contador le aparece la foto sin recargar.
+  await nav(b, 'Merch')
+  await expect(b.getByRole('img', { name: `Foto de ${playera}` })).toBeVisible({ timeout: 15_000 })
+})
+
+test('saldo inicial: la cuenta es transparente y queda en los movimientos', async () => {
+  const gorra = `Gorra ${run}`
+  await nav(b, 'Más')
+  await b.getByRole('link', { name: /Productos y precios/ }).click()
+  await b.getByRole('button', { name: 'Nuevo producto' }).click()
+  const form = b.getByRole('dialog')
+  await form.getByLabel('Producto').fill(gorra)
+  await form.getByLabel('Precio de la variante 1').fill('200')
+  await expect(form).toContainText('Las existencias no se escriben aquí')
+  await form.getByRole('button', { name: 'Guardar producto' }).click()
+  await expect(catalogRow(b, gorra)).toHaveAccessibleName('Única $200 $0 0')
+
+  // Desde la variante: entró merch → ya las teníamos.
+  await catalogRow(b, gorra).click()
+  const sheet = b.getByRole('dialog')
+  await sheet.getByRole('button', { name: /Entró merch/ }).click()
+  await sheet.getByRole('button', { name: /Ya las teníamos/ }).click()
+  await sheet.getByLabel('Cantidad').fill('5')
+  await sheet.getByRole('button', { name: 'Continuar' }).click()
+  for (const digit of '100') await sheet.getByRole('button', { name: digit, exact: true }).click()
+  await sheet.getByRole('button', { name: 'Continuar' }).click()
+  await expect(sheet).toContainText('Había0 piezas · $0.00')
+  await expect(sheet).toContainText('Entran 5 piezas × $100.00$500.00')
+  await expect(sheet).toContainText('Quedan5 piezas · $500.00')
+  await expect(sheet).toContainText('Saldo inicial: 5 piezas por $500.00. No sale dinero')
+  await sheet.getByRole('button', { name: 'Guardar' }).click()
+  await expect(catalogRow(b, gorra)).toHaveAccessibleName('Única $200 $100 5', { timeout: 15_000 })
+
+  // Dónde se revisa el costo: los movimientos de la variante.
+  await catalogRow(b, gorra).click()
+  const moves = b.getByRole('dialog').getByRole('region', { name: 'Movimientos' })
+  await expect(moves).toContainText('Saldo inicial')
+  await expect(moves).toContainText('+5 pzas')
+  await expect(moves).toContainText('5 × $100.00 = $500.00')
+  await expect(moves).toContainText('Quedan 5 · $500.00')
+  await expect(b.getByRole('dialog')).toContainText('Cómo se calcula el costo')
+
+  // Corregir existencias desde ahí: se contaron 4.
+  await b
+    .getByRole('dialog')
+    .getByRole('button', { name: /Corregir existencias/ })
+    .click()
+  await b.getByRole('dialog').getByLabel('Cantidad').fill('4')
+  await expect(b.getByRole('dialog')).toContainText('Faltan 1 pieza')
+  await expect(b.getByRole('dialog')).toContainText('−$100.00')
+  await b.getByRole('dialog').getByRole('button', { name: 'Guardar' }).click()
+  await expect(catalogRow(b, gorra)).toHaveAccessibleName('Única $200 $100 4', { timeout: 15_000 })
+
+  // En el diario: inventario contra el fondo, sin salida de dinero.
+  await nav(b, 'Más')
+  await b.getByRole('link', { name: /Libro diario/ }).click()
+  const entry = b.locator('section').filter({ hasText: 'Saldo inicial de merch (5 pzas)' }).first()
+  await expect(entry.getByRole('row', { name: /^1\.4\.01/ })).toHaveAccessibleName(/\$500\.00$/)
+  await expect(entry.getByRole('row', { name: /^3\.3 / })).toHaveAccessibleName(/\$500\.00$/)
+})
+
+test('editar un producto sí guarda: precio y aviso de stock', async () => {
+  const gorra = `Gorra ${run}`
+  await nav(b, 'Más')
+  await b.getByRole('link', { name: /Productos y precios/ }).click()
+  await b
+    .locator('section')
+    .filter({ hasText: gorra })
+    .getByRole('button', { name: /Editar nombre y precios/ })
+    .click()
+  const form = b.getByRole('dialog')
+  await expect(form).toContainText('Hay 4 en inventario')
+  await form.getByLabel('Precio de la variante 1').fill('250')
+  await form.getByLabel(/Avisar cuando queden/).fill('5')
+  await form.getByRole('button', { name: 'Guardar producto' }).click()
+  await expect(catalogRow(b, gorra)).toHaveAccessibleName('Única $250 $100 4', { timeout: 15_000 })
+
+  // Persistió: al recargar sigue igual, y con 4 piezas y aviso en 5 marca stock bajo.
+  await b.reload()
+  await expect(catalogRow(b, gorra)).toHaveAccessibleName('Única $250 $100 4')
+  await nav(b, 'Merch')
+  await expect(b.locator('main button', { hasText: gorra })).toContainText('Quedan 4')
 })

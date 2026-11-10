@@ -34,6 +34,8 @@ export function backoffDelay(attempts: number): number {
 export class SyncEngine {
   private running: Promise<void> | null = null
   private again = false
+  private againForce = false
+  private retryTimer: ReturnType<typeof setTimeout> | undefined
   private lastStamp = 0
   /** Se llama cuando al menos una operación llegó al servidor. */
   onSynced: () => void = () => {}
@@ -144,13 +146,16 @@ export class SyncEngine {
   sync(userId: string, opts: { force?: boolean } = {}): Promise<void> {
     if (this.running) {
       this.again = true
+      this.againForce ||= opts.force ?? false
       return this.running
     }
     this.running = this.drain(userId, opts.force ?? false).finally(() => {
       this.running = null
       if (this.again) {
+        const force = this.againForce
         this.again = false
-        void this.sync(userId)
+        this.againForce = false
+        void this.sync(userId, { force })
       }
     })
     return this.running
@@ -175,6 +180,12 @@ export class SyncEngine {
           last_error: result.error.message,
         })
         this.onChange()
+        // El reintento se agenda solo: no depende de que vuelva a dispararse un evento.
+        clearTimeout(this.retryTimer)
+        this.retryTimer = setTimeout(
+          () => void this.sync(userId, { force: true }),
+          backoffDelay(attempts),
+        )
         break // sin red: no tiene caso seguir, y así se conserva el orden
       } else {
         await this.db.outbox.update(op.client_id, {

@@ -45,6 +45,9 @@ createRoot(document.getElementById('root')!).render(
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister, maxAge: WEEK, buster: 'v1' }}
+      // La copia guardada es solo un respaldo para cuando no hay señal: al abrir
+      // la app siempre se vuelve a pedir todo al servidor.
+      onSuccess={() => void queryClient.invalidateQueries()}
     >
       <AuthProvider>
         <ToastProvider>

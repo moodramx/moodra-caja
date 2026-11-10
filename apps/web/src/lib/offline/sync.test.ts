@@ -192,6 +192,32 @@ describe('outbox + sync', () => {
     expect(synced).toBe(1)
   })
 
+  it('al volver la red mientras hay un intento en curso, el reintento inmediato no se pierde', async () => {
+    server.state.online = false
+    const id = await engine.enqueueSubmit(USER, 'gasto', gasto)
+    await engine.sync(USER) // falla: queda en espera (backoff)
+    server.state.online = true
+    const enCurso = engine.sync(USER) // pasada normal: respeta el backoff y no manda
+    void engine.sync(USER, { force: true }) // llega el evento "online" a media pasada
+    await enCurso
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(server.events.has(id)).toBe(true)
+    expect(await db.outbox.count()).toBe(0)
+  })
+
+  it('reintenta solo después de la espera, sin que nadie lo dispare', async () => {
+    server.state.online = false
+    const id = await engine.enqueueSubmit(USER, 'gasto', gasto)
+    await engine.sync(USER)
+    expect(server.calls).toHaveLength(1)
+
+    // Vuelve la red y nadie llama a sync: el motor reintenta solo a los 2 s.
+    server.state.online = true
+    await new Promise((resolve) => setTimeout(resolve, backoffDelay(1) + 300))
+    expect(server.events.has(id)).toBe(true)
+    expect(await db.outbox.count()).toBe(0)
+  }, 10_000)
+
   it('confirma una entrega', async () => {
     await engine.enqueueConfirm(USER, 'ev-9', true)
     await engine.sync(USER)

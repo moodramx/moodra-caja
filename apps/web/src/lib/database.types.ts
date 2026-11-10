@@ -869,14 +869,14 @@ isOneToOne: false
                   ]
                 },"purchase_details": {
                   Row: {
-                    "description": string | null,"event_id": string,"paid_with": Database["public"]['Enums']["paid_with"],"payer_member_id": string,"pieces": number,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id": string | null,"total_cents": number
+                    "description": string | null,"event_id": string,"is_opening": boolean,"paid_with": Database["public"]['Enums']["paid_with"] | null,"payer_member_id": string,"pieces": number,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id": string | null,"total_cents": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "description"?: string | null,"event_id": string,"paid_with": Database["public"]['Enums']["paid_with"],"payer_member_id": string,"pieces": number,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id"?: string | null,"total_cents": number
+                    "description"?: string | null,"event_id": string,"is_opening"?: boolean,"paid_with"?: Database["public"]['Enums']["paid_with"] | null,"payer_member_id": string,"pieces": number,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id"?: string | null,"total_cents": number
                   }
                   Update: {
-                    "description"?: string | null,"event_id"?: string,"paid_with"?: Database["public"]['Enums']["paid_with"],"payer_member_id"?: string,"pieces"?: number,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id"?: string | null,"total_cents"?: number
+                    "description"?: string | null,"event_id"?: string,"is_opening"?: boolean,"paid_with"?: Database["public"]['Enums']["paid_with"] | null,"payer_member_id"?: string,"pieces"?: number,"settlement_pref"?: Database["public"]['Enums']["settlement_pref"] | null,"supplier_contact_id"?: string | null,"total_cents"?: number
                   }
                   Relationships: [
                     {
@@ -1202,11 +1202,55 @@ isOneToOne: false
                   ]
                 },"v_inventory": {
                   Row: {
-                    "active": boolean | null,"avg_cost_cents": number,"category": Database["public"]['Enums']["merch_category"],"emoji": string,"label": string,"low_stock_threshold": number,"price_cents": number,"product_id": string,"product_name": string,"product_sort": number,"sku": string,"stock_qty": number,"stock_status": string | null,"stock_value_cents": number,"variant_id": string,"variant_sort": number
+                    "active": boolean | null,"avg_cost_cents": number,"category": Database["public"]['Enums']["merch_category"],"emoji": string,"label": string,"low_stock_threshold": number,"photo_path": string | null,"price_cents": number,"product_id": string,"product_name": string,"product_sort": number,"sku": string,"stock_qty": number,"stock_status": string | null,"stock_value_cents": number,"variant_id": string,"variant_sort": number
                   }
                   ComputedFields: never
                   Relationships: [
                     
+                  ]
+                },"v_kardex": {
+                  Row: {
+                    "captured_at": string,"cost_cents": number,"created_at": string,"created_by": string,"event_id": string,"event_status": Database["public"]['Enums']["event_status"],"event_type": Database["public"]['Enums']["event_type"],"is_opening": boolean | null,"kind": Database["public"]['Enums']["inventory_kind"],"movement_id": string,"qty": number,"unit_cost_cents": number,"variant_id": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "inventory_movements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventory_movements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventory_movements_variant_id_fkey"
+      columns: ["variant_id"]
+isOneToOne: false
+      referencedRelation: "product_variants"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventory_movements_variant_id_fkey"
+      columns: ["variant_id"]
+isOneToOne: false
+      referencedRelation: "v_inventory"
+      referencedColumns: ["variant_id"]
+    }
                   ]
                 },"v_member_balances": {
                   Row: {
@@ -1384,6 +1428,9 @@ isOneToOne: false
                            },
 "set_active_context":
 { Args: { "p_project_id": string }; Returns: undefined
+                           },
+"set_product_photo":
+{ Args: { "p_path": string,"p_product_id": string }; Returns: undefined
                            },
 "submit_event":
 { Args: { "p_captured_at": string,"p_client_id": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"] }; Returns: Json

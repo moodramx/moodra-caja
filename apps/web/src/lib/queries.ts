@@ -179,6 +179,18 @@ export function useMerchToday() {
   })
 }
 
+/** Movimientos de inventario de una variante, del más viejo al más nuevo. */
+export function useKardex(variantId: string | null) {
+  return useQuery({
+    queryKey: ['kardex', variantId],
+    enabled: variantId !== null,
+    queryFn: () =>
+      unwrap(
+        supabase.from('v_kardex').select('*').eq('variant_id', variantId!).order('movement_id'),
+      ),
+  })
+}
+
 export function useJournal(limit = 100) {
   return useQuery({
     queryKey: ['journal', limit],

@@ -21,6 +21,7 @@ import { formatMXNShort } from '../../lib/money'
 import { useOutbox } from '../../lib/offline/runtime'
 import { useActiveProject, useInventory, useMerchToday, useProfiles } from '../../lib/queries'
 import { useCapture } from '../captura/parts'
+import { ChangeCalculator, CostNote, PhotosTool, ProductImage, type Product } from './MerchParts'
 import { CompraFlow, ConteoFlow, SalidaFlow } from './StockFlows'
 
 const money = (cents: bigint | number | null) => formatMXNShort(BigInt(cents ?? 0))
@@ -31,12 +32,7 @@ const CHANNELS: { value: SaleChannel; label: string; emoji: string }[] = [
   { value: 'otro', label: 'Otro', emoji: '🧾' },
 ]
 
-export interface Product {
-  id: string
-  name: string
-  emoji: string
-  variants: (InventoryRow & { stock: number })[]
-}
+export type { Product }
 
 /** Agrupa el inventario por producto y aplica lo vendido que aún no sincroniza. */
 function useCatalog() {
@@ -53,6 +49,7 @@ function useCatalog() {
         id: row.product_id,
         name: row.product_name ?? '',
         emoji: row.emoji ?? '👕',
+        photoPath: row.photo_path ?? null,
         variants: [],
       }
       product.variants.push({
@@ -91,7 +88,7 @@ function NightSummary() {
   )
 }
 
-type Tool = 'compra' | 'regalo' | 'merma' | 'conteo'
+type Tool = 'compra' | 'regalo' | 'merma' | 'conteo' | 'fotos'
 
 export function MerchPage() {
   const { profile } = useAuth()
@@ -185,9 +182,7 @@ export function MerchPage() {
                   {count}
                 </span>
               )}
-              <span aria-hidden="true" className="text-4xl">
-                {product.emoji}
-              </span>
+              <ProductImage product={product} />
               <span className="w-full">
                 <span className="block font-semibold">{product.name}</span>
                 <span className="block text-lg font-semibold tabular-nums">
@@ -215,6 +210,9 @@ export function MerchPage() {
           </Button>
           <Button variant="secondary" onClick={() => setTool('regalo')}>
             🎁 Regalé
+          </Button>
+          <Button variant="secondary" className="col-span-2" onClick={() => setTool('fotos')}>
+            📷 Fotos de productos
           </Button>
           {isContador && (
             <>
@@ -395,6 +393,12 @@ export function MerchPage() {
             </div>
           )}
 
+          {method === 'efectivo' && totals.total > 0n && (
+            <ChangeCalculator key={totals.total.toString()} total={totals.total} />
+          )}
+          {isContador && cart.length > 0 && (
+            <CostNote cart={cart} products={products} total={totals.total} />
+          )}
           <p className="text-ink-muted">{describeVenta(totals, method)}</p>
           <Button
             size="lg"
@@ -419,13 +423,16 @@ export function MerchPage() {
               ? '🎁 Regalé merch'
               : tool === 'merma'
                 ? '🗑️ Se dañó o se perdió'
-                : '🔢 Conté el merch'
+                : tool === 'fotos'
+                  ? '📷 Fotos de productos'
+                  : '🔢 Conté el merch'
         }
       >
         {tool === 'compra' && <CompraFlow products={products} onDone={() => setTool(null)} />}
         {(tool === 'regalo' || tool === 'merma') && (
           <SalidaFlow kind={tool} products={products} onDone={() => setTool(null)} />
         )}
+        {tool === 'fotos' && <PhotosTool products={products} />}
         {tool === 'conteo' && <ConteoFlow products={products} onDone={() => setTool(null)} />}
       </BottomSheet>
 

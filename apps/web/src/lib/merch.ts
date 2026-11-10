@@ -87,3 +87,56 @@ export function pendingStock(ops: OutboxOp[]): Map<string, number> {
   }
   return delta
 }
+
+/** Cambio a devolver. Negativo = todavía falta dinero. */
+export function changeDue(totalCents: bigint, paidCents: bigint): bigint {
+  return paidCents - totalCents
+}
+
+/** Billetes sugeridos para "¿con cuánto te pagan?": exacto y los siguientes redondos. */
+export function suggestedPayments(totalCents: bigint): bigint[] {
+  if (totalCents <= 0n) return []
+  const options = new Set<bigint>([totalCents])
+  for (const bill of [5000n, 10000n, 20000n, 50000n, 100000n]) {
+    const rounded = ((totalCents + bill - 1n) / bill) * bill
+    if (rounded > totalCents) options.add(rounded)
+  }
+  return [...options].sort((x, y) => (x < y ? -1 : 1)).slice(0, 5)
+}
+
+export interface StockState {
+  stock: number
+  valueCents: bigint
+  avgCostCents: bigint
+}
+
+/** Cómo queda el inventario al entrar piezas: mismo cálculo que la base (costo promedio ponderado). */
+export function previewEntry(before: StockState, qty: number, unitCostCents: bigint): StockState {
+  const stock = before.stock + qty
+  const valueCents = before.valueCents + BigInt(qty) * unitCostCents
+  const avgCostCents =
+    stock > 0 && valueCents >= 0n ? roundDiv(valueCents, BigInt(stock)) : unitCostCents
+  return { stock, valueCents, avgCostCents }
+}
+
+/** Costo con el que salen piezas (venta, regalo, merma): mismo cálculo que la base. */
+export function costOfExit(before: StockState, qty: number): bigint {
+  if (qty <= 0) return 0n
+  let cost: bigint
+  if (before.stock >= qty) {
+    cost =
+      qty === before.stock
+        ? before.valueCents
+        : roundDiv(before.valueCents * BigInt(qty), BigInt(before.stock))
+  } else {
+    cost =
+      (before.stock > 0 ? before.valueCents : 0n) +
+      BigInt(qty - Math.max(before.stock, 0)) * before.avgCostCents
+  }
+  return cost > 0n ? cost : 0n
+}
+
+/** División entera redondeando al más cercano (como round() de Postgres). */
+function roundDiv(a: bigint, b: bigint): bigint {
+  return (a * 2n + b) / (b * 2n)
+}

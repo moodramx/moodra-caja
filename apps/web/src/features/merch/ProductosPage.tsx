@@ -1,4 +1,5 @@
-// Catálogo de merch (solo contador): productos, variantes, precios y alertas.
+// Catálogo de merch (solo contador): productos, variantes, precios, existencias
+// y el detalle de cómo se formó el costo de cada una.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -12,9 +13,10 @@ import { useAuth } from '../../lib/auth'
 import type { Json } from '../../lib/database.types'
 import type { InventoryRow } from '../../lib/events'
 import { centsToDecimalString, entryToCents, formatMXN, formatMXNShort } from '../../lib/money'
-import { useInventory } from '../../lib/queries'
+import { useInventory, useKardex, useNameOf } from '../../lib/queries'
 import { supabase } from '../../lib/supabase'
 import { fieldClass } from '../captura/parts'
+import { CompraFlow, ConteoFlow, type Picked } from './StockFlows'
 
 const CATEGORIES = [
   { value: 'playeras', label: 'Playeras', emoji: '👕' },
@@ -30,6 +32,7 @@ interface VariantDraft {
   label: string
   price: string
   threshold: string
+  stock?: number
 }
 interface Draft {
   id?: string
@@ -49,6 +52,11 @@ const emptyDraft = (): Draft => ({
 const pesos = (cents: number | null) =>
   centsToDecimalString(BigInt(cents ?? 0)).replace(/\.00$/, '')
 const validPrice = (text: string) => /^\d+(\.\d{1,2})?$/.test(text.trim())
+const money = (cents: bigint | number | null) => formatMXN(BigInt(cents ?? 0))
+const asPicked = (row: InventoryRow): Picked => ({
+  variant: { ...row, stock: row.stock_qty ?? 0 },
+  name: `${row.product_name} · ${row.label}`,
+})
 
 function ProductForm({ initial, onSaved }: { initial: Draft; onSaved: () => void }) {
   const queryClient = useQueryClient()
@@ -135,42 +143,57 @@ function ProductForm({ initial, onSaved }: { initial: Draft; onSaved: () => void
         </div>
       )}
 
-      <div className="space-y-3">
-        <p className="text-sm text-ink-muted">Variantes (talla, color) con su precio de venta</p>
+      <div className="space-y-4">
+        <p className="font-semibold">Tallas o colores</p>
         {draft.variants.map((variant, index) => (
-          <div
+          <fieldset
             key={variant.id ?? `nueva-${index}`}
-            className="grid grid-cols-[1fr_6rem_4.5rem] gap-2"
+            className="space-y-2 rounded-card border border-line p-3"
           >
-            <input
-              aria-label={`Variante ${index + 1}`}
-              className={fieldClass}
-              value={variant.label}
-              maxLength={40}
-              placeholder="Ej. M negra"
-              onChange={(event) => setVariant(index, { label: event.target.value })}
-            />
-            <input
-              aria-label={`Precio de la variante ${index + 1}`}
-              className={`${fieldClass} px-3 tabular-nums`}
-              inputMode="decimal"
-              value={variant.price}
-              placeholder="$"
-              onChange={(event) => setVariant(index, { price: event.target.value })}
-            />
-            <input
-              aria-label={`Avisar cuando queden (variante ${index + 1})`}
-              className={`${fieldClass} px-3 tabular-nums`}
-              inputMode="numeric"
-              value={variant.threshold}
-              title="Avisar cuando queden"
-              onChange={(event) =>
-                setVariant(index, { threshold: event.target.value.replace(/\D/g, '') })
-              }
-            />
-          </div>
+            <legend className="sr-only">Variante {index + 1}</legend>
+            <label className="block space-y-1">
+              <span className="text-sm text-ink-muted">Talla o color</span>
+              <input
+                aria-label={`Variante ${index + 1}`}
+                className={fieldClass}
+                value={variant.label}
+                maxLength={40}
+                placeholder="Ej. M negra"
+                onChange={(event) => setVariant(index, { label: event.target.value })}
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block space-y-1">
+                <span className="text-sm text-ink-muted">Precio de venta ($)</span>
+                <input
+                  aria-label={`Precio de la variante ${index + 1}`}
+                  className={`${fieldClass} tabular-nums`}
+                  inputMode="decimal"
+                  value={variant.price}
+                  placeholder="350"
+                  onChange={(event) => setVariant(index, { price: event.target.value })}
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-sm text-ink-muted">Avisar si quedan</span>
+                <input
+                  aria-label={`Avisar cuando queden (variante ${index + 1})`}
+                  className={`${fieldClass} tabular-nums`}
+                  inputMode="numeric"
+                  value={variant.threshold}
+                  onChange={(event) =>
+                    setVariant(index, { threshold: event.target.value.replace(/\D/g, '') })
+                  }
+                />
+              </label>
+            </div>
+            {variant.id && (
+              <p className="text-sm text-ink-muted">
+                Hay <strong className="text-ink">{variant.stock}</strong> en inventario.
+              </p>
+            )}
+          </fieldset>
         ))}
-        <p className="text-sm text-ink-muted">Nombre · precio · avisar cuando queden</p>
         <Button
           variant="secondary"
           onClick={() =>
@@ -180,8 +203,13 @@ function ProductForm({ initial, onSaved }: { initial: Draft; onSaved: () => void
             })
           }
         >
-          ➕ Otra variante
+          ➕ Otra talla o color
         </Button>
+        <p className="rounded-card bg-surface-2 p-3 text-sm">
+          <strong>Las existencias no se escriben aquí.</strong> Cambian solas con cada movimiento:
+          cuando entra merch, se vende, se regala o se cuenta. Para corregirlas, guarda y toca la
+          variante en la lista.
+        </p>
       </div>
 
       {save.error && (
@@ -196,11 +224,143 @@ function ProductForm({ initial, onSaved }: { initial: Draft; onSaved: () => void
   )
 }
 
+const KIND_LABEL: Record<string, string> = {
+  compra: 'Compra',
+  venta: 'Venta',
+  regalo: 'Regalo',
+  merma: 'Merma',
+  ajuste: 'Conteo',
+  anulacion: 'Anulación',
+}
+
+/** Saldo corrido: piezas y valor que quedan después de cada movimiento. */
+function withRunningBalance<T extends { qty: number | null; cost_cents: number | null }>(
+  rows: T[],
+) {
+  const result: (T & { stock: number; value: bigint })[] = []
+  let stock = 0
+  let value = 0n
+  for (const row of rows) {
+    stock += row.qty ?? 0
+    value += BigInt(row.cost_cents ?? 0)
+    result.push({ ...row, stock, value })
+  }
+  return result
+}
+
+/** Existencias, costo y cada movimiento que los formó. */
+function VariantSheet({ row, onClose }: { row: InventoryRow | null; onClose: () => void }) {
+  const kardex = useKardex(row?.variant_id ?? null)
+  const nameOf = useNameOf()
+  const [tool, setTool] = useState<'entro' | 'conte' | null>(null)
+  const close = () => {
+    setTool(null)
+    onClose()
+  }
+
+  const movements = withRunningBalance(kardex.data ?? [])
+
+  return (
+    <BottomSheet
+      open={row !== null}
+      onOpenChange={(open) => !open && close()}
+      title={row ? `${row.emoji} ${row.product_name} · ${row.label}` : ''}
+    >
+      {row && tool === 'entro' && (
+        <CompraFlow products={[]} initial={asPicked(row)} onDone={close} />
+      )}
+      {row && tool === 'conte' && (
+        <ConteoFlow products={[]} initial={asPicked(row)} onDone={close} />
+      )}
+      {row && tool === null && (
+        <div className="space-y-4">
+          <dl className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-control bg-surface-2 p-2">
+              <dt className="text-xs text-ink-muted">Hay</dt>
+              <dd className="display text-2xl tabular-nums">{row.stock_qty}</dd>
+            </div>
+            <div className="rounded-control bg-surface-2 p-2">
+              <dt className="text-xs text-ink-muted">Costo por pieza</dt>
+              <dd className="display text-2xl tabular-nums">
+                {formatMXNShort(BigInt(row.avg_cost_cents ?? 0))}
+              </dd>
+            </div>
+            <div className="rounded-control bg-surface-2 p-2">
+              <dt className="text-xs text-ink-muted">Valen</dt>
+              <dd className="display text-2xl tabular-nums">
+                {formatMXNShort(BigInt(row.stock_value_cents ?? 0))}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" onClick={() => setTool('entro')}>
+              📦 Entró merch
+            </Button>
+            <Button variant="secondary" onClick={() => setTool('conte')}>
+              🔢 Corregir existencias
+            </Button>
+          </div>
+
+          <p className="rounded-card bg-surface-2 p-3 text-sm">
+            <strong>Cómo se calcula el costo.</strong> Cada entrada suma sus piezas y lo que
+            costaron. El costo por pieza es el promedio: lo que valen todas entre cuántas hay. Con
+            ese costo sale cada pieza que se vende (costo de venta), se regala (merch regalado) o se
+            da de baja (merma).
+          </p>
+
+          <section aria-label="Movimientos">
+            <h3 className="label-mono pb-1 text-ink-muted">Movimientos</h3>
+            {kardex.isPending && <p className="text-ink-muted">Afinando…</p>}
+            {kardex.data?.length === 0 && (
+              <p className="text-ink-muted">Todavía no hay movimientos.</p>
+            )}
+            <ul className="divide-y divide-line">
+              {movements.map((m) => (
+                <li key={m.movement_id} className="py-2 text-sm tabular-nums">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-semibold">
+                      {m.is_opening ? 'Saldo inicial' : (KIND_LABEL[m.kind ?? ''] ?? m.kind)}
+                      <span className="font-normal text-ink-muted">
+                        {' '}
+                        ·{' '}
+                        {new Date(m.captured_at ?? '').toLocaleDateString('es-MX', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}{' '}
+                        · {nameOf(m.created_by)}
+                      </span>
+                    </span>
+                    <span className={`font-semibold ${(m.qty ?? 0) > 0 ? 'text-in' : ''}`}>
+                      {(m.qty ?? 0) > 0 ? '+' : '−'}
+                      {Math.abs(m.qty ?? 0)} pzas
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3 text-ink-muted">
+                    <span>
+                      {Math.abs(m.qty ?? 0)} × {money(m.unit_cost_cents)} ={' '}
+                      {money(Math.abs(m.cost_cents ?? 0))}
+                    </span>
+                    <span>
+                      Quedan {m.stock} · {money(m.value)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      )}
+    </BottomSheet>
+  )
+}
+
 export function ProductosPage() {
   const { profile } = useAuth()
   const inventory = useInventory()
   const { toast } = useToast()
   const [editing, setEditing] = useState<Draft | null>(null)
+  const [viewing, setViewing] = useState<string | null>(null)
 
   if (profile && profile.role !== 'contador') return <Navigate to="/merch" />
 
@@ -213,6 +373,7 @@ export function ProductosPage() {
     (sum, row) => sum + BigInt(row.stock_value_cents ?? 0),
     0n,
   )
+  const viewed = inventory.data?.find((row) => row.variant_id === viewing) ?? null
 
   const edit = (rows: InventoryRow[]) =>
     setEditing({
@@ -225,6 +386,7 @@ export function ProductosPage() {
         label: row.label ?? '',
         price: pesos(row.price_cents),
         threshold: String(row.low_stock_threshold ?? 0),
+        stock: row.stock_qty ?? 0,
       })),
     })
 
@@ -241,6 +403,9 @@ export function ProductosPage() {
         <Card>
           <p className="text-ink-muted">Inventario valuado a costo</p>
           <p className="display mt-1 text-4xl tabular-nums">{formatMXN(total)}</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            Toca una talla o color para ver sus movimientos, su costo y corregir existencias.
+          </p>
         </Card>
       )}
 
@@ -254,42 +419,38 @@ export function ProductosPage() {
             <span className="text-lg font-semibold">
               <span aria-hidden="true">{rows[0]!.emoji}</span> {rows[0]!.product_name}
             </span>
-            <span className="text-sm font-semibold text-accent">Editar</span>
+            <span className="text-sm font-semibold text-accent">Editar nombre y precios</span>
           </button>
-          <table className="mt-2 w-full text-sm tabular-nums">
-            <thead>
-              <tr className="text-left text-ink-muted">
-                <th className="pb-1 font-medium">Variante</th>
-                <th className="pb-1 text-right font-medium">Precio</th>
-                <th className="pb-1 text-right font-medium">Costo</th>
-                <th className="pb-1 text-right font-medium">Hay</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.variant_id} className="border-t border-line">
-                  <td className="py-1.5">{row.label}</td>
-                  <td className="py-1.5 text-right">
-                    {formatMXNShort(BigInt(row.price_cents ?? 0))}
-                  </td>
-                  <td className="py-1.5 text-right">
-                    {formatMXNShort(BigInt(row.avg_cost_cents ?? 0))}
-                  </td>
-                  <td
-                    className={`py-1.5 text-right font-semibold ${
-                      row.stock_status === 'negativo'
-                        ? 'text-danger'
-                        : row.stock_status === 'bajo'
-                          ? 'text-pending'
-                          : ''
-                    }`}
-                  >
-                    {row.stock_qty}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="mt-1 grid grid-cols-[1fr_4rem_4rem_3rem] gap-2 text-sm text-ink-muted">
+            <span>Variante</span>
+            <span className="text-right">Precio</span>
+            <span className="text-right">Costo</span>
+            <span className="text-right">Hay</span>
+          </div>
+          {rows.map((row) => (
+            <button
+              key={row.variant_id}
+              type="button"
+              aria-label={`${row.label} ${formatMXNShort(BigInt(row.price_cents ?? 0))} ${formatMXNShort(BigInt(row.avg_cost_cents ?? 0))} ${row.stock_qty}`}
+              onClick={() => setViewing(row.variant_id)}
+              className="-mx-2 grid min-h-12 w-[calc(100%+1rem)] grid-cols-[1fr_4rem_4rem_3rem] items-center gap-2 rounded-control border-t border-line px-2 text-left tabular-nums active:bg-surface-2"
+            >
+              <span>{row.label}</span>
+              <span className="text-right">{formatMXNShort(BigInt(row.price_cents ?? 0))}</span>
+              <span className="text-right">{formatMXNShort(BigInt(row.avg_cost_cents ?? 0))}</span>
+              <span
+                className={`text-right font-semibold ${
+                  row.stock_status === 'negativo'
+                    ? 'text-danger'
+                    : row.stock_status === 'bajo'
+                      ? 'text-pending'
+                      : ''
+                }`}
+              >
+                {row.stock_qty}
+              </span>
+            </button>
+          ))}
         </Card>
       ))}
 
@@ -313,6 +474,8 @@ export function ProductosPage() {
           />
         )}
       </BottomSheet>
+
+      <VariantSheet row={viewed} onClose={() => setViewing(null)} />
     </Page>
   )
 }
