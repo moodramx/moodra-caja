@@ -90,30 +90,30 @@ Origen: `Moodra Website/site/css/styles.css` y `site/index.html`. Cierra el pend
 
 ### Desviaciones y huecos (revísalas, Diego)
 
-| Decisión | Alternativa descartada | Por qué |
-| --- | --- | --- |
-| **El catálogo de cuentas, categorías y tipos de proyecto van en la migración**, no en `seed.sql`. | `seed.sql`, como dice CLAUDE.md. | `seed.sql` no se ejecuta en la nube; el catálogo debe existir ahí. |
-| **Regresar dinero, pago a proveedor y reclasificación solo existen en la base** (con pruebas), sin pantalla. | Hacer las tres pantallas ya. | El plan de la Fase 1 lista cuatro flujos. Sin "Regresar dinero" el saldo "Te debemos" no se puede saldar desde la app todavía: conviene adelantarlo. |
-| **Inicio pesa ~224 KB gzip de JS**, arriba de los 200 KB del PRD §3.6. | Recortar ya. | Dexie y la caché persistida suman ~35 KB. Se ataca en la auditoría de rendimiento de la Fase 6. |
-| **Sin Zod en el cliente**: los tipos de TypeScript validan al capturar y la base valida todo al recibir. | Validar también con Zod en el celular. | Ahorra peso; la validación que cuenta es la del servidor. Zod sí se usa en las Edge Functions. |
-| **Motion sigue sin instalarse.** | Instalarlo ya. | Las animaciones actuales son CSS. |
-| **Cambiar el contexto activo requiere internet.** | Meterlo al outbox. | Es un ajuste compartido, no una captura; aplicarlo tarde confundiría a los demás. |
-| **Se permite efectivo negativo** (gastar más efectivo de la banda del que dicen los libros). | Bloquear la captura. | Igual que el inventario negativo: nunca se bloquea al que captura; Inicio lo avisa y se aclara con un arqueo. |
-| `show_id` existe en eventos y líneas pero sin llave foránea. | Crear `shows` ya. | La tabla llega en la Fase 3. |
+| Decisión                                                                                                     | Alternativa descartada                 | Por qué                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **El catálogo de cuentas, categorías y tipos de proyecto van en la migración**, no en `seed.sql`.            | `seed.sql`, como dice CLAUDE.md.       | `seed.sql` no se ejecuta en la nube; el catálogo debe existir ahí.                                                                                   |
+| **Regresar dinero, pago a proveedor y reclasificación solo existen en la base** (con pruebas), sin pantalla. | Hacer las tres pantallas ya.           | El plan de la Fase 1 lista cuatro flujos. Sin "Regresar dinero" el saldo "Te debemos" no se puede saldar desde la app todavía: conviene adelantarlo. |
+| **Inicio pesa ~224 KB gzip de JS**, arriba de los 200 KB del PRD §3.6.                                       | Recortar ya.                           | Dexie y la caché persistida suman ~35 KB. Se ataca en la auditoría de rendimiento de la Fase 6.                                                      |
+| **Sin Zod en el cliente**: los tipos de TypeScript validan al capturar y la base valida todo al recibir.     | Validar también con Zod en el celular. | Ahorra peso; la validación que cuenta es la del servidor. Zod sí se usa en las Edge Functions.                                                       |
+| **Motion sigue sin instalarse.**                                                                             | Instalarlo ya.                         | Las animaciones actuales son CSS.                                                                                                                    |
+| **Cambiar el contexto activo requiere internet.**                                                            | Meterlo al outbox.                     | Es un ajuste compartido, no una captura; aplicarlo tarde confundiría a los demás.                                                                    |
+| **Se permite efectivo negativo** (gastar más efectivo de la banda del que dicen los libros).                 | Bloquear la captura.                   | Igual que el inventario negativo: nunca se bloquea al que captura; Inicio lo avisa y se aclara con un arqueo.                                        |
+| `show_id` existe en eventos y líneas pero sin llave foránea.                                                 | Crear `shows` ya.                      | La tabla llega en la Fase 3.                                                                                                                         |
 
 ### Reglas de negocio que definí
 
-| Decisión | Por qué |
-| --- | --- |
-| Pagar o mover dinero **desde la caja** es solo del contador (es su custodio). | PRD §4.5. |
-| Entregas **a la caja o al banco** las confirma el contador; si las captura él, cuentan de inmediato. | PRD §4.5: "lo confirma el contador al verlo". |
-| **Regresar dinero** y **pagar a proveedor** desde la caja o la cuenta: solo contador. Desde el efectivo que uno trae: cualquiera. | La cuenta está a nombre de Diego. |
-| No se puede regresar, pagar o reclasificar **más que el saldo** correspondiente. | Evita saldos al revés por error de dedo. |
-| Anular una entrega **pendiente** la cancela sin asientos. Una **rechazada** no se anula. | No hay nada que revertir. |
-| Evento capturado en un **mes cerrado**: entra con fecha de hoy, con nota y alerta en la bitácora. | PRD §8. |
-| "Deshacer" antes de sincronizar **descarta** la captura en el celular; después, la anula en el servidor. | El servidor nunca la vio; no hace falta un asiento y su reversa. |
-| Los montos viajan como número JSON (seguro hasta 2^53 centavos) y se manejan como `bigint` en el celular y en la base. | Cierra el pendiente de la Fase 0. |
-| Realtime en `events`, `app_settings` y `projects`. | Feed, contexto y giras nuevas en vivo. |
-| Todas las funciones de la base son privadas salvo las RPC listadas; las nuevas nacen privadas por default. | Ninguna función de posteo debe ser invocable desde el cliente. |
-| Subcuentas por integrante: `1.1.1N`, `2.1.NN`, `2.4.NN`, `3.1.NN`, `3.2.NN`, numeradas por orden de alta. | PRD §5.1. |
-| Las operaciones del outbox llevan un sello estrictamente creciente. | Una prueba mostró que capturar y deshacer en el mismo milisegundo podía perder la anulación. |
+| Decisión                                                                                                                          | Por qué                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Pagar o mover dinero **desde la caja** es solo del contador (es su custodio).                                                     | PRD §4.5.                                                                                    |
+| Entregas **a la caja o al banco** las confirma el contador; si las captura él, cuentan de inmediato.                              | PRD §4.5: "lo confirma el contador al verlo".                                                |
+| **Regresar dinero** y **pagar a proveedor** desde la caja o la cuenta: solo contador. Desde el efectivo que uno trae: cualquiera. | La cuenta está a nombre de Diego.                                                            |
+| No se puede regresar, pagar o reclasificar **más que el saldo** correspondiente.                                                  | Evita saldos al revés por error de dedo.                                                     |
+| Anular una entrega **pendiente** la cancela sin asientos. Una **rechazada** no se anula.                                          | No hay nada que revertir.                                                                    |
+| Evento capturado en un **mes cerrado**: entra con fecha de hoy, con nota y alerta en la bitácora.                                 | PRD §8.                                                                                      |
+| "Deshacer" antes de sincronizar **descarta** la captura en el celular; después, la anula en el servidor.                          | El servidor nunca la vio; no hace falta un asiento y su reversa.                             |
+| Los montos viajan como número JSON (seguro hasta 2^53 centavos) y se manejan como `bigint` en el celular y en la base.            | Cierra el pendiente de la Fase 0.                                                            |
+| Realtime en `events`, `app_settings` y `projects`.                                                                                | Feed, contexto y giras nuevas en vivo.                                                       |
+| Todas las funciones de la base son privadas salvo las RPC listadas; las nuevas nacen privadas por default.                        | Ninguna función de posteo debe ser invocable desde el cliente.                               |
+| Subcuentas por integrante: `1.1.1N`, `2.1.NN`, `2.4.NN`, `3.1.NN`, `3.2.NN`, numeradas por orden de alta.                         | PRD §5.1.                                                                                    |
+| Las operaciones del outbox llevan un sello estrictamente creciente.                                                               | Una prueba mostró que capturar y deshacer en el mismo milisegundo podía perder la anulación. |
