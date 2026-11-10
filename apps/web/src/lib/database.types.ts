@@ -75,6 +75,12 @@ isOneToOne: false
       foreignKeyName: "accounts_parent_id_fkey"
       columns: ["parent_id"]
 isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "accounts_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
       referencedRelation: "v_trial_balance"
       referencedColumns: ["account_id"]
     }
@@ -97,6 +103,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_settings_active_project_fkey"
+      columns: ["active_project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "app_settings_active_show_fkey"
+      columns: ["active_show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "app_settings_active_show_fkey"
+      columns: ["active_show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
     },{
       foreignKeyName: "app_settings_updated_by_fkey"
       columns: ["updated_by"]
@@ -227,6 +251,12 @@ isOneToOne: false
       foreignKeyName: "categories_account_general_id_fkey"
       columns: ["account_general_id"]
 isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_account_general_id_fkey"
+      columns: ["account_general_id"]
+isOneToOne: false
       referencedRelation: "v_trial_balance"
       referencedColumns: ["account_id"]
     },{
@@ -240,6 +270,12 @@ isOneToOne: false
       columns: ["account_show_id"]
 isOneToOne: false
       referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "categories_account_show_id_fkey"
+      columns: ["account_show_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
       referencedColumns: ["account_id"]
     },{
       foreignKeyName: "categories_account_show_id_fkey"
@@ -323,6 +359,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
     },{
       foreignKeyName: "events_void_entry_id_fkey"
       columns: ["void_entry_id"]
@@ -466,6 +520,12 @@ isOneToOne: false
       columns: ["account_id"]
 isOneToOne: false
       referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "income_details_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
       referencedColumns: ["account_id"]
     },{
       foreignKeyName: "income_details_account_id_fkey"
@@ -627,6 +687,12 @@ isOneToOne: false
       foreignKeyName: "journal_lines_account_id_fkey"
       columns: ["account_id"]
 isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "journal_lines_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
       referencedRelation: "v_trial_balance"
       referencedColumns: ["account_id"]
     },{
@@ -653,6 +719,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "journal_lines_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
     },{
       foreignKeyName: "journal_lines_variant_fkey"
       columns: ["variant_id"]
@@ -773,6 +857,12 @@ isOneToOne: false
       foreignKeyName: "products_inventory_account_id_fkey"
       columns: ["inventory_account_id"]
 isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "products_inventory_account_id_fkey"
+      columns: ["inventory_account_id"]
+isOneToOne: false
       referencedRelation: "v_trial_balance"
       referencedColumns: ["account_id"]
     },{
@@ -786,6 +876,12 @@ isOneToOne: false
       columns: ["revenue_account_id"]
 isOneToOne: false
       referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "products_revenue_account_id_fkey"
+      columns: ["revenue_account_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
       referencedColumns: ["account_id"]
     },{
       foreignKeyName: "products_revenue_account_id_fkey"
@@ -949,6 +1045,80 @@ isOneToOne: false
       referencedColumns: ["variant_id"]
     }
                   ]
+                },"receivable_collections": {
+                  Row: {
+                    "account_id": string,"amount_cents": number,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id": string | null,"platform_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"amount_cents": number,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id"?: string | null,"platform_id"?: string | null
+                  }
+                  Update: {
+                    "account_id"?: string,"amount_cents"?: number,"destination"?: Database["public"]['Enums']["money_place"],"event_id"?: string,"holder_member_id"?: string | null,"platform_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "receivable_collections_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "receivable_collections_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "receivable_collections_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "receivable_collections_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "receivable_collections_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "receivable_collections_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "receivable_collections_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "receivable_collections_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "receivable_collections_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "ticket_platforms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "receivable_collections_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["platform_id"]
+    }
+                  ]
                 },"sale_details": {
                   Row: {
                     "channel": Database["public"]['Enums']["sale_channel"],"channel_note": string | null,"collected_by": string,"event_id": string,"payment_method": Database["public"]['Enums']["payment_method"],"pieces": number,"total_cents": number
@@ -1023,6 +1193,174 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_inventory"
       referencedColumns: ["variant_id"]
+    }
+                  ]
+                },"show_advances": {
+                  Row: {
+                    "amount_cents": number,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id": string | null,"show_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"destination": Database["public"]['Enums']["money_place"],"event_id": string,"holder_member_id"?: string | null,"show_id": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"destination"?: Database["public"]['Enums']["money_place"],"event_id"?: string,"holder_member_id"?: string | null,"show_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "show_advances_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_advances_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_advances_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_advances_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "show_advances_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_advances_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    }
+                  ]
+                },"show_settlements": {
+                  Row: {
+                    "advance_applied_cents": number,"commission_cents": number,"deal_type": Database["public"]['Enums']["deal_type"],"destination": Database["public"]['Enums']["money_place"] | null,"event_id": string,"fee_cents": number,"gross_cents": number,"holder_member_id": string | null,"income_cents": number,"net_cents": number,"pending": boolean,"platform_id": string | null,"share_cents": number,"show_id": string,"tickets_sold": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "advance_applied_cents"?: number,"commission_cents"?: number,"deal_type": Database["public"]['Enums']["deal_type"],"destination"?: Database["public"]['Enums']["money_place"] | null,"event_id": string,"fee_cents"?: number,"gross_cents"?: number,"holder_member_id"?: string | null,"income_cents": number,"net_cents"?: number,"pending": boolean,"platform_id"?: string | null,"share_cents"?: number,"show_id": string,"tickets_sold"?: number
+                  }
+                  Update: {
+                    "advance_applied_cents"?: number,"commission_cents"?: number,"deal_type"?: Database["public"]['Enums']["deal_type"],"destination"?: Database["public"]['Enums']["money_place"] | null,"event_id"?: string,"fee_cents"?: number,"gross_cents"?: number,"holder_member_id"?: string | null,"income_cents"?: number,"net_cents"?: number,"pending"?: boolean,"platform_id"?: string | null,"share_cents"?: number,"show_id"?: string,"tickets_sold"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "show_settlements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_settlements_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_settlements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_settlements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "show_settlements_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "ticket_platforms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_settlements_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["platform_id"]
+    },{
+      foreignKeyName: "show_settlements_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "show_settlements_show_id_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    }
+                  ]
+                },"shows": {
+                  Row: {
+                    "city": string | null,"created_at": string,"created_by": string | null,"date": string,"deal_type": Database["public"]['Enums']["deal_type"],"expected_income_cents": number,"expected_tickets": number,"fee_cents": number,"id": string,"name": string,"notes": string | null,"percentage": number,"platform_id": string | null,"project_id": string,"status": Database["public"]['Enums']["show_status"],"ticket_price_cents": number,"venue_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"date": string,"deal_type": Database["public"]['Enums']["deal_type"],"expected_income_cents"?: number,"expected_tickets"?: number,"fee_cents"?: number,"id"?: string,"name": string,"notes"?: string | null,"percentage"?: number,"platform_id"?: string | null,"project_id": string,"status"?: Database["public"]['Enums']["show_status"],"ticket_price_cents"?: number,"venue_id"?: string | null
+                  }
+                  Update: {
+                    "city"?: string | null,"created_at"?: string,"created_by"?: string | null,"date"?: string,"deal_type"?: Database["public"]['Enums']["deal_type"],"expected_income_cents"?: number,"expected_tickets"?: number,"fee_cents"?: number,"id"?: string,"name"?: string,"notes"?: string | null,"percentage"?: number,"platform_id"?: string | null,"project_id"?: string,"status"?: Database["public"]['Enums']["show_status"],"ticket_price_cents"?: number,"venue_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shows_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shows_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "shows_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "ticket_platforms"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shows_platform_id_fkey"
+      columns: ["platform_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["platform_id"]
+    },{
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "shows_venue_id_fkey"
+      columns: ["venue_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["id"]
     }
                   ]
                 },"stock_adjustments": {
@@ -1107,6 +1445,50 @@ isOneToOne: false
       referencedColumns: ["member_id"]
     }
                   ]
+                },"ticket_platforms": {
+                  Row: {
+                    "account_id": string,"active": boolean,"bearer": Database["public"]['Enums']["commission_bearer"],"commission_fixed_cents": number,"commission_pct": number,"contact_id": string | null,"created_at": string,"id": string,"name": string,"settlement_days": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"active"?: boolean,"bearer"?: Database["public"]['Enums']["commission_bearer"],"commission_fixed_cents"?: number,"commission_pct"?: number,"contact_id"?: string | null,"created_at"?: string,"id"?: string,"name": string,"settlement_days"?: number
+                  }
+                  Update: {
+                    "account_id"?: string,"active"?: boolean,"bearer"?: Database["public"]['Enums']["commission_bearer"],"commission_fixed_cents"?: number,"commission_pct"?: number,"contact_id"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"settlement_days"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ticket_platforms_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ticket_platforms_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_account_balances"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "ticket_platforms_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_receivables"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "ticket_platforms_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "v_trial_balance"
+      referencedColumns: ["account_id"]
+    },{
+      foreignKeyName: "ticket_platforms_contact_id_fkey"
+      columns: ["contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1140,7 +1522,7 @@ isOneToOne: false
                   ]
                 },"v_event_feed": {
                   Row: {
-                    "amount_cents": number | null,"captured_at": string,"category_emoji": string | null,"category_name": string | null,"client_id": string,"created_at": string,"created_by": string,"description": string | null,"direction": Database["public"]['Enums']["reclass_direction"] | null,"from_kind": Database["public"]['Enums']["transfer_party"] | null,"from_member": string | null,"fund_kind": Database["public"]['Enums']["fund_kind"] | null,"fund_member": string | null,"id": string,"note": string | null,"paid_with": Database["public"]['Enums']["paid_with"] | null,"pieces": number | null,"place": Database["public"]['Enums']["money_place"] | null,"project_id": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"status": Database["public"]['Enums']["event_status"],"stock_kind": Database["public"]['Enums']["inventory_kind"] | null,"to_kind": Database["public"]['Enums']["transfer_party"] | null,"to_member": string | null,"type": Database["public"]['Enums']["event_type"],"void_reason": string | null
+                    "amount_cents": number | null,"captured_at": string,"category_emoji": string | null,"category_name": string | null,"client_id": string,"created_at": string,"created_by": string,"description": string | null,"direction": Database["public"]['Enums']["reclass_direction"] | null,"from_kind": Database["public"]['Enums']["transfer_party"] | null,"from_member": string | null,"fund_kind": Database["public"]['Enums']["fund_kind"] | null,"fund_member": string | null,"id": string,"note": string | null,"paid_with": Database["public"]['Enums']["paid_with"] | null,"pieces": number | null,"place": Database["public"]['Enums']["money_place"] | null,"project_id": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"show_id": string | null,"show_name": string | null,"show_pending": boolean | null,"status": Database["public"]['Enums']["event_status"],"stock_kind": Database["public"]['Enums']["inventory_kind"] | null,"to_kind": Database["public"]['Enums']["transfer_party"] | null,"to_member": string | null,"type": Database["public"]['Enums']["event_type"],"void_reason": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1186,6 +1568,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
     },{
       foreignKeyName: "fund_movements_member_id_fkey"
       columns: ["fund_member"]
@@ -1272,7 +1672,29 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
     }
+                  ]
+                },"v_project_pnl": {
+                  Row: {
+                    "code": string,"costs_cents": number | null,"merch_cost_cents": number | null,"merch_revenue_cents": number | null,"name": string,"net_cents": number | null,"other_income_cents": number | null,"project_id": string,"show_income_cents": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_receivables": {
+                  Row: {
+                    "account_id": string,"balance_cents": number | null,"code": string,"name": string,"platform_id": string | null,"settlement_days": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
                   ]
                 },"v_results_by_period": {
                   Row: {
@@ -1294,6 +1716,32 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "projects"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "journal_lines_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    }
+                  ]
+                },"v_show_pnl": {
+                  Row: {
+                    "costs_cents": number | null,"date": string,"deal_type": Database["public"]['Enums']["deal_type"],"expected_income_cents": number,"merch_cost_cents": number | null,"merch_revenue_cents": number | null,"name": string,"net_cents": number | null,"other_income_cents": number | null,"project_id": string,"show_id": string,"show_income_cents": number | null,"status": Database["public"]['Enums']["show_status"]
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shows_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
     }
                   ]
                 },"v_trial_balance": {
@@ -1357,8 +1805,14 @@ isOneToOne: false
 "event_result":
 { Args: { "p_duplicate"?: boolean,"p_event": string }; Returns: Json
                            },
+"expected_show_income":
+{ Args: { "p_deal": Database["public"]['Enums']["deal_type"],"p_fee": number,"p_pct": number,"p_platform": string,"p_price": number,"p_tickets": number }; Returns: number
+                           },
 "insert_merch_detail":
 { Args: { "p_contador": boolean,"p_event": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"],"p_uid": string }; Returns: undefined
+                           },
+"insert_show_detail":
+{ Args: { "p_amount": number,"p_contador": boolean,"p_event": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"],"p_uid": string }; Returns: undefined
                            },
 "is_active_member":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -1385,6 +1839,15 @@ isOneToOne: false
 { Args: { "p_member": string,"p_place": Database["public"]['Enums']["money_place"] }; Returns: string
                            },
 "post_ajuste_stock":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_anticipo_show":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_cierre_show":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_cobro_pendiente":
 { Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
                            },
 "post_compra":
@@ -1423,14 +1886,23 @@ isOneToOne: false
 "save_product":
 { Args: { "p_payload": Json }; Returns: string
                            },
+"save_show":
+{ Args: { "p_payload": Json }; Returns: string
+                           },
+"save_ticket_platform":
+{ Args: { "p_payload": Json }; Returns: string
+                           },
 "seed_account":
 { Args: { "p_code": string,"p_name": string,"p_nature": Database["public"]['Enums']["account_nature"],"p_postable"?: boolean,"p_type": Database["public"]['Enums']["account_type"] }; Returns: string
                            },
 "set_active_context":
-{ Args: { "p_project_id": string }; Returns: undefined
+{ Args: { "p_project_id": string,"p_show_id"?: string }; Returns: undefined
                            },
 "set_product_photo":
 { Args: { "p_path": string,"p_product_id": string }; Returns: undefined
+                           },
+"set_show_cancelled":
+{ Args: { "p_cancelled": boolean,"p_show_id": string }; Returns: undefined
                            },
 "submit_event":
 { Args: { "p_captured_at": string,"p_client_id": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"] }; Returns: Json
@@ -1443,7 +1915,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "account_nature": "deudora"|"acreedora","account_type": "activo"|"pasivo"|"patrimonio"|"ingreso"|"costo"|"gasto"|"otro","category_kind": "gasto"|"ingreso","contact_kind": "venue"|"proveedor"|"tercero"|"boletera"|"otro","event_status": "registrado"|"pendiente_confirmacion"|"rechazado"|"anulado","event_type": "gasto"|"ingreso"|"entrega_efectivo"|"puse_dinero"|"reclasificacion"|"regreso_dinero"|"pago_proveedor"|"venta_merch"|"compra_merch"|"salida_merch"|"ajuste_inventario","fund_kind": "prestamo"|"aportacion"|"reclasificacion"|"regreso","inventory_kind": "compra"|"venta"|"regalo"|"merma"|"ajuste"|"anulacion","member_account_kind": "efectivo"|"por_regresar"|"reparto_por_pagar"|"aportaciones"|"repartos","merch_category": "playeras"|"vinilos_cd"|"stickers"|"pines"|"canas"|"otros","money_place": "efectivo_integrante"|"caja"|"cuenta_banda","paid_with": "efectivo_banda"|"caja"|"cuenta_banda"|"mi_dinero"|"pendiente","payment_method": "efectivo"|"transferencia","period_status": "abierto"|"cerrado","project_status": "planeado"|"activo"|"cerrado","reclass_direction": "a_aportacion"|"a_prestamo","sale_channel": "show"|"bandcamp"|"tienda_web"|"otro","settlement_pref": "reembolso"|"compensar_reparto"|"aportacion","transfer_party": "integrante"|"caja"|"banco","user_role": "integrante"|"contador","visible_to": "todos"|"contador"
+            "account_nature": "deudora"|"acreedora","account_type": "activo"|"pasivo"|"patrimonio"|"ingreso"|"costo"|"gasto"|"otro","category_kind": "gasto"|"ingreso","commission_bearer": "publico"|"banda","contact_kind": "venue"|"proveedor"|"tercero"|"boletera"|"otro","deal_type": "fee_fijo"|"porcentaje_taquilla"|"fee_mas_porcentaje"|"boletaje_propio"|"sin_pago","event_status": "registrado"|"pendiente_confirmacion"|"rechazado"|"anulado","event_type": "gasto"|"ingreso"|"entrega_efectivo"|"puse_dinero"|"reclasificacion"|"regreso_dinero"|"pago_proveedor"|"venta_merch"|"compra_merch"|"salida_merch"|"ajuste_inventario"|"cierre_show"|"anticipo_show"|"cobro_pendiente","fund_kind": "prestamo"|"aportacion"|"reclasificacion"|"regreso","inventory_kind": "compra"|"venta"|"regalo"|"merma"|"ajuste"|"anulacion","member_account_kind": "efectivo"|"por_regresar"|"reparto_por_pagar"|"aportaciones"|"repartos","merch_category": "playeras"|"vinilos_cd"|"stickers"|"pines"|"canas"|"otros","money_place": "efectivo_integrante"|"caja"|"cuenta_banda","paid_with": "efectivo_banda"|"caja"|"cuenta_banda"|"mi_dinero"|"pendiente","payment_method": "efectivo"|"transferencia","period_status": "abierto"|"cerrado","project_status": "planeado"|"activo"|"cerrado","reclass_direction": "a_aportacion"|"a_prestamo","sale_channel": "show"|"bandcamp"|"tienda_web"|"otro","settlement_pref": "reembolso"|"compensar_reparto"|"aportacion","show_status": "programado"|"realizado"|"cerrado"|"cancelado","transfer_party": "integrante"|"caja"|"banco","user_role": "integrante"|"contador","visible_to": "todos"|"contador"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1563,7 +2035,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "account_nature": ["deudora", "acreedora"],"account_type": ["activo", "pasivo", "patrimonio", "ingreso", "costo", "gasto", "otro"],"category_kind": ["gasto", "ingreso"],"contact_kind": ["venue", "proveedor", "tercero", "boletera", "otro"],"event_status": ["registrado", "pendiente_confirmacion", "rechazado", "anulado"],"event_type": ["gasto", "ingreso", "entrega_efectivo", "puse_dinero", "reclasificacion", "regreso_dinero", "pago_proveedor", "venta_merch", "compra_merch", "salida_merch", "ajuste_inventario"],"fund_kind": ["prestamo", "aportacion", "reclasificacion", "regreso"],"inventory_kind": ["compra", "venta", "regalo", "merma", "ajuste", "anulacion"],"member_account_kind": ["efectivo", "por_regresar", "reparto_por_pagar", "aportaciones", "repartos"],"merch_category": ["playeras", "vinilos_cd", "stickers", "pines", "canas", "otros"],"money_place": ["efectivo_integrante", "caja", "cuenta_banda"],"paid_with": ["efectivo_banda", "caja", "cuenta_banda", "mi_dinero", "pendiente"],"payment_method": ["efectivo", "transferencia"],"period_status": ["abierto", "cerrado"],"project_status": ["planeado", "activo", "cerrado"],"reclass_direction": ["a_aportacion", "a_prestamo"],"sale_channel": ["show", "bandcamp", "tienda_web", "otro"],"settlement_pref": ["reembolso", "compensar_reparto", "aportacion"],"transfer_party": ["integrante", "caja", "banco"],"user_role": ["integrante", "contador"],"visible_to": ["todos", "contador"]
+            "account_nature": ["deudora", "acreedora"],"account_type": ["activo", "pasivo", "patrimonio", "ingreso", "costo", "gasto", "otro"],"category_kind": ["gasto", "ingreso"],"commission_bearer": ["publico", "banda"],"contact_kind": ["venue", "proveedor", "tercero", "boletera", "otro"],"deal_type": ["fee_fijo", "porcentaje_taquilla", "fee_mas_porcentaje", "boletaje_propio", "sin_pago"],"event_status": ["registrado", "pendiente_confirmacion", "rechazado", "anulado"],"event_type": ["gasto", "ingreso", "entrega_efectivo", "puse_dinero", "reclasificacion", "regreso_dinero", "pago_proveedor", "venta_merch", "compra_merch", "salida_merch", "ajuste_inventario", "cierre_show", "anticipo_show", "cobro_pendiente"],"fund_kind": ["prestamo", "aportacion", "reclasificacion", "regreso"],"inventory_kind": ["compra", "venta", "regalo", "merma", "ajuste", "anulacion"],"member_account_kind": ["efectivo", "por_regresar", "reparto_por_pagar", "aportaciones", "repartos"],"merch_category": ["playeras", "vinilos_cd", "stickers", "pines", "canas", "otros"],"money_place": ["efectivo_integrante", "caja", "cuenta_banda"],"paid_with": ["efectivo_banda", "caja", "cuenta_banda", "mi_dinero", "pendiente"],"payment_method": ["efectivo", "transferencia"],"period_status": ["abierto", "cerrado"],"project_status": ["planeado", "activo", "cerrado"],"reclass_direction": ["a_aportacion", "a_prestamo"],"sale_channel": ["show", "bandcamp", "tienda_web", "otro"],"settlement_pref": ["reembolso", "compensar_reparto", "aportacion"],"show_status": ["programado", "realizado", "cerrado", "cancelado"],"transfer_party": ["integrante", "caja", "banco"],"user_role": ["integrante", "contador"],"visible_to": ["todos", "contador"]
           }
         }
 } as const
