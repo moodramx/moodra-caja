@@ -16,10 +16,10 @@ import { Route as AppComponentesRouteImport } from './routes/_app/componentes'
 import { Route as AppMasRouteImport } from './routes/_app/mas'
 import { Route as AppMerchRouteImport } from './routes/_app/merch'
 import { Route as AppMovimientosRouteImport } from './routes/_app/movimientos'
+import { Route as AppProyectosRouteImport } from './routes/_app/proyectos'
 import { Route as AppReportesRouteImport } from './routes/_app/reportes'
 import { Route as AppContadorBalanzaRouteImport } from './routes/_app/contador/balanza'
 import { Route as AppContadorDiarioRouteImport } from './routes/_app/contador/diario'
-import { Route as AppContadorProyectosRouteImport } from './routes/_app/contador/proyectos'
 import { Route as AppContadorUsuariosRouteImport } from './routes/_app/contador/usuarios'
 
 const AppRoute = AppRouteImport.update({
@@ -56,6 +56,11 @@ const AppMovimientosRoute = AppMovimientosRouteImport.update({
   path: '/movimientos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProyectosRoute = AppProyectosRouteImport.update({
+  id: '/proyectos',
+  path: '/proyectos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppReportesRoute = AppReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -71,11 +76,6 @@ const AppContadorDiarioRoute = AppContadorDiarioRouteImport.update({
   path: '/contador/diario',
   getParentRoute: () => AppRoute,
 } as any)
-const AppContadorProyectosRoute = AppContadorProyectosRouteImport.update({
-  id: '/contador/proyectos',
-  path: '/contador/proyectos',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppContadorUsuariosRoute = AppContadorUsuariosRouteImport.update({
   id: '/contador/usuarios',
   path: '/contador/usuarios',
@@ -89,10 +89,10 @@ export interface FileRoutesByFullPath {
   '/mas': typeof AppMasRoute
   '/merch': typeof AppMerchRoute
   '/movimientos': typeof AppMovimientosRoute
+  '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/diario': typeof AppContadorDiarioRoute
-  '/contador/proyectos': typeof AppContadorProyectosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
 }
 export interface FileRoutesByTo {
@@ -101,11 +101,11 @@ export interface FileRoutesByTo {
   '/mas': typeof AppMasRoute
   '/merch': typeof AppMerchRoute
   '/movimientos': typeof AppMovimientosRoute
+  '/proyectos': typeof AppProyectosRoute
   '/reportes': typeof AppReportesRoute
   '/': typeof AppIndexRoute
   '/contador/balanza': typeof AppContadorBalanzaRoute
   '/contador/diario': typeof AppContadorDiarioRoute
-  '/contador/proyectos': typeof AppContadorProyectosRoute
   '/contador/usuarios': typeof AppContadorUsuariosRoute
 }
 export interface FileRoutesById {
@@ -116,11 +116,11 @@ export interface FileRoutesById {
   '/_app/mas': typeof AppMasRoute
   '/_app/merch': typeof AppMerchRoute
   '/_app/movimientos': typeof AppMovimientosRoute
+  '/_app/proyectos': typeof AppProyectosRoute
   '/_app/reportes': typeof AppReportesRoute
   '/_app/': typeof AppIndexRoute
   '/_app/contador/balanza': typeof AppContadorBalanzaRoute
   '/_app/contador/diario': typeof AppContadorDiarioRoute
-  '/_app/contador/proyectos': typeof AppContadorProyectosRoute
   '/_app/contador/usuarios': typeof AppContadorUsuariosRoute
 }
 export interface FileRouteTypes {
@@ -132,10 +132,10 @@ export interface FileRouteTypes {
     | '/mas'
     | '/merch'
     | '/movimientos'
+    | '/proyectos'
     | '/reportes'
     | '/contador/balanza'
     | '/contador/diario'
-    | '/contador/proyectos'
     | '/contador/usuarios'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -144,11 +144,11 @@ export interface FileRouteTypes {
     | '/mas'
     | '/merch'
     | '/movimientos'
+    | '/proyectos'
     | '/reportes'
     | '/'
     | '/contador/balanza'
     | '/contador/diario'
-    | '/contador/proyectos'
     | '/contador/usuarios'
   id:
     | '__root__'
@@ -158,11 +158,11 @@ export interface FileRouteTypes {
     | '/_app/mas'
     | '/_app/merch'
     | '/_app/movimientos'
+    | '/_app/proyectos'
     | '/_app/reportes'
     | '/_app/'
     | '/_app/contador/balanza'
     | '/_app/contador/diario'
-    | '/_app/contador/proyectos'
     | '/_app/contador/usuarios'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMovimientosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/proyectos': {
+      id: '/_app/proyectos'
+      path: '/proyectos'
+      fullPath: '/proyectos'
+      preLoaderRoute: typeof AppProyectosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/reportes': {
       id: '/_app/reportes'
       path: '/reportes'
@@ -243,13 +250,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContadorDiarioRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/contador/proyectos': {
-      id: '/_app/contador/proyectos'
-      path: '/contador/proyectos'
-      fullPath: '/contador/proyectos'
-      preLoaderRoute: typeof AppContadorProyectosRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/contador/usuarios': {
       id: '/_app/contador/usuarios'
       path: '/contador/usuarios'
@@ -265,11 +265,11 @@ interface AppRouteChildren {
   AppMasRoute: typeof AppMasRoute
   AppMerchRoute: typeof AppMerchRoute
   AppMovimientosRoute: typeof AppMovimientosRoute
+  AppProyectosRoute: typeof AppProyectosRoute
   AppReportesRoute: typeof AppReportesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppContadorBalanzaRoute: typeof AppContadorBalanzaRoute
   AppContadorDiarioRoute: typeof AppContadorDiarioRoute
-  AppContadorProyectosRoute: typeof AppContadorProyectosRoute
   AppContadorUsuariosRoute: typeof AppContadorUsuariosRoute
 }
 
@@ -278,11 +278,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppMasRoute: AppMasRoute,
   AppMerchRoute: AppMerchRoute,
   AppMovimientosRoute: AppMovimientosRoute,
+  AppProyectosRoute: AppProyectosRoute,
   AppReportesRoute: AppReportesRoute,
   AppIndexRoute: AppIndexRoute,
   AppContadorBalanzaRoute: AppContadorBalanzaRoute,
   AppContadorDiarioRoute: AppContadorDiarioRoute,
-  AppContadorProyectosRoute: AppContadorProyectosRoute,
   AppContadorUsuariosRoute: AppContadorUsuariosRoute,
 }
 

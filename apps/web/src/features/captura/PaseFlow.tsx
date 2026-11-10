@@ -3,7 +3,8 @@ import { useAuth } from '../../lib/auth'
 import type { EntregaPayload } from '../../lib/events'
 import { describeEntrega } from '../../lib/humanize'
 import { entryToCents } from '../../lib/money'
-import { useActiveProject, useProfiles } from '../../lib/queries'
+import { useProfiles } from '../../lib/queries'
+import { useCaptureProject } from '../proyectos/Proyectos'
 import { AmountStep, Confirm, Option, Step, useCapture } from './parts'
 
 type StepName = 'monto' | 'destino' | 'confirmar'
@@ -14,7 +15,7 @@ type Target =
 export function PaseFlow({ onDone }: { onDone: () => void }) {
   const { profile } = useAuth()
   const profiles = useProfiles()
-  const context = useActiveProject()
+  const captureProject = useCaptureProject()
   const capture = useCapture()
 
   const [step, setStep] = useState<StepName>('monto')
@@ -70,7 +71,7 @@ export function PaseFlow({ onDone }: { onDone: () => void }) {
     amount_cents: Number(entryToCents(amount)),
     to_kind: target.to_kind,
     to_member: target.to_kind === 'integrante' ? target.to_member : undefined,
-    project_id: context.id,
+    project_id: captureProject.projectId,
   }
   const needsDiego = target.to_kind !== 'integrante' && profile?.role !== 'contador'
 

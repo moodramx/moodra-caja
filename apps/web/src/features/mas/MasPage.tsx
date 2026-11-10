@@ -8,7 +8,6 @@ import { InstallButton } from '../pwa/InstallGuide'
 
 const CONTADOR_LINKS = [
   { to: '/contador/usuarios', label: '👥 Usuarios' },
-  { to: '/contador/proyectos', label: '🚐 Giras y proyectos' },
   { to: '/contador/diario', label: '📒 Libro diario' },
   { to: '/contador/balanza', label: '⚖️ Balanza' },
 ] as const
@@ -67,6 +66,12 @@ export function MasPage() {
       )}
 
       <Card>
+        <Link to="/proyectos" className={rowClass}>
+          <span className="font-semibold">🚐 Giras y proyectos</span>
+          <span aria-hidden="true" className="text-ink-muted">
+            ›
+          </span>
+        </Link>
         <Link to="/componentes" className={rowClass}>
           <span className="font-semibold">🎛️ Probar componentes</span>
           <span aria-hidden="true" className="text-ink-muted">

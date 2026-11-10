@@ -20,10 +20,10 @@ import {
 import { supabase } from '../../lib/supabase'
 import { CobreFlow } from '../captura/CobreFlow'
 import { GasteFlow } from '../captura/GasteFlow'
-import { Option } from '../captura/parts'
 import { PaseFlow } from '../captura/PaseFlow'
 import { PuseFlow } from '../captura/PuseFlow'
 import { Feed, useFeedIsEmpty } from '../feed/Feed'
+import { ProjectList } from '../proyectos/Proyectos'
 import { InstallBanner } from '../pwa/InstallGuide'
 
 type FlowName = 'gaste' | 'cobre' | 'pase' | 'puse'
@@ -94,28 +94,7 @@ function ContextChip() {
         title="¿En qué andamos?"
         description="Lo que registre la banda se etiqueta con esto."
       >
-        <div className="space-y-2">
-          <Option
-            emoji="🏠"
-            label="Operación general"
-            hint="Nada en especial"
-            onClick={() => void choose(null)}
-          />
-          {projects.data?.map((p) => (
-            <Option
-              key={p.id}
-              emoji={p.type?.emoji ?? '📁'}
-              label={p.name}
-              hint={p.type?.name}
-              onClick={() => void choose(p.id)}
-            />
-          ))}
-          {projects.data?.length === 0 && (
-            <p className="pt-2 text-sm text-ink-muted">
-              Diego puede dar de alta giras y proyectos.
-            </p>
-          )}
-        </div>
+        {open && <ProjectList onSelect={(next) => void choose(next?.id ?? null)} />}
       </BottomSheet>
     </>
   )

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { Category, IngresoPayload, MoneyPlace } from '../../lib/events'
 import { describeIngreso, INCOME_PLACE_OPTIONS } from '../../lib/humanize'
 import { entryToCents } from '../../lib/money'
-import { useActiveProject, useCategories } from '../../lib/queries'
+import { useCategories } from '../../lib/queries'
+import { ProjectPicker, useCaptureProject } from '../proyectos/Proyectos'
 import { AmountStep, Confirm, Option, Step, useCapture } from './parts'
 
 type StepName = 'tipo' | 'monto' | 'destino' | 'confirmar'
@@ -10,7 +11,7 @@ type StepName = 'tipo' | 'monto' | 'destino' | 'confirmar'
 /** Cobré: de qué fue → monto → dónde quedó → confirmar. */
 export function CobreFlow({ onDone }: { onDone: () => void }) {
   const categories = useCategories()
-  const context = useActiveProject()
+  const target = useCaptureProject()
   const capture = useCapture()
 
   const [step, setStep] = useState<StepName>('tipo')
@@ -38,7 +39,7 @@ export function CobreFlow({ onDone }: { onDone: () => void }) {
           ))}
         </div>
         <p className="text-sm text-ink-muted">
-          El pago de un show y la venta de merch tendrán su propio botón muy pronto.
+          La venta de merch tendrá su propio botón muy pronto.
         </p>
       </Step>
     )
@@ -77,7 +78,7 @@ export function CobreFlow({ onDone }: { onDone: () => void }) {
     amount_cents: Number(entryToCents(amount)),
     category_id: category.id,
     destination,
-    project_id: context.id,
+    project_id: target.projectId,
   }
 
   return (
@@ -88,7 +89,9 @@ export function CobreFlow({ onDone }: { onDone: () => void }) {
           void capture('ingreso', payload)
           onDone()
         }}
-      />
+      >
+        <ProjectPicker project={target.project} onChange={target.setProjectId} />
+      </Confirm>
     </Step>
   )
 }

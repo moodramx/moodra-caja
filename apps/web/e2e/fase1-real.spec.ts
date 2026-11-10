@@ -182,12 +182,13 @@ test('el contador ve el libro diario y la balanza cuadra', async () => {
   await expect(b.getByText('Entrega de efectivo').first()).toBeVisible()
 })
 
-test('el contador crea una gira y cualquiera la pone como contexto', async () => {
+test('se crea una gira y cualquiera la pone como contexto', async () => {
   await nav(b, 'Más')
   await b.getByRole('link', { name: /Giras y proyectos/ }).click()
-  await b.getByRole('button', { name: 'Nuevo proyecto' }).click()
+  await b.getByRole('button', { name: 'Nueva gira, show o proyecto' }).click()
+  await b.getByRole('dialog').getByRole('button', { name: 'Gira', exact: true }).click()
   await b.getByRole('dialog').getByLabel('Nombre').fill(`Gira ${run}`)
-  await b.getByRole('dialog').getByRole('button', { name: 'Crear proyecto' }).click()
+  await b.getByRole('dialog').getByRole('button', { name: 'Crear', exact: true }).click()
   await expect(b.getByText(`Gira ${run}`).first()).toBeVisible()
 
   await a.reload()
@@ -209,4 +210,31 @@ test('el contador crea una gira y cualquiera la pone como contexto', async () =>
   await chip.click()
   await pick(a, /Operación general/)
   await expect(chip).toContainText('Operación general')
+})
+
+test('un integrante crea un show al registrar un gasto y se lo asigna', async () => {
+  await a.getByRole('button', { name: 'Gasté' }).click()
+  await typeAmount(a, '70')
+  await pick(a, /Comida/)
+  await pick(a, /Cuenta de la banda/)
+
+  const sheet = a.getByRole('dialog')
+  await sheet.getByRole('button', { name: 'Cambiar para qué fue' }).click()
+  await expect(sheet.getByRole('button', { name: /Ensayos generales/ })).toBeVisible()
+  await sheet.getByRole('button', { name: /Nueva gira, show o proyecto/ }).click()
+  await sheet.getByLabel('Nombre').fill(`Show ${run}`)
+  await sheet.getByRole('button', { name: 'Crear', exact: true }).click()
+
+  await expect(sheet).toContainText(`para Show ${run}`)
+  await pick(a, 'Guardar')
+  await expect(sync(a)).toContainText('Todo al día', { timeout: 15_000 })
+
+  // El show nuevo le aparece al otro integrante, y el contexto general no cambió.
+  await expect(a.getByRole('button', { name: 'Cambiar en qué andamos' })).toContainText(
+    'Operación general',
+  )
+  await nav(b, 'Más')
+  await b.getByRole('link', { name: /Giras y proyectos/ }).click()
+  await expect(b.getByText(`Show ${run}`)).toBeVisible({ timeout: 15_000 })
+  await expect(b.getByText('Ensayos generales')).toBeVisible()
 })

@@ -3,7 +3,8 @@ import { useAuth } from '../../lib/auth'
 import type { PuseDineroPayload } from '../../lib/events'
 import { describePuse } from '../../lib/humanize'
 import { entryToCents } from '../../lib/money'
-import { useActiveProject, useProfiles } from '../../lib/queries'
+import { useProfiles } from '../../lib/queries'
+import { useCaptureProject } from '../proyectos/Proyectos'
 import { AmountStep, Confirm, Option, Step, useCapture } from './parts'
 
 type StepName = 'monto' | 'destino' | 'quien' | 'tipo' | 'confirmar'
@@ -12,7 +13,7 @@ type StepName = 'monto' | 'destino' | 'quien' | 'tipo' | 'confirmar'
 export function PuseFlow({ onDone }: { onDone: () => void }) {
   const { profile } = useAuth()
   const profiles = useProfiles()
-  const context = useActiveProject()
+  const target = useCaptureProject()
   const capture = useCapture()
 
   const [step, setStep] = useState<StepName>('monto')
@@ -106,7 +107,7 @@ export function PuseFlow({ onDone }: { onDone: () => void }) {
     destination,
     holder_member_id: holder?.id,
     kind,
-    project_id: context.id,
+    project_id: target.projectId,
   }
 
   return (

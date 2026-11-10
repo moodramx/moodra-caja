@@ -67,7 +67,9 @@ update public.profiles set display_name = 'Pepe' where username = 'pgtap-pepe';
 select is((select name from public.accounts where member_id = pg_temp.uid('pepe') and member_kind = 'por_regresar'),
   'Por regresar a Pepe', 'el nombre de la cuenta sigue al del integrante');
 select is((select count(*)::int from public.categories where kind = 'gasto'), 14, 'categorías de gasto sembradas');
-select is((select count(*)::int from public.project_types), 12, 'tipos de proyecto sembrados');
+select is((select count(*)::int from public.project_types), 13, 'tipos de proyecto sembrados');
+select is((select name from public.projects where code = 'ENS-2026-01'), 'Ensayos generales',
+  'existe el proyecto Ensayos generales');
 
 -- ---------------------------------------------------------------------------
 -- B. Gasto: todas las formas de pago (PRD §5.3)
@@ -164,6 +166,9 @@ select is(pg_temp.asiento(pg_temp.ev('ingreso', jsonb_build_object('amount_cents
 select is(pg_temp.asiento(pg_temp.ev('ingreso', jsonb_build_object('amount_cents', 300000,
     'category_id', pg_temp.cat('patrocinio'), 'destination', 'efectivo_integrante'))),
   'efectivo@pepe D300000 | 4.4 C300000', 'patrocinio en efectivo queda en poder de quien cobró');
+select is(pg_temp.asiento(pg_temp.ev('ingreso', jsonb_build_object('amount_cents', 800000,
+    'category_id', pg_temp.cat('show-en-vivo'), 'destination', 'efectivo_integrante'))),
+  'efectivo@pepe D800000 | 4.1.01 C800000', 'cobro de un show en vivo, en efectivo');
 select is(pg_temp.asiento(pg_temp.ev('ingreso', jsonb_build_object('amount_cents', 5000,
     'category_id', pg_temp.cat('otro-ingreso'), 'destination', 'caja'))),
   '1.1.01 D5000 | 4.9 C5000', 'otro ingreso guardado en la caja');
@@ -423,8 +428,14 @@ select throws_ok($$ update public.periods set status = 'abierto' $$, '42501', nu
   'un integrante no reabre periodos');
 select throws_ok($$ select public.post_entry(current_date, null, 'x', null, '[]'::jsonb) $$,
   '42501', null, 'las funciones internas de posteo no son invocables');
-select throws_ok($$ select public.create_project('GIR', 'Intento') $$, '42501', null,
-  'un integrante no crea proyectos');
+select lives_ok($$ select public.create_project('SHW', 'Foro de prueba') $$,
+  'cualquier integrante crea giras, shows y proyectos');
+select throws_ok($$ select public.create_project('SHW', 'Con presupuesto', null, null, 100000) $$, '42501', null,
+  'el presupuesto solo lo pone el contador');
+select throws_ok($$ select public.create_project('OPE', 'Otra operación') $$, 'P0001', null,
+  'no se crean proyectos de tipo operación general');
+select throws_ok($$ select public.create_project('SHW', '  ') $$, 'P0001', null,
+  'un proyecto necesita nombre');
 select lives_ok($$ select public.set_active_context((select id from public.projects limit 1)) $$,
   'cualquier integrante cambia el contexto activo');
 select isnt((select active_project_id from public.app_settings), null, 'el contexto activo quedó puesto');

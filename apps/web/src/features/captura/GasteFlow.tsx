@@ -4,7 +4,8 @@ import { useAuth } from '../../lib/auth'
 import type { Category, GastoPayload, PaidWith, SettlementPref } from '../../lib/events'
 import { describeGasto, PAID_WITH_OPTIONS, SETTLEMENT_OPTIONS } from '../../lib/humanize'
 import { entryToCents } from '../../lib/money'
-import { useActiveProject, useCategories } from '../../lib/queries'
+import { useCategories } from '../../lib/queries'
+import { ProjectPicker, useCaptureProject } from '../proyectos/Proyectos'
 import { AmountStep, Confirm, fieldClass, Option, Step, useCapture } from './parts'
 
 type StepName = 'monto' | 'categoria' | 'pago' | 'acuerdo' | 'confirmar'
@@ -13,7 +14,7 @@ type StepName = 'monto' | 'categoria' | 'pago' | 'acuerdo' | 'confirmar'
 export function GasteFlow({ onDone }: { onDone: () => void }) {
   const { profile } = useAuth()
   const categories = useCategories()
-  const context = useActiveProject()
+  const target = useCaptureProject()
   const capture = useCapture()
 
   const [step, setStep] = useState<StepName>('monto')
@@ -38,7 +39,7 @@ export function GasteFlow({ onDone }: { onDone: () => void }) {
           category_id: category.id,
           paid_with: paidWith,
           settlement_pref: paidWith === 'mi_dinero' ? pref : undefined,
-          project_id: context.id,
+          project_id: target.projectId,
           description: description.trim() || undefined,
         }
       : null
@@ -133,12 +134,13 @@ export function GasteFlow({ onDone }: { onDone: () => void }) {
     >
       {payload && category && (
         <Confirm
-          text={describeGasto(payload, category, context.project?.name)}
+          text={describeGasto(payload, category, target.project?.name)}
           onSave={() => {
             void capture('gasto', payload)
             onDone()
           }}
         >
+          <ProjectPicker project={target.project} onChange={target.setProjectId} />
           <label className="block space-y-2">
             <span className="text-sm text-ink-muted">Nota (opcional)</span>
             <input

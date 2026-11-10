@@ -30,6 +30,7 @@ export default tseslint.config(
       'src/lib/mode.tsx',
       'src/features/feed/Feed.tsx',
       'src/features/captura/parts.tsx',
+      'src/features/proyectos/Proyectos.tsx',
       'src/main.tsx',
     ],
     rules: { 'react-refresh/only-export-components': 'off' },

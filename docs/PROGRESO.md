@@ -1,8 +1,8 @@
 # PROGRESO — Moodra $$
 
-## Fase 1 — Núcleo contable + captura básica · 2026-11-10 · **lista en local, sin publicar**
+## Fase 1 — Núcleo contable + captura básica · 2026-11-10 · **publicada, en revisión de Diego**
 
-Vive en la rama `fase-1`. Todavía **no** está en `main`, ni en Netlify, ni en la base de la nube.
+Está en `main` y en la base de desarrollo de la nube. Falta comprobarla en un celular con la app instalada (el sitio de Netlify sigue protegido).
 
 ### Hecho y verificado en la compu
 
@@ -14,11 +14,18 @@ Vive en la rama `fase-1`. Todavía **no** está en `main`, ni en Netlify, ni en 
 - **Contexto activo**: "¿En qué andamos?" sincronizado en vivo.
 - **Contador**: libro diario, balanza y alta de giras y proyectos.
 
+### Ajustes posteriores (2026-11-10)
+
+- **Cobré → 🎤 Show en vivo**.
+- **Todos pueden crear giras, shows y proyectos** (Más → Giras y proyectos, o desde "¿En qué andamos?").
+- **Cada gasto o cobro se puede asignar a un proyecto** al confirmarlo: "Para: … · Cambiar".
+- Proyecto **Ensayos generales** ya creado.
+
 ### Pruebas (todas en verde)
 
 | Suite                                               | Resultado |
 | --------------------------------------------------- | --------- |
-| pgTAP (asientos, idempotencia, anulación, permisos) | 138/138   |
+| pgTAP (asientos, idempotencia, anulación, permisos) | 143/143   |
 | Vitest (dinero, outbox, sync, textos, saldos)       | 50/50     |
 | Playwright con sesión simulada                      | 11/11     |
 | Playwright real contra Supabase local               | 8/8       |
@@ -32,7 +39,6 @@ Los tres criterios de aceptación del plan están cubiertos por la prueba real `
 
 ### Lo que NO está hecho o quedó distinto
 
-1. **No está publicado**: falta pasar `fase-1` a `main`, subir las migraciones a la nube y que Netlify despliegue.
 2. **No se ha probado en un celular real**, solo en navegador con tamaño de celular.
 3. **Regresar dinero, pagar a proveedor y reclasificar** funcionan en la base y están probados, pero aún no tienen pantalla (el plan solo pide cuatro flujos en esta fase).
 4. **Peso de Inicio: ~224 KB gzip de JS**, arriba del límite de 200 KB del PRD. Queda para la auditoría de rendimiento de la Fase 6.

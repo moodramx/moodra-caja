@@ -1,18 +1,10 @@
 // Vista contador mínima de la Fase 1. Aquí SÍ se habla en contabilidad.
-import { useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { Navigate } from '@tanstack/react-router'
-import { BottomSheet } from '../../design/BottomSheet'
-import { Button } from '../../design/Button'
-import { Chip } from '../../design/Chip'
 import { Card, EmptyState, Page } from '../../design/Page'
-import { useToast } from '../../design/Toast'
 import { useAuth } from '../../lib/auth'
 import { formatMXN } from '../../lib/money'
-import { useJournal, useProjects, useProjectTypes, useTrialBalance } from '../../lib/queries'
-import { supabase } from '../../lib/supabase'
-import { fieldClass } from '../captura/parts'
+import { useJournal, useTrialBalance } from '../../lib/queries'
 
 const cents = (value: number | null) => (value ? formatMXN(BigInt(value)) : '')
 
@@ -132,106 +124,6 @@ export function BalanzaPage() {
             </table>
           </Card>
         )}
-      </Page>
-    </ContadorOnly>
-  )
-}
-
-export function ProyectosPage() {
-  const projects = useProjects()
-  const types = useProjectTypes()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [typeCode, setTypeCode] = useState('GIR')
-
-  const create = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc('create_project', {
-        p_type_code: typeCode,
-        p_name: name.trim(),
-      })
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['projects'] })
-      toast({ message: `Listo: "${name.trim()}" ya se puede elegir en Inicio.` })
-      setName('')
-      setOpen(false)
-    },
-  })
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (name.trim()) create.mutate()
-  }
-
-  return (
-    <ContadorOnly>
-      <Page number="C4" title="Giras y proyectos">
-        {projects.data?.length === 0 && (
-          <EmptyState
-            emoji="🚐"
-            title="Sin proyectos"
-            hint="Crea una gira o un show para etiquetar lo que se registre."
-          />
-        )}
-        {projects.data && projects.data.length > 0 && (
-          <Card className="divide-y divide-line">
-            {projects.data.map((project) => (
-              <div key={project.id} className="flex min-h-14 items-center gap-3 py-2">
-                <span aria-hidden="true" className="text-2xl">
-                  {project.type?.emoji}
-                </span>
-                <span>
-                  <span className="block font-semibold">{project.name}</span>
-                  <span className="label-mono block text-ink-muted">{project.code}</span>
-                </span>
-              </div>
-            ))}
-          </Card>
-        )}
-        <Button size="lg" block onClick={() => setOpen(true)}>
-          Nuevo proyecto
-        </Button>
-
-        <BottomSheet open={open} onOpenChange={setOpen} title="Nuevo proyecto">
-          <form onSubmit={submit} className="space-y-4" noValidate>
-            <label className="block space-y-2">
-              <span className="text-sm text-ink-muted">Nombre</span>
-              <input
-                className={fieldClass}
-                value={name}
-                maxLength={80}
-                placeholder="Ej. Gira Bajío 2026"
-                onChange={(event) => setName(event.target.value)}
-              />
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {types.data
-                ?.filter((type) => type.code !== 'OPE')
-                .map((type) => (
-                  <Chip
-                    key={type.code}
-                    emoji={type.emoji}
-                    selected={typeCode === type.code}
-                    onClick={() => setTypeCode(type.code)}
-                  >
-                    {type.name}
-                  </Chip>
-                ))}
-            </div>
-            {create.error && (
-              <p role="alert" className="text-danger">
-                {create.error.message}
-              </p>
-            )}
-            <Button type="submit" size="lg" block disabled={!name.trim() || create.isPending}>
-              {create.isPending ? 'Creando…' : 'Crear proyecto'}
-            </Button>
-          </form>
-        </BottomSheet>
       </Page>
     </ContadorOnly>
   )
