@@ -36,7 +36,7 @@ export function Button({
       className={cx(
         'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
         'transition-[background-color,transform] duration-100 select-none active:scale-[0.98]',
-        'disabled:pointer-events-none disabled:opacity-40',
+        'disabled:pointer-events-none disabled:border disabled:border-line disabled:bg-surface-2 disabled:text-ink-faint',
         variants[variant],
         sizes[size],
         block && 'w-full',

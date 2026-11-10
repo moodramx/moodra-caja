@@ -1,20 +1,20 @@
 // Tokens para uso desde JS (gráficas, PDF, meta tags). Los estilos usan las
 // variables CSS de src/index.css, que son la fuente de verdad; estos valores
-// deben coincidir con ellas. Origen: moodra.mx (site/css/styles.css).
+// deben coincidir con ellas. Tema claro; tipografías y formas de moodra.mx.
 export const tokens = {
   color: {
-    bg: '#0b0a0c',
-    surface: '#141216',
-    surface2: '#1e1b21',
-    line: 'rgba(239, 233, 223, 0.16)',
-    ink: '#efe9df',
-    inkMuted: '#a9a298',
-    accent: '#c9a7ff',
-    violet: '#b026d9',
-    in: '#8fd6a8',
-    pending: '#f2b84b',
-    void: '#8a847b',
-    danger: '#f29c9c',
+    bg: '#ffffff',
+    surface: '#f6f3ee',
+    surface2: '#ebe6dd',
+    line: 'rgba(11, 10, 12, 0.16)',
+    ink: '#0b0a0c',
+    inkMuted: '#524d46',
+    accent: '#8f1fb3',
+    lavender: '#c9a7ff',
+    in: '#17683a',
+    pending: '#8f5200',
+    void: '#68635b',
+    danger: '#b3261e',
   },
   font: {
     display: "'Fraunces', 'Cooper Black', Georgia, serif",

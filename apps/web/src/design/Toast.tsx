@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {items.map((item) => (
           <div
             key={item.id}
-            className="pointer-events-auto flex min-h-14 animate-fade-in items-center justify-between gap-3 rounded-control border border-line bg-surface-2 py-1 pr-1 pl-4 shadow-lg shadow-black/40"
+            className="pointer-events-auto flex min-h-14 animate-fade-in items-center justify-between gap-3 rounded-control border border-line bg-bg py-1 pr-1 pl-4 shadow-lg shadow-black/15"
           >
             <span className="py-2">{item.message}</span>
             {item.actionLabel && (

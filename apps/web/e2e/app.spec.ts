@@ -51,7 +51,7 @@ test.describe('integrante', () => {
     const background = await page.evaluate(
       () => getComputedStyle(document.body.parentElement!).backgroundColor,
     )
-    expect(background).toBe('rgb(11, 10, 12)')
+    expect(background).toBe('rgb(255, 255, 255)')
   })
 
   test('navega por las cinco secciones', async ({ page }) => {

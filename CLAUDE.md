@@ -69,7 +69,7 @@ Es un monorepo simple con pnpm workspaces.
 ## UX
 
 - **Idioma y tono.** Español de México, cercano. Cero jerga contable en la vista de integrante.
-- **Tema.** Modo oscuro único. Los tokens de diseño se toman de moodra.mx (PRD §10).
+- **Tema.** Modo claro único (fondo blanco, decisión de Diego del 2026-11-10; reemplaza el modo oscuro del PRD §10). Tipografías y formas se toman de moodra.mx. Todo texto debe cumplir contraste AA.
 - **Rapidez.** Registrar un gasto en ≤ 3 toques más el monto. Targets táctiles ≥ 48 px. Teclado numérico propio para montos.
 - **Confirmaciones.** Toda acción de dinero muestra un resumen en lenguaje humano antes de guardar, con toast de "Deshacer" (que en realidad anula) durante 10 s.
 

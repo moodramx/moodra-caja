@@ -1,5 +1,5 @@
 // Genera el logo y la fuente de los íconos de la PWA a partir del logo de moodra.mx.
-// Uso:  node scripts/generar-marca.mjs "<ruta a logo-white-1200.png>"
+// Uso:  node scripts/generar-marca.mjs "<ruta a Logo_Sin Fondo_Negro_CMYK.png>"
 // Después:  pnpm --filter web icons
 import { createRequire } from 'node:module'
 import { writeFile } from 'node:fs/promises'
@@ -10,12 +10,12 @@ const sharp = require('sharp')
 
 const source = process.argv[2]
 if (!source) {
-  console.error('Falta la ruta al logo blanco de moodra.mx')
+  console.error('Falta la ruta al logo negro de moodra.mx')
   process.exit(1)
 }
 
-const INK = '#0b0a0c'
-const ACCENT = '#c9a7ff'
+const INK = '#ffffff'
+const ACCENT = '#8f1fb3'
 const out = new URL('../apps/web/public/', import.meta.url)
 
 // 1. Wordmark recortado para el encabezado y el login.

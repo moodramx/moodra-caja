@@ -37,25 +37,27 @@
 }
 
 /*
- * Tokens de diseño (PRD §10), tomados de moodra.mx (site/css/styles.css).
+ * Tokens de diseño (PRD §10). Tema CLARO por decisión de Diego (2026-11-10):
+ * fondo blanco y texto tinta, con las tipografías y formas de moodra.mx.
+ * Todos los colores de texto cumplen contraste AA (≥ 4.5:1) sobre bg y surface.
  * Fuente de verdad de los estilos; src/design/tokens.ts es su espejo para JS.
  */
 @theme {
-  --color-bg: #0b0a0c; /* --ink */
-  --color-surface: #141216; /* --ink-2 */
-  --color-surface-2: #1e1b21; /* --ink-3 */
-  --color-line: rgb(239 233 223 / 0.16); /* --line */
-  --color-ink: #efe9df; /* --bone */
-  --color-ink-muted: #a9a298; /* --muted */
-  --color-ink-faint: #8a847b;
-  --color-accent: #c9a7ff; /* lavanda */
-  --color-accent-ink: #0b0a0c;
-  --color-violet: #b026d9;
+  --color-bg: #ffffff;
+  --color-surface: #f6f3ee;
+  --color-surface-2: #ebe6dd;
+  --color-line: rgb(11 10 12 / 0.16);
+  --color-ink: #0b0a0c; /* --ink de la web */
+  --color-ink-muted: #524d46;
+  --color-ink-faint: #68635b;
+  --color-accent: #8f1fb3; /* violeta de la web, oscurecido para leerse sobre blanco */
+  --color-accent-ink: #ffffff;
+  --color-lavender: #c9a7ff;
   /* Semántica: entradas verde suave, pendientes ámbar, anulados gris. Las salidas son neutras. */
-  --color-in: #8fd6a8;
-  --color-pending: #f2b84b;
-  --color-void: #8a847b;
-  --color-danger: #f29c9c;
+  --color-in: #17683a;
+  --color-pending: #8f5200;
+  --color-void: #68635b;
+  --color-danger: #b3261e;
 
   --font-sans: 'Manrope', system-ui, sans-serif;
   --font-display: 'Fraunces', 'Cooper Black', Georgia, serif;
@@ -98,7 +100,7 @@
   html {
     background: var(--color-bg);
     color: var(--color-ink);
-    color-scheme: dark;
+    color-scheme: light;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
   }

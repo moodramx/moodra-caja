@@ -20,7 +20,7 @@ export function BottomSheet({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60 data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
         <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-sheet border-t border-line bg-surface pb-safe data-[state=closed]:animate-sheet-out data-[state=open]:animate-sheet-in">
           <div aria-hidden="true" className="mx-auto mt-3 h-1.5 w-10 rounded-full bg-line" />
           <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-2">
