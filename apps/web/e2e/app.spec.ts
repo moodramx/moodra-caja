@@ -85,8 +85,10 @@ test.describe('integrante', () => {
     await expect(page.getByText('@pepe')).toBeVisible()
     await expect(page.getByText('Modo contador')).toHaveCount(0)
     await page.getByRole('button', { name: 'Buscar actualización' }).click()
-    await expect(page.getByRole('status', { name: 'Avisos' })).toContainText(/última versión|versión nueva/)
-    await expect(page.getByText(/versión del d/)).toBeVisible()
+    await expect(page.getByRole('status', { name: 'Avisos' })).toContainText(
+      /última versión|versión nueva/,
+    )
+    await expect(page.getByText(/versión del \d/)).toBeVisible()
     for (const path of ['/', '/movimientos', '/merch', '/reportes', '/mas']) {
       await page.goto(path)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
