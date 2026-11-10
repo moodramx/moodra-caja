@@ -1,8 +1,8 @@
 # PROGRESO — Moodra $$
 
-## Fase 2 — Merch, POS e inventario · 2026-11-10 · **lista en local, sin publicar**
+## Fase 2 — Merch, POS e inventario · 2026-11-10 · **publicada, en revisión de Diego**
 
-Vive en la rama `fase-2`. No está en `main`, ni en Netlify, ni en la base de la nube.
+Está en `main` y en la base de desarrollo de la nube. Falta probarla en un celular real.
 
 ### Hecho y verificado en la compu
 
@@ -32,7 +32,7 @@ Criterios de aceptación del plan, cubiertos por `e2e/fase2-real.spec.ts`:
 
 ### Lo que NO está hecho o quedó distinto
 
-1. **No está publicada** ni probada en un celular real.
+1. **No se ha probado en un celular real.**
 2. **Los productos no tienen foto**, solo emoji. El plan pedía foto; requiere almacenamiento y compresión de imágenes, que llegan con la foto de tickets (Fase 4).
 3. **Una sola variante por movimiento** en Entró merch, Regalé, Se dañó y Conté (la base ya acepta varias líneas por compra).
 4. **Canal "Tienda web"** existe en la base pero no se muestra (PRD: futuro).
