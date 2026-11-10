@@ -48,6 +48,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "accounts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "accounts_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
@@ -58,6 +64,12 @@ isOneToOne: false
       columns: ["member_id"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "accounts_parent_id_fkey"
@@ -87,14 +99,14 @@ isOneToOne: false
                   ]
                 },"app_settings": {
                   Row: {
-                    "active_project_id": string | null,"active_show_id": string | null,"cash_alert_days": number,"cash_alert_threshold_cents": number,"id": boolean,"timezone": string,"updated_at": string,"updated_by": string | null,"void_window_hours": number
+                    "active_project_id": string | null,"active_show_id": string | null,"cash_alert_days": number,"cash_alert_threshold_cents": number,"fuel_diesel_cents": number,"fuel_magna_cents": number,"fuel_premium_cents": number,"id": boolean,"timezone": string,"updated_at": string,"updated_by": string | null,"void_window_hours": number,"wear_cents_per_km": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "active_project_id"?: string | null,"active_show_id"?: string | null,"cash_alert_days"?: number,"cash_alert_threshold_cents"?: number,"id"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null,"void_window_hours"?: number
+                    "active_project_id"?: string | null,"active_show_id"?: string | null,"cash_alert_days"?: number,"cash_alert_threshold_cents"?: number,"fuel_diesel_cents"?: number,"fuel_magna_cents"?: number,"fuel_premium_cents"?: number,"id"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null,"void_window_hours"?: number,"wear_cents_per_km"?: number
                   }
                   Update: {
-                    "active_project_id"?: string | null,"active_show_id"?: string | null,"cash_alert_days"?: number,"cash_alert_threshold_cents"?: number,"id"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null,"void_window_hours"?: number
+                    "active_project_id"?: string | null,"active_show_id"?: string | null,"cash_alert_days"?: number,"cash_alert_threshold_cents"?: number,"fuel_diesel_cents"?: number,"fuel_magna_cents"?: number,"fuel_premium_cents"?: number,"id"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null,"void_window_hours"?: number,"wear_cents_per_km"?: number
                   }
                   Relationships: [
                     {
@@ -139,6 +151,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "app_settings_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"audit_log": {
@@ -164,6 +182,12 @@ isOneToOne: false
       columns: ["actor"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "audit_log_actor_fkey"
+      columns: ["actor"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     }
                   ]
@@ -192,6 +216,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "cash_transfers_confirmed_by_fkey"
+      columns: ["confirmed_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "cash_transfers_event_id_fkey"
       columns: ["event_id"]
 isOneToOne: true
@@ -216,6 +246,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "cash_transfers_to_member_fkey"
       columns: ["to_member"]
 isOneToOne: false
@@ -226,6 +262,12 @@ isOneToOne: false
       columns: ["to_member"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     }
                   ]
@@ -301,6 +343,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "categories_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"contacts": {
@@ -327,6 +375,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "contacts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"events": {
@@ -352,6 +406,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "events_journal_entry_id_fkey"
@@ -407,6 +467,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_voided_by_fkey"
+      columns: ["voided_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"expense_details": {
@@ -457,6 +523,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "expense_details_payer_member_id_fkey"
+      columns: ["payer_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"fund_movements": {
@@ -496,6 +568,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "fund_movements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "fund_movements_member_id_fkey"
       columns: ["member_id"]
 isOneToOne: false
@@ -506,6 +584,12 @@ isOneToOne: false
       columns: ["member_id"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     }
                   ]
@@ -574,6 +658,12 @@ isOneToOne: false
       columns: ["holder_member_id"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "income_details_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     }
                   ]
@@ -644,6 +734,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "journal_entries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "journal_entries_period_id_fkey"
@@ -724,6 +820,12 @@ isOneToOne: false
       columns: ["member_id"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "journal_lines_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "journal_lines_project_id_fkey"
@@ -807,6 +909,44 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "periods_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"places": {
+                  Row: {
+                    "active": boolean,"address": string,"created_at": string,"created_by": string | null,"id": string,"name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"address": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string
+                  }
+                  Update: {
+                    "active"?: boolean,"address"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "places_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "places_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "places_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"product_variants": {
@@ -858,6 +998,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "products_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "products_inventory_account_id_fkey"
@@ -933,6 +1079,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "profiles_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"project_types": {
@@ -972,6 +1124,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "projects_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "projects_type_id_fkey"
@@ -1016,6 +1174,12 @@ isOneToOne: false
       columns: ["payer_member_id"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "purchase_details_payer_member_id_fkey"
+      columns: ["payer_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "purchase_details_supplier_contact_id_fkey"
@@ -1124,6 +1288,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "receivable_collections_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "receivable_collections_platform_id_fkey"
       columns: ["platform_id"]
 isOneToOne: false
@@ -1160,6 +1330,12 @@ isOneToOne: false
       columns: ["collected_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "sale_details_collected_by_fkey"
+      columns: ["collected_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "sale_details_event_id_fkey"
@@ -1250,6 +1426,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "show_advances_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "show_advances_show_id_fkey"
       columns: ["show_id"]
 isOneToOne: false
@@ -1306,6 +1488,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "show_settlements_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "show_settlements_platform_id_fkey"
       columns: ["platform_id"]
 isOneToOne: false
@@ -1360,6 +1548,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "shows_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "shows_platform_id_fkey"
@@ -1473,6 +1667,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "supplier_payments_holder_member_id_fkey"
+      columns: ["holder_member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"ticket_platforms": {
@@ -1519,6 +1719,212 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"transport_payments": {
+                  Row: {
+                    "amount_cents": number,"event_id": string,"from_member": string,"to_member": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"event_id": string,"from_member": string,"to_member": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"event_id"?: string,"from_member"?: string,"to_member"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "transport_payments_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"trip_cars": {
+                  Row: {
+                    "event_id": string,"fuel": Database["public"]['Enums']["fuel_type"],"fuel_cents": number,"id": string,"km_per_liter": number,"owner_id": string,"price_per_liter_cents": number,"riders": (string)[],"toll_cents": number,"toll_paid_by": string | null,"vehicle_id": string,"wear_cents": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "event_id": string,"fuel": Database["public"]['Enums']["fuel_type"],"fuel_cents": number,"id"?: string,"km_per_liter": number,"owner_id": string,"price_per_liter_cents": number,"riders"?: (string)[],"toll_cents"?: number,"toll_paid_by"?: string | null,"vehicle_id": string,"wear_cents": number
+                  }
+                  Update: {
+                    "event_id"?: string,"fuel"?: Database["public"]['Enums']["fuel_type"],"fuel_cents"?: number,"id"?: string,"km_per_liter"?: number,"owner_id"?: string,"price_per_liter_cents"?: number,"riders"?: (string)[],"toll_cents"?: number,"toll_paid_by"?: string | null,"vehicle_id"?: string,"wear_cents"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "trip_cars_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "trips"
+      referencedColumns: ["event_id"]
+    },{
+      foreignKeyName: "trip_cars_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "v_trips"
+      referencedColumns: ["event_id"]
+    },{
+      foreignKeyName: "trip_cars_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "trip_cars_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "trip_cars_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "trip_cars_toll_paid_by_fkey"
+      columns: ["toll_paid_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "trip_cars_toll_paid_by_fkey"
+      columns: ["toll_paid_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "trip_cars_toll_paid_by_fkey"
+      columns: ["toll_paid_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "trip_cars_vehicle_id_fkey"
+      columns: ["vehicle_id"]
+isOneToOne: false
+      referencedRelation: "vehicles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"trips": {
+                  Row: {
+                    "dest_address": string | null,"dest_name": string,"distance_m": number,"duration_s": number | null,"event_id": string,"note": string | null,"origin_address": string | null,"origin_name": string,"purpose": Database["public"]['Enums']["trip_purpose"],"round_trip": boolean,"sharers": (string)[],"total_cents": number,"traffic_pct": number,"wear_cents_per_km": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "dest_address"?: string | null,"dest_name": string,"distance_m": number,"duration_s"?: number | null,"event_id": string,"note"?: string | null,"origin_address"?: string | null,"origin_name": string,"purpose": Database["public"]['Enums']["trip_purpose"],"round_trip"?: boolean,"sharers": (string)[],"total_cents": number,"traffic_pct"?: number,"wear_cents_per_km": number
+                  }
+                  Update: {
+                    "dest_address"?: string | null,"dest_name"?: string,"distance_m"?: number,"duration_s"?: number | null,"event_id"?: string,"note"?: string | null,"origin_address"?: string | null,"origin_name"?: string,"purpose"?: Database["public"]['Enums']["trip_purpose"],"round_trip"?: boolean,"sharers"?: (string)[],"total_cents"?: number,"traffic_pct"?: number,"wear_cents_per_km"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "trips_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "trips_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"vehicles": {
+                  Row: {
+                    "active": boolean,"created_at": string,"created_by": string | null,"fuel": Database["public"]['Enums']["fuel_type"],"id": string,"km_per_liter": number,"name": string,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"created_by"?: string | null,"fuel": Database["public"]['Enums']["fuel_type"],"id"?: string,"km_per_liter": number,"name": string,"owner_id": string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"created_by"?: string | null,"fuel"?: Database["public"]['Enums']["fuel_type"],"id"?: string,"km_per_liter"?: number,"name"?: string,"owner_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vehicles_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vehicles_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "vehicles_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "vehicles_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vehicles_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "vehicles_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1556,11 +1962,17 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"v_event_feed": {
                   Row: {
-                    "amount_cents": number | null,"captured_at": string,"category_emoji": string | null,"category_name": string | null,"client_id": string,"created_at": string,"created_by": string,"description": string | null,"direction": Database["public"]['Enums']["reclass_direction"] | null,"from_kind": Database["public"]['Enums']["transfer_party"] | null,"from_member": string | null,"fund_kind": Database["public"]['Enums']["fund_kind"] | null,"fund_member": string | null,"id": string,"note": string | null,"paid_with": Database["public"]['Enums']["paid_with"] | null,"pieces": number | null,"place": Database["public"]['Enums']["money_place"] | null,"project_id": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"show_id": string | null,"show_name": string | null,"show_pending": boolean | null,"status": Database["public"]['Enums']["event_status"],"stock_kind": Database["public"]['Enums']["inventory_kind"] | null,"to_kind": Database["public"]['Enums']["transfer_party"] | null,"to_member": string | null,"type": Database["public"]['Enums']["event_type"],"void_reason": string | null
+                    "amount_cents": number | null,"captured_at": string,"category_emoji": string | null,"category_name": string | null,"client_id": string,"created_at": string,"created_by": string,"description": string | null,"direction": Database["public"]['Enums']["reclass_direction"] | null,"from_kind": Database["public"]['Enums']["transfer_party"] | null,"from_member": string | null,"fund_kind": Database["public"]['Enums']["fund_kind"] | null,"fund_member": string | null,"id": string,"note": string | null,"paid_with": Database["public"]['Enums']["paid_with"] | null,"pay_from": string | null,"pay_to": string | null,"pieces": number | null,"place": Database["public"]['Enums']["money_place"] | null,"project_id": string | null,"settlement_pref": Database["public"]['Enums']["settlement_pref"] | null,"show_id": string | null,"show_name": string | null,"show_pending": boolean | null,"status": Database["public"]['Enums']["event_status"],"stock_kind": Database["public"]['Enums']["inventory_kind"] | null,"to_kind": Database["public"]['Enums']["transfer_party"] | null,"to_member": string | null,"trip_dest": string | null,"trip_origin": string | null,"trip_purpose": Database["public"]['Enums']["trip_purpose"] | null,"type": Database["public"]['Enums']["event_type"],"void_reason": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1577,6 +1989,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "cash_transfers_from_member_fkey"
+      columns: ["from_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "cash_transfers_to_member_fkey"
       columns: ["to_member"]
 isOneToOne: false
@@ -1589,6 +2007,12 @@ isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
     },{
+      foreignKeyName: "cash_transfers_to_member_fkey"
+      columns: ["to_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
       foreignKeyName: "events_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -1599,6 +2023,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "events_project_id_fkey"
@@ -1642,6 +2072,48 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "fund_movements_member_id_fkey"
+      columns: ["fund_member"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["pay_from"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["pay_from"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_from_member_fkey"
+      columns: ["pay_from"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["pay_to"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["pay_to"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "transport_payments_to_member_fkey"
+      columns: ["pay_to"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
     }
                   ]
                 },"v_inventory": {
@@ -1669,6 +2141,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
       referencedColumns: ["member_id"]
     },{
       foreignKeyName: "inventory_movements_event_id_fkey"
@@ -1808,6 +2286,20 @@ isOneToOne: false
       referencedColumns: ["project_id"]
     }
                   ]
+                },"v_transport_balances": {
+                  Row: {
+                    "activo": boolean,"balance_cents": number | null,"display_name": string,"emoji": string,"member_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "activo"?: boolean | null,"balance_cents"?: never,"display_name"?: string | null,"emoji"?: string | null,"member_id"?: string | null
+                         }
+                        Update: {
+                           "activo"?: boolean | null,"balance_cents"?: never,"display_name"?: string | null,"emoji"?: string | null,"member_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"v_trial_balance": {
                   Row: {
                     "account_id": string,"balance_cents": number | null,"code": string,"credit_cents": number | null,"debit_cents": number | null,"member_id": string | null,"name": string,"nature": Database["public"]['Enums']["account_nature"],"type": Database["public"]['Enums']["account_type"]
@@ -1826,6 +2318,80 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_member_balances"
       referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "accounts_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    }
+                  ]
+                },"v_trips": {
+                  Row: {
+                    "captured_at": string,"cars": Json | null,"created_by": string,"dest_address": string | null,"dest_name": string,"distance_m": number,"duration_s": number | null,"event_id": string,"note": string | null,"origin_address": string | null,"origin_name": string,"project_id": string | null,"purpose": Database["public"]['Enums']["trip_purpose"],"round_trip": boolean,"sharers": (string)[],"show_id": string | null,"status": Database["public"]['Enums']["event_status"],"total_cents": number,"traffic_pct": number,"wear_cents_per_km": number
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_member_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_transport_balances"
+      referencedColumns: ["member_id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "v_project_pnl"
+      referencedColumns: ["project_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "shows"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_pnl"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "events_show_fkey"
+      columns: ["show_id"]
+isOneToOne: false
+      referencedRelation: "v_show_report"
+      referencedColumns: ["show_id"]
+    },{
+      foreignKeyName: "trips_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "trips_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "v_event_feed"
+      referencedColumns: ["id"]
     }
                   ]
                 }
@@ -1876,6 +2442,9 @@ isOneToOne: false
 { Args: { "p_contador": boolean,"p_event": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"],"p_uid": string }; Returns: undefined
                            },
 "insert_show_detail":
+{ Args: { "p_amount": number,"p_contador": boolean,"p_event": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"],"p_uid": string }; Returns: undefined
+                           },
+"insert_transport_detail":
 { Args: { "p_amount": number,"p_contador": boolean,"p_event": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"],"p_uid": string }; Returns: undefined
                            },
 "is_active_member":
@@ -1938,7 +2507,13 @@ isOneToOne: false
 "post_pago_proveedor":
 { Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
                            },
+"post_pago_transporte":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
 "post_venta":
+{ Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
+                           },
+"post_viaje":
 { Args: { "e": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']>,"p_date": string,"p_period": string }; Returns: string
                            },
 "report_account_totals":
@@ -1967,6 +2542,21 @@ isOneToOne: false
 "revert_stock":
 { Args: { "p_event": string }; Returns: undefined
                            },
+"save_place":
+{ Args: { "p_active"?: boolean,"p_address": string,"p_id": string,"p_name": string }; Returns: {
+              "active": boolean,
+"address": string,
+"created_at": string,
+"created_by": string | null,
+"id": string,
+"name": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "places"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "save_product":
 { Args: { "p_payload": Json }; Returns: string
                            },
@@ -1976,6 +2566,23 @@ isOneToOne: false
 "save_ticket_platform":
 { Args: { "p_payload": Json }; Returns: string
                            },
+"save_vehicle":
+{ Args: { "p_active"?: boolean,"p_fuel": Database["public"]['Enums']["fuel_type"],"p_id": string,"p_km_per_liter": number,"p_name": string,"p_owner": string }; Returns: {
+              "active": boolean,
+"created_at": string,
+"created_by": string | null,
+"fuel": Database["public"]['Enums']["fuel_type"],
+"id": string,
+"km_per_liter": number,
+"name": string,
+"owner_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "vehicles"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "seed_account":
 { Args: { "p_code": string,"p_name": string,"p_nature": Database["public"]['Enums']["account_nature"],"p_postable"?: boolean,"p_type": Database["public"]['Enums']["account_type"] }; Returns: string
                            },
@@ -1988,8 +2595,33 @@ isOneToOne: false
 "set_show_cancelled":
 { Args: { "p_cancelled": boolean,"p_show_id": string }; Returns: undefined
                            },
+"set_transport_rates":
+{ Args: { "p_diesel_cents": number,"p_magna_cents": number,"p_premium_cents": number,"p_wear_cents_per_km": number }; Returns: {
+              "active_project_id": string | null,
+"active_show_id": string | null,
+"cash_alert_days": number,
+"cash_alert_threshold_cents": number,
+"fuel_diesel_cents": number,
+"fuel_magna_cents": number,
+"fuel_premium_cents": number,
+"id": boolean,
+"timezone": string,
+"updated_at": string,
+"updated_by": string | null,
+"void_window_hours": number,
+"wear_cents_per_km": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "app_settings"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "submit_event":
 { Args: { "p_captured_at": string,"p_client_id": string,"p_payload": Json,"p_type": Database["public"]['Enums']["event_type"] }; Returns: Json
+                           },
+"transport_account":
+{ Args: { "p_member": string }; Returns: string
                            },
 "uuid_v7":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -1999,7 +2631,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "account_nature": "deudora"|"acreedora","account_type": "activo"|"pasivo"|"patrimonio"|"ingreso"|"costo"|"gasto"|"otro","category_kind": "gasto"|"ingreso","commission_bearer": "publico"|"banda","contact_kind": "venue"|"proveedor"|"tercero"|"boletera"|"otro","deal_type": "fee_fijo"|"porcentaje_taquilla"|"fee_mas_porcentaje"|"boletaje_propio"|"sin_pago","event_status": "registrado"|"pendiente_confirmacion"|"rechazado"|"anulado","event_type": "gasto"|"ingreso"|"entrega_efectivo"|"puse_dinero"|"reclasificacion"|"regreso_dinero"|"pago_proveedor"|"venta_merch"|"compra_merch"|"salida_merch"|"ajuste_inventario"|"cierre_show"|"anticipo_show"|"cobro_pendiente","fund_kind": "prestamo"|"aportacion"|"reclasificacion"|"regreso","inventory_kind": "compra"|"venta"|"regalo"|"merma"|"ajuste"|"anulacion","member_account_kind": "efectivo"|"por_regresar"|"reparto_por_pagar"|"aportaciones"|"repartos","merch_category": "playeras"|"vinilos_cd"|"stickers"|"pines"|"canas"|"otros","money_place": "efectivo_integrante"|"caja"|"cuenta_banda","paid_with": "efectivo_banda"|"caja"|"cuenta_banda"|"mi_dinero"|"pendiente","payment_method": "efectivo"|"transferencia","period_status": "abierto"|"cerrado","project_status": "planeado"|"activo"|"cerrado","reclass_direction": "a_aportacion"|"a_prestamo","sale_channel": "show"|"bandcamp"|"tienda_web"|"otro","settlement_pref": "reembolso"|"compensar_reparto"|"aportacion","show_status": "programado"|"realizado"|"cerrado"|"cancelado","transfer_party": "integrante"|"caja"|"banco","user_role": "integrante"|"contador","visible_to": "todos"|"contador"
+            "account_nature": "deudora"|"acreedora","account_type": "activo"|"pasivo"|"patrimonio"|"ingreso"|"costo"|"gasto"|"otro","category_kind": "gasto"|"ingreso","commission_bearer": "publico"|"banda","contact_kind": "venue"|"proveedor"|"tercero"|"boletera"|"otro","deal_type": "fee_fijo"|"porcentaje_taquilla"|"fee_mas_porcentaje"|"boletaje_propio"|"sin_pago","event_status": "registrado"|"pendiente_confirmacion"|"rechazado"|"anulado","event_type": "gasto"|"ingreso"|"entrega_efectivo"|"puse_dinero"|"reclasificacion"|"regreso_dinero"|"pago_proveedor"|"venta_merch"|"compra_merch"|"salida_merch"|"ajuste_inventario"|"cierre_show"|"anticipo_show"|"cobro_pendiente"|"viaje"|"pago_transporte","fuel_type": "magna"|"premium"|"diesel","fund_kind": "prestamo"|"aportacion"|"reclasificacion"|"regreso","inventory_kind": "compra"|"venta"|"regalo"|"merma"|"ajuste"|"anulacion","member_account_kind": "efectivo"|"por_regresar"|"reparto_por_pagar"|"aportaciones"|"repartos"|"transporte","merch_category": "playeras"|"vinilos_cd"|"stickers"|"pines"|"canas"|"otros","money_place": "efectivo_integrante"|"caja"|"cuenta_banda","paid_with": "efectivo_banda"|"caja"|"cuenta_banda"|"mi_dinero"|"pendiente","payment_method": "efectivo"|"transferencia","period_status": "abierto"|"cerrado","project_status": "planeado"|"activo"|"cerrado","reclass_direction": "a_aportacion"|"a_prestamo","sale_channel": "show"|"bandcamp"|"tienda_web"|"otro","settlement_pref": "reembolso"|"compensar_reparto"|"aportacion","show_status": "programado"|"realizado"|"cerrado"|"cancelado","transfer_party": "integrante"|"caja"|"banco","trip_purpose": "ensayo"|"show"|"otro","user_role": "integrante"|"contador","visible_to": "todos"|"contador"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2119,7 +2751,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "account_nature": ["deudora", "acreedora"],"account_type": ["activo", "pasivo", "patrimonio", "ingreso", "costo", "gasto", "otro"],"category_kind": ["gasto", "ingreso"],"commission_bearer": ["publico", "banda"],"contact_kind": ["venue", "proveedor", "tercero", "boletera", "otro"],"deal_type": ["fee_fijo", "porcentaje_taquilla", "fee_mas_porcentaje", "boletaje_propio", "sin_pago"],"event_status": ["registrado", "pendiente_confirmacion", "rechazado", "anulado"],"event_type": ["gasto", "ingreso", "entrega_efectivo", "puse_dinero", "reclasificacion", "regreso_dinero", "pago_proveedor", "venta_merch", "compra_merch", "salida_merch", "ajuste_inventario", "cierre_show", "anticipo_show", "cobro_pendiente"],"fund_kind": ["prestamo", "aportacion", "reclasificacion", "regreso"],"inventory_kind": ["compra", "venta", "regalo", "merma", "ajuste", "anulacion"],"member_account_kind": ["efectivo", "por_regresar", "reparto_por_pagar", "aportaciones", "repartos"],"merch_category": ["playeras", "vinilos_cd", "stickers", "pines", "canas", "otros"],"money_place": ["efectivo_integrante", "caja", "cuenta_banda"],"paid_with": ["efectivo_banda", "caja", "cuenta_banda", "mi_dinero", "pendiente"],"payment_method": ["efectivo", "transferencia"],"period_status": ["abierto", "cerrado"],"project_status": ["planeado", "activo", "cerrado"],"reclass_direction": ["a_aportacion", "a_prestamo"],"sale_channel": ["show", "bandcamp", "tienda_web", "otro"],"settlement_pref": ["reembolso", "compensar_reparto", "aportacion"],"show_status": ["programado", "realizado", "cerrado", "cancelado"],"transfer_party": ["integrante", "caja", "banco"],"user_role": ["integrante", "contador"],"visible_to": ["todos", "contador"]
+            "account_nature": ["deudora", "acreedora"],"account_type": ["activo", "pasivo", "patrimonio", "ingreso", "costo", "gasto", "otro"],"category_kind": ["gasto", "ingreso"],"commission_bearer": ["publico", "banda"],"contact_kind": ["venue", "proveedor", "tercero", "boletera", "otro"],"deal_type": ["fee_fijo", "porcentaje_taquilla", "fee_mas_porcentaje", "boletaje_propio", "sin_pago"],"event_status": ["registrado", "pendiente_confirmacion", "rechazado", "anulado"],"event_type": ["gasto", "ingreso", "entrega_efectivo", "puse_dinero", "reclasificacion", "regreso_dinero", "pago_proveedor", "venta_merch", "compra_merch", "salida_merch", "ajuste_inventario", "cierre_show", "anticipo_show", "cobro_pendiente", "viaje", "pago_transporte"],"fuel_type": ["magna", "premium", "diesel"],"fund_kind": ["prestamo", "aportacion", "reclasificacion", "regreso"],"inventory_kind": ["compra", "venta", "regalo", "merma", "ajuste", "anulacion"],"member_account_kind": ["efectivo", "por_regresar", "reparto_por_pagar", "aportaciones", "repartos", "transporte"],"merch_category": ["playeras", "vinilos_cd", "stickers", "pines", "canas", "otros"],"money_place": ["efectivo_integrante", "caja", "cuenta_banda"],"paid_with": ["efectivo_banda", "caja", "cuenta_banda", "mi_dinero", "pendiente"],"payment_method": ["efectivo", "transferencia"],"period_status": ["abierto", "cerrado"],"project_status": ["planeado", "activo", "cerrado"],"reclass_direction": ["a_aportacion", "a_prestamo"],"sale_channel": ["show", "bandcamp", "tienda_web", "otro"],"settlement_pref": ["reembolso", "compensar_reparto", "aportacion"],"show_status": ["programado", "realizado", "cerrado", "cancelado"],"transfer_party": ["integrante", "caja", "banco"],"trip_purpose": ["ensayo", "show", "otro"],"user_role": ["integrante", "contador"],"visible_to": ["todos", "contador"]
           }
         }
 } as const

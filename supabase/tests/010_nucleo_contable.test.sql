@@ -56,7 +56,7 @@ grant all on ids to public;
 select ok(public.account_id('1.1.01') is not null and public.account_id('2.2') is not null
           and public.account_id('5.3.99') is not null and public.account_id('7.4') is not null,
   'el catálogo de cuentas está sembrado');
-select is((select count(*)::int from public.accounts where is_postable and member_id is null), 56,
+select is((select count(*)::int from public.accounts where is_postable and member_id is null), 57,
   'cuentas de detalle del catálogo');
 select is((select count(*)::int from public.accounts where member_id = pg_temp.uid('pepe')), 5,
   'cada integrante recibe sus 5 subcuentas al darse de alta');
