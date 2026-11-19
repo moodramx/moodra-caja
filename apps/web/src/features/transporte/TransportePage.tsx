@@ -421,6 +421,14 @@ function Trips({ nameOf }: { nameOf: (id: string | null | undefined) => string }
                       .
                     </li>
                   ) : null}
+                  {(
+                    (trip.toll_segments ?? []) as { from: string; to: string; cents: number }[]
+                  ).map((segment, i) => (
+                    <li key={i}>
+                      Tag: {segment.from || 'entrada'} → {segment.to || 'salida'} ·{' '}
+                      {formatMXN(BigInt(segment.cents))}
+                    </li>
+                  ))}
                   {cars.map((car) => (
                     <li key={car.vehicle_name}>
                       {car.vehicle_name} (de {nameOf(car.owner_id)}): gasolina{' '}
@@ -516,6 +524,15 @@ function PlaceField({
   )
 }
 
+interface TollSegment {
+  from: string
+  to: string
+  /** Pesos, como los escribe la persona. */
+  amount: string
+  /** Metros marcados en el camino, si el tramo se marcó en vivo. */
+  meters: number | null
+}
+
 interface CarState {
   riders: string[]
   toll: string
@@ -558,10 +575,22 @@ function TripForm({
     Object.fromEntries(
       cars
         .filter((car) => tracked?.carIds.includes(car.id))
-        .map((car) => [car.id, { riders: [car.owner_id], toll: '', tollPaidBy: car.owner_id }]),
+        .map((car) => [
+          car.id,
+          {
+            riders: tracked?.riders[car.id] ?? [car.owner_id],
+            toll: '',
+            tollPaidBy: tracked?.tagBy ?? car.owner_id,
+          },
+        ]),
     ),
   )
   const [sharers, setSharers] = useState<string[] | null>(null)
+  // Tramos por vía de cuota marcados en el camino (solo en viajes seguidos en el mapa).
+  const [segments, setSegments] = useState<TollSegment[]>(() =>
+    (tracked?.tollMeters ?? []).map((meters) => ({ from: '', to: '', amount: '', meters })),
+  )
+  const [tagOwner, setTagOwner] = useState<string | null>(tracked?.tagBy ?? null)
 
   // Por defecto se reparte entre quienes participan en los repartos de la banda.
   const defaultSharers = useMemo(
@@ -575,7 +604,18 @@ function TripForm({
   const distanceM = kmToMeters(km)
   const trafficPct = /^\d{1,2}$/.test(traffic) ? Math.min(Number(traffic), 50) : 0
   const chosen = cars.filter((car) => selected[car.id])
-  const tolls = chosen.map((car) => pesosToCents(selected[car.id]!.toll))
+  const segmentCents = segments.map((segment) => pesosToCents(segment.amount))
+  const segmentTotal = segmentCents.includes(null)
+    ? null
+    : segmentCents.reduce<number>((sum, cents) => sum + (cents ?? 0), 0)
+  // En un viaje seguido las casetas son la suma de sus tramos con tag y van al primer auto.
+  const tolls = tracked
+    ? chosen.map((_, i) => (i === 0 ? segmentTotal : 0))
+    : chosen.map((car) => pesosToCents(selected[car.id]!.toll))
+  const tollPayer = (car: { id: string; owner_id: string }) =>
+    tracked ? (tagOwner ?? car.owner_id) : (selected[car.id]!.tollPaidBy ?? car.owner_id)
+  const patchSegment = (index: number, patch: Partial<TollSegment>) =>
+    setSegments((current) => current.map((s, i) => (i === index ? { ...s, ...patch } : s)))
   const preview =
     distanceM && chosen.length > 0 && sharing.length > 0 && !tolls.includes(null)
       ? previewTrip({
@@ -590,7 +630,7 @@ function TripForm({
             kmPerLiter: car.km_per_liter,
             pricePerLiterCents: priceOf(rates, car.fuel),
             tollCents: tolls[i] ?? 0,
-            tollPaidBy: selected[car.id]!.tollPaidBy ?? car.owner_id,
+            tollPaidBy: tollPayer(car),
           })),
         })
       : null
@@ -607,7 +647,9 @@ function TripForm({
           : chosen.length === 0
             ? 'Elige al menos un auto'
             : tolls.includes(null)
-              ? 'Revisa el monto de casetas'
+              ? tracked
+                ? 'Revisa lo que cobró el tag'
+                : 'Revisa el monto de casetas'
               : sharing.length === 0
                 ? 'Elige entre quiénes se reparte'
                 : null
@@ -653,13 +695,21 @@ function TripForm({
       if (tracked) {
         // La distancia ya la midió el GPS: de Google solo interesan las casetas.
         const toll = result.toll_cents ?? 0
-        const first = chosen[0]
         if (error || result.error || !result.configured) {
           setRouteNote(
             `No se pudieron consultar las casetas${result.error ? ` (${result.error})` : ''}. Ponlas a mano con lo que cobró el tag.`,
           )
         } else {
-          if (toll > 0 && first) patchCar(first.id, { toll: centsToPesos(toll) })
+          // Lo que diga Google se propone solo si nadie ha puesto ya un cobro.
+          if (toll > 0) {
+            setSegments((current) =>
+              current.some((s) => s.amount.trim() !== '')
+                ? current
+                : current.length === 0
+                  ? [{ from: '', to: '', amount: centsToPesos(toll), meters: null }]
+                  : current.map((s, i) => (i === 0 ? { ...s, amount: centsToPesos(toll) } : s)),
+            )
+          }
           const off =
             result.distance_m &&
             Math.abs(result.distance_m - tracked.distanceM) > tracked.distanceM * 0.15
@@ -667,7 +717,7 @@ function TripForm({
               : ''
           setRouteNote(
             (toll > 0
-              ? `Casetas de la ruta que tomaron: ${formatMXN(BigInt(toll))}${first ? ' (puestas en el primer auto; corrígelas con lo que cobró el tag).' : '.'}`
+              ? `Casetas de la ruta que tomaron, según Google: ${formatMXN(BigInt(toll))}. Corrígelas abajo con lo que cobró el tag.`
               : result.tolls_unavailable
                 ? `Google no dejó consultar casetas (${result.tolls_unavailable}): ponlas a mano.`
                 : result.has_tolls
@@ -754,8 +804,19 @@ function TripForm({
         riders: selected[car.id]!.riders,
         price_per_liter_cents: priceOf(rates, car.fuel),
         toll_cents: tolls[i] ?? 0,
-        toll_paid_by: (tolls[i] ?? 0) > 0 ? (selected[car.id]!.tollPaidBy ?? car.owner_id) : null,
+        toll_paid_by: (tolls[i] ?? 0) > 0 ? tollPayer(car) : null,
       })),
+      ...(tracked
+        ? {
+            toll_segments: segments
+              .map((segment, i) => ({
+                from: segment.from.trim(),
+                to: segment.to.trim(),
+                cents: segmentCents[i] ?? 0,
+              }))
+              .filter((segment) => segment.cents > 0 || segment.from || segment.to),
+          }
+        : {}),
     }
     void capture('viaje', payload, 'Viaje guardado ✓')
     if (tracked) clearLiveTrip()
@@ -927,43 +988,137 @@ function TripForm({
                   ))}
                 </div>
               </div>
-              <label className="block">
-                <span className="text-sm text-ink-muted">
-                  Casetas / tag de este auto (total del viaje, en pesos)
-                </span>
-                <input
-                  className={fieldClass}
-                  inputMode="decimal"
-                  placeholder="0"
-                  aria-label={`Casetas de ${car.name}`}
-                  value={state.toll}
-                  onChange={(event) => patchCar(car.id, { toll: event.target.value })}
-                />
-              </label>
-              {(pesosToCents(state.toll) ?? 0) > 0 && (
-                <div
-                  role="group"
-                  aria-label={`Quién pagó el tag de ${car.name}`}
-                  className="space-y-1"
-                >
-                  <p className="text-sm text-ink-muted">¿De quién es el tag?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {members.map((member) => (
-                      <Chip
-                        key={member.id}
-                        selected={(state.tollPaidBy ?? car.owner_id) === member.id}
-                        onClick={() => patchCar(car.id, { tollPaidBy: member.id })}
-                      >
-                        {member.display_name}
-                      </Chip>
-                    ))}
-                  </div>
-                </div>
+              {!tracked && (
+                <>
+                  <label className="block">
+                    <span className="text-sm text-ink-muted">
+                      Casetas / tag de este auto (total del viaje, en pesos)
+                    </span>
+                    <input
+                      className={fieldClass}
+                      inputMode="decimal"
+                      placeholder="0"
+                      aria-label={`Casetas de ${car.name}`}
+                      value={state.toll}
+                      onChange={(event) => patchCar(car.id, { toll: event.target.value })}
+                    />
+                  </label>
+                  {(pesosToCents(state.toll) ?? 0) > 0 && (
+                    <div
+                      role="group"
+                      aria-label={`Quién pagó el tag de ${car.name}`}
+                      className="space-y-1"
+                    >
+                      <p className="text-sm text-ink-muted">¿De quién es el tag?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {members.map((member) => (
+                          <Chip
+                            key={member.id}
+                            selected={(state.tollPaidBy ?? car.owner_id) === member.id}
+                            onClick={() => patchCar(car.id, { tollPaidBy: member.id })}
+                          >
+                            {member.display_name}
+                          </Chip>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )
         })}
       </fieldset>
+
+      {tracked && (
+        <fieldset className="space-y-3">
+          <legend className="font-semibold">Tag y vías de cuota</legend>
+          {segments.length === 0 && (
+            <p className="text-sm text-ink-muted">
+              No se marcó ningún tramo con tag. Si sí usaron (segundo piso, autopista), agrégalo.
+            </p>
+          )}
+          {segments.map((segment, i) => (
+            <div
+              key={i}
+              role="group"
+              aria-label={`Tramo con tag ${i + 1}`}
+              className="space-y-2 rounded-card border border-line bg-bg p-3"
+            >
+              <p className="flex items-center justify-between gap-3 font-semibold">
+                <span>
+                  Tramo {i + 1}
+                  {segment.meters ? (
+                    <span className="font-normal text-ink-muted">
+                      {' '}
+                      · {(segment.meters / 1000).toFixed(1)} km marcados
+                    </span>
+                  ) : null}
+                </span>
+                <button
+                  type="button"
+                  className="min-h-11 px-2 text-sm font-normal text-ink-muted underline"
+                  onClick={() => setSegments(segments.filter((_, index) => index !== i))}
+                >
+                  Quitar
+                </button>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className={fieldClass}
+                  aria-label={`Tramo ${i + 1}: dónde entraron`}
+                  placeholder="Entraron en…"
+                  value={segment.from}
+                  onChange={(event) => patchSegment(i, { from: event.target.value })}
+                />
+                <input
+                  className={fieldClass}
+                  aria-label={`Tramo ${i + 1}: dónde salieron`}
+                  placeholder="Salieron en…"
+                  value={segment.to}
+                  onChange={(event) => patchSegment(i, { to: event.target.value })}
+                />
+              </div>
+              <label className="block">
+                <span className="text-sm text-ink-muted">Lo que cobró el tag (pesos)</span>
+                <input
+                  className={fieldClass}
+                  inputMode="decimal"
+                  placeholder="0"
+                  aria-label={`Tramo ${i + 1}: cobro del tag`}
+                  value={segment.amount}
+                  onChange={(event) => patchSegment(i, { amount: event.target.value })}
+                />
+              </label>
+            </div>
+          ))}
+          <Button
+            variant="secondary"
+            block
+            onClick={() =>
+              setSegments([...segments, { from: '', to: '', amount: '', meters: null }])
+            }
+          >
+            Agregar tramo con tag
+          </Button>
+          {segments.length > 0 && (
+            <div role="group" aria-label="De quién es el tag" className="space-y-1">
+              <p className="text-sm text-ink-muted">¿De quién es el tag?</p>
+              <div className="flex flex-wrap gap-2">
+                {members.map((member) => (
+                  <Chip
+                    key={member.id}
+                    selected={(tagOwner ?? chosen[0]?.owner_id) === member.id}
+                    onClick={() => setTagOwner(member.id)}
+                  >
+                    {member.display_name}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          )}
+        </fieldset>
+      )}
 
       <fieldset className="space-y-2">
         <legend className="font-semibold">Se reparte entre</legend>

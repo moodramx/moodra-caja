@@ -1,6 +1,6 @@
 // Viaje en vivo: "Iniciar viaje", mapa con el recorrido mientras van en camino
 // y "Terminar viaje". Lo recorrido de verdad es lo que se cobra.
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Button } from '../../design/Button'
 import { Chip } from '../../design/Chip'
 import { Card } from '../../design/Page'
@@ -10,11 +10,13 @@ import {
   endLiveTrip,
   resumeLiveTrip,
   startLiveTrip,
+  toggleTollMark,
+  tollPaths,
   useLiveTrip,
   type TripPurpose,
 } from '../../lib/liveTrip'
 import { formatMXNShort } from '../../lib/money'
-import { useShows } from '../../lib/queries'
+import { useProfiles, useShows } from '../../lib/queries'
 import { showsForSale } from '../../lib/shows'
 import { formatDuration, trafficPctFromSpeed, type LatLng } from '../../lib/track'
 import { carCost, priceOf, PURPOSES, type Fuel, type Rates } from '../../lib/transport'
@@ -72,6 +74,16 @@ export function LiveTripCard({
   const trip = live.trip
   const now = useNow(trip?.status === 'active')
   const [confirming, setConfirming] = useState(false)
+  const profiles = useProfiles()
+  const marks = trip?.tollMarks
+  const points = trip?.points
+  const tollOpen = marks?.at(-1)?.to === null
+  // Con un tramo abierto la línea morada crece con el auto; si no, no cambia.
+  const highlights = useMemo(
+    () => (trip && marks && points ? tollPaths(trip, Number.MAX_SAFE_INTEGER) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [marks, points],
+  )
 
   if (!trip) {
     return (
@@ -148,6 +160,7 @@ export function LiveTripCard({
             points={trip.points}
             here={active ? live.here : null}
             live={active}
+            highlights={highlights}
             className="h-72"
           />
         </MapBox>
@@ -171,6 +184,25 @@ export function LiveTripCard({
             Deja la app abierta durante el camino: si la cierras o bloqueas el celular, deja de
             medir.
           </p>
+          <Button variant="secondary" block onClick={toggleTollMark}>
+            {tollOpen
+              ? '⬇️ Salimos de la vía de cuota'
+              : '🛣️ Entramos a vía de cuota (segundo piso, autopista)'}
+          </Button>
+          {(trip.tollMarks.length > 0 || trip.tagBy) && (
+            <p role="status" className="text-sm text-ink-muted">
+              {trip.tollMarks.length === 0
+                ? 'Sin tramos con tag todavía'
+                : trip.tollMarks.length === 1
+                  ? 'Un tramo con tag'
+                  : `${trip.tollMarks.length} tramos con tag`}
+              {tollOpen ? ' · van en uno ahorita (en morado en el mapa)' : ''}
+              {trip.tagBy
+                ? ` · tag de ${profiles.data?.find((p) => p.id === trip.tagBy)?.display_name ?? 'alguien'}`
+                : ''}
+              .
+            </p>
+          )}
           <Button size="lg" block onClick={endLiveTrip}>
             ■ Terminar viaje
           </Button>
@@ -241,6 +273,12 @@ export function StartTripForm({ cars, onDone }: { cars: Car[]; onDone: () => voi
     const mine = cars.filter((car) => car.owner_id === session?.user.id)
     return mine.length === 1 ? [mine[0]!.id] : cars.length === 1 ? [cars[0]!.id] : []
   })
+  const profiles = useProfiles()
+  const members = (profiles.data ?? []).filter((p) => p.activo)
+  const [riders, setRiders] = useState<Record<string, string[]>>({})
+  const [tagBy, setTagBy] = useState<string | null>(null)
+  // Quien no se ha tocado va con el dueño del auto.
+  const ridersOf = (car: Car) => riders[car.id] ?? [car.owner_id]
   const showOptions = showsForSale(shows.data ?? [], showId)
   const missing =
     carIds.length === 0 ? 'Elige el auto' : purpose === 'show' && !showId ? 'Elige el show' : null
@@ -295,14 +333,70 @@ export function StartTripForm({ cars, onDone }: { cars: Car[]; onDone: () => voi
             </Chip>
           ))}
         </div>
+        {cars
+          .filter((car) => carIds.includes(car.id))
+          .map((car) => (
+            <div
+              key={car.id}
+              role="group"
+              aria-label={`Quiénes van en ${car.name}`}
+              className="space-y-1 rounded-card border border-line bg-bg p-3"
+            >
+              <p className="text-sm text-ink-muted">¿Quiénes van en {car.name}?</p>
+              <div className="flex flex-wrap gap-2">
+                {members.map((member) => {
+                  const inside = ridersOf(car).includes(member.id)
+                  return (
+                    <Chip
+                      key={member.id}
+                      selected={inside}
+                      onClick={() =>
+                        setRiders({
+                          ...riders,
+                          [car.id]: inside
+                            ? ridersOf(car).filter((id) => id !== member.id)
+                            : [...ridersOf(car), member.id],
+                        })
+                      }
+                    >
+                      {member.display_name}
+                    </Chip>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         <p className="text-sm text-ink-muted">
           Si van en dos autos por caminos distintos, cada auto inicia su viaje en un celular.
         </p>
       </fieldset>
 
+      <fieldset className="space-y-2">
+        <legend className="font-semibold">¿Van a usar tag?</legend>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Tag">
+          <Chip selected={tagBy === null} onClick={() => setTagBy(null)}>
+            Sin tag
+          </Chip>
+          {members.map((member) => (
+            <Chip
+              key={member.id}
+              selected={tagBy === member.id}
+              onClick={() => setTagBy(member.id)}
+            >
+              El de {member.display_name}
+            </Chip>
+          ))}
+        </div>
+        <p className="text-sm text-ink-muted">
+          La app no sabe si van por el segundo piso o por abajo: en el camino toca "Entramos a vía
+          de cuota" y "Salimos" para marcar de dónde a dónde se usó. Si cambian de plan, también se
+          puede marcar aunque aquí digas que no.
+        </p>
+      </fieldset>
+
       <p className="text-sm text-ink-muted">
         La app va a pedir permiso de ubicación y mide lo que de verdad recorran, aunque cambien de
-        ruta. Quién iba, las casetas y entre quiénes se reparte se confirman al llegar.
+        ruta. Lo que cobró el tag y entre quiénes se reparte se confirman al llegar.
       </p>
       {missing && <p className="text-center text-sm text-ink-muted">{missing}</p>}
       <Button
@@ -310,7 +404,15 @@ export function StartTripForm({ cars, onDone }: { cars: Car[]; onDone: () => voi
         block
         disabled={Boolean(missing)}
         onClick={() => {
-          startLiveTrip({ purpose, showId: purpose === 'show' ? showId : null, carIds })
+          startLiveTrip({
+            purpose,
+            showId: purpose === 'show' ? showId : null,
+            carIds,
+            riders: Object.fromEntries(
+              cars.filter((car) => carIds.includes(car.id)).map((car) => [car.id, ridersOf(car)]),
+            ),
+            tagBy,
+          })
           onDone()
         }}
       >

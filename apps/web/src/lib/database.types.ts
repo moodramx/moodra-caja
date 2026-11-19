@@ -3599,6 +3599,7 @@ export type Database = {
           round_trip: boolean
           sharers: string[]
           started_at: string | null
+          toll_segments: NonNullable<Json>
           total_cents: number
           tracked: boolean
           traffic_pct: number
@@ -3621,6 +3622,7 @@ export type Database = {
           round_trip?: boolean
           sharers: string[]
           started_at?: string | null
+          toll_segments?: NonNullable<Json>
           total_cents: number
           tracked?: boolean
           traffic_pct?: number
@@ -3642,6 +3644,7 @@ export type Database = {
           round_trip?: boolean
           sharers?: string[]
           started_at?: string | null
+          toll_segments?: NonNullable<Json>
           total_cents?: number
           tracked?: boolean
           traffic_pct?: number
@@ -4560,6 +4563,7 @@ export type Database = {
           show_id: string | null
           started_at: string | null
           status: Database['public']['Enums']['event_status']
+          toll_segments: NonNullable<Json>
           total_cents: number
           tracked: boolean
           traffic_pct: number

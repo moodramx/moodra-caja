@@ -129,6 +129,8 @@ export interface ViajePayload {
   /** Ruta simplificada (polilínea codificada). */
   path?: string
   gaps?: number
+  /** Tramos donde se usó el tag: de dónde a dónde y cuánto cobró. */
+  toll_segments?: { from: string; to: string; cents: number }[]
   project_id?: string | null
   show_id?: string | null
   note?: string

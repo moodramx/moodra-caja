@@ -14,15 +14,24 @@ interface TripMapProps {
   here?: LatLng | null
   /** En vivo: el mapa sigue al auto. Si no, encuadra toda la ruta y no se mueve. */
   live?: boolean
+  /** Pedazos de la ruta hechos por vía de cuota: se pintan en otro color. */
+  highlights?: readonly LatLng[][]
   className?: string
 }
 
-export default function TripMap({ points, here = null, live = false, className }: TripMapProps) {
+export default function TripMap({
+  points,
+  here = null,
+  live = false,
+  highlights,
+  className,
+}: TripMapProps) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
   const line = useRef<L.Polyline | null>(null)
   const dot = useRef<L.CircleMarker | null>(null)
   const startDot = useRef<L.CircleMarker | null>(null)
+  const tolls = useRef<L.LayerGroup | null>(null)
   const following = useRef(true)
   const [detached, setDetached] = useState(false)
 
@@ -46,6 +55,7 @@ export default function TripMap({ points, here = null, live = false, className }
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(instance)
     line.current = L.polyline([], { color: '#111111', weight: 5, opacity: 0.85 }).addTo(instance)
+    tolls.current = L.layerGroup().addTo(instance)
     instance.on('dragstart', () => {
       following.current = false
       setDetached(true)
@@ -57,6 +67,7 @@ export default function TripMap({ points, here = null, live = false, className }
       line.current = null
       dot.current = null
       startDot.current = null
+      tolls.current = null
     }
   }, [live])
 
@@ -65,6 +76,12 @@ export default function TripMap({ points, here = null, live = false, className }
     if (!instance || !line.current) return
     const path = points.map((p) => [p[0]!, p[1]!] as LatLng)
     line.current.setLatLngs(path)
+    if (tolls.current) {
+      tolls.current.clearLayers()
+      for (const stretch of highlights ?? []) {
+        L.polyline(stretch, { color: '#7c3aed', weight: 7, opacity: 0.95 }).addTo(tolls.current)
+      }
+    }
     const first = path[0]
     if (first) {
       if (!startDot.current) {
@@ -106,7 +123,7 @@ export default function TripMap({ points, here = null, live = false, className }
     } else if (first) {
       instance.setView(first, 15)
     }
-  }, [points, here, live])
+  }, [points, here, live, highlights])
 
   return (
     <div className={`relative isolate overflow-hidden rounded-card ${className ?? ''}`}>

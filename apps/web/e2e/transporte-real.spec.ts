@@ -189,6 +189,9 @@ test('un viaje seguido en el mapa: se inicia, el GPS mide lo recorrido y se guar
   await sheet(a).getByRole('button', { name: 'Ensayo' }).click()
   // El auto de quien inicia ya viene elegido.
   await expect(chip(a, 'Autos', auto)).toHaveAttribute('aria-pressed', 'true')
+  // Quiénes van en el auto y de quién es el tag se dicen desde el arranque.
+  await chip(a, `Quiénes van en ${auto}`, conta.name).click()
+  await chip(a, 'Tag', `El de ${conta.name}`).click()
   await sheet(a).getByRole('button', { name: 'Empezar viaje' }).click()
   await expect(a.getByText('Viaje en curso')).toBeVisible()
 
@@ -196,6 +199,9 @@ test('un viaje seguido en el mapa: se inicia, el GPS mide lo recorrido y se guar
   for (let step = 1; step <= 24; step++) {
     await context.setGeolocation(at(step))
     await a.waitForTimeout(600)
+    // A medio camino suben al segundo piso y luego bajan.
+    if (step === 8) await a.getByRole('button', { name: /Entramos a vía de cuota/ }).click()
+    if (step === 16) await a.getByRole('button', { name: /Salimos de la vía de cuota/ }).click()
   }
   await expect(a.getByLabel('Kilómetros recorridos')).toContainText(/0\.[78] km/)
 
@@ -229,7 +235,18 @@ test('un viaje seguido en el mapa: se inicia, el GPS mide lo recorrido y se guar
     const pressed = (await button.getAttribute('aria-pressed')) === 'true'
     if (pressed !== [inte.name, conta.name].includes(name)) await button.click()
   }
-  await expect(form.getByLabel('Cuentas del viaje')).toContainText('Costo del viaje')
+  // El tramo marcado en el camino llega al resumen; falta decir dónde fue y cuánto cobró.
+  const tramo = form.getByRole('group', { name: 'Tramo con tag 1' })
+  await expect(tramo).toContainText(/0\.[23] km marcados/)
+  await tramo.getByLabel('Tramo 1: dónde entraron').fill('San Antonio')
+  await tramo.getByLabel('Tramo 1: dónde salieron').fill('San Jerónimo')
+  await tramo.getByLabel('Tramo 1: cobro del tag').fill('95')
+  await expect(chip(a, 'De quién es el tag', conta.name)).toHaveAttribute('aria-pressed', 'true')
+  await expect(chip(a, `Quiénes iban en ${auto}`, conta.name)).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(form.getByLabel('Cuentas del viaje')).toContainText('casetas $95.00')
   if (process.env.CAPTURAS) {
     await a.screenshot({ path: '../../docs/capturas/transporte-gps-resumen.png' })
   }
@@ -240,6 +257,8 @@ test('un viaje seguido en el mapa: se inicia, el GPS mide lo recorrido y se guar
   await expect(a.getByText('Viaje terminado')).toBeHidden()
   await row.click()
   await expect(a.getByRole('img', { name: 'Mapa del viaje' })).toBeVisible()
+  await expect(a.getByText('Tag: San Antonio → San Jerónimo · $95.00')).toBeVisible()
+  await expect(a.getByText(`las pagó ${conta.name}`)).toBeVisible()
   if (process.env.CAPTURAS) {
     await a.screenshot({ path: '../../docs/capturas/transporte-gps.png', fullPage: true })
   }

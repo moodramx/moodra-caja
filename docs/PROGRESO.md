@@ -4,6 +4,7 @@
 
 - **Iniciar viaje / Terminar viaje** con mapa (OpenStreetMap) y GPS: se cobra lo recorrido de verdad. El viaje en curso sobrevive a cerrar la app y se ve desde cualquier pestaña.
 - Al terminar: resumen con kilómetros, tiempo, extra por tráfico según la velocidad, casetas de la ruta recorrida (Google) y reparto.
+- **Tag y pasajeros desde el arranque** (rama `tramos-con-tag`): al iniciar se elige quiénes van en cada auto y de quién es el tag; en el camino se marca "Entramos a vía de cuota" / "Salimos" y al guardar se anota de dónde a dónde y cuánto cobró. Migración `20261122000000_tramos_con_tag.sql`.
 - **Gasolina diaria**: función `fuel-prices` (CRE, mediana del Valle de México), llamada por el trabajo nocturno y al abrir Transporte. Se apaga en Tarifas.
 - Migración `20261121000000_viaje_en_vivo.sql`.
 - **Sin verificar**: nada probado en un celular real (GPS real, pantalla encendida, iPhone); las casetas automáticas dependen de la llave de Google, que hoy responde 403.

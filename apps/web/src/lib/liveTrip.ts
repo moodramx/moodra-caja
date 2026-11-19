@@ -9,6 +9,7 @@ import {
   sampleRoute,
   simplify,
   type LatLng,
+  haversineM,
   type Track,
 } from './track'
 
@@ -21,6 +22,18 @@ export interface LiveTrip extends Track {
   purpose: TripPurpose
   showId: string | null
   carIds: string[]
+  /** Quiénes van en cada auto (por id de auto). */
+  riders: Record<string, string[]>
+  /** De quién es el tag, si van a usar vías de cuota. */
+  tagBy: string | null
+  /** Tramos de cuota marcados en el camino (entrada y salida). */
+  tollMarks: TollMark[]
+}
+
+/** Momento en que entraron a una vía de cuota y momento en que salieron. */
+export interface TollMark {
+  from: number
+  to: number | null
 }
 
 export interface LiveState {
@@ -64,7 +77,13 @@ function load(): LiveTrip | null {
     if (!raw) return null
     const trip = JSON.parse(raw) as LiveTrip
     if (!Array.isArray(trip.points) || typeof trip.startedAt !== 'number') return null
-    return trip
+    // Viajes guardados por una versión anterior de la app.
+    return {
+      ...trip,
+      riders: trip.riders ?? {},
+      tagBy: trip.tagBy ?? null,
+      tollMarks: trip.tollMarks ?? [],
+    }
   } catch {
     return null
   }
@@ -153,9 +172,18 @@ export function initLiveTrip() {
   if (trip.status === 'active') watch()
 }
 
-export function startLiveTrip(meta: Pick<LiveTrip, 'purpose' | 'showId' | 'carIds'>) {
+export function startLiveTrip(
+  meta: Pick<LiveTrip, 'purpose' | 'showId' | 'carIds' | 'riders' | 'tagBy'>,
+) {
   set({
-    trip: { ...emptyTrack(), ...meta, status: 'active', startedAt: Date.now(), endedAt: null },
+    trip: {
+      ...emptyTrack(),
+      ...meta,
+      tollMarks: [],
+      status: 'active',
+      startedAt: Date.now(),
+      endedAt: null,
+    },
     problem: null,
   })
   persist()
@@ -165,7 +193,18 @@ export function startLiveTrip(meta: Pick<LiveTrip, 'purpose' | 'showId' | 'carId
 export function endLiveTrip() {
   if (!state.trip) return
   unwatch()
-  set({ trip: { ...state.trip, status: 'ended', endedAt: Date.now() } })
+  const now = Date.now()
+  set({
+    trip: {
+      ...state.trip,
+      status: 'ended',
+      endedAt: now,
+      // Si se quedó un tramo de cuota abierto, termina con el viaje.
+      tollMarks: state.trip.tollMarks.map((mark) =>
+        mark.to === null ? { ...mark, to: now } : mark,
+      ),
+    },
+  })
   persist()
 }
 
@@ -175,6 +214,43 @@ export function resumeLiveTrip() {
   set({ trip: { ...state.trip, status: 'active', endedAt: null } })
   persist()
   watch()
+}
+
+/** "Entramos a vía de cuota" / "Salimos": abre o cierra un tramo con tag. */
+export function toggleTollMark() {
+  const trip = state.trip
+  if (!trip) return
+  const now = Date.now()
+  const open = trip.tollMarks.at(-1)?.to === null
+  set({
+    trip: {
+      ...trip,
+      tollMarks: open
+        ? trip.tollMarks.map((mark, i) =>
+            i === trip.tollMarks.length - 1 ? { ...mark, to: now } : mark,
+          )
+        : [...trip.tollMarks, { from: now, to: null }],
+    },
+  })
+  persist()
+}
+
+/** De quién es el tag (se puede decidir o cambiar a medio camino). */
+export function setLiveTag(tagBy: string | null) {
+  if (!state.trip) return
+  set({ trip: { ...state.trip, tagBy } })
+  persist()
+}
+
+/** Los pedazos de la ruta que se hicieron por vía de cuota, para pintarlos en el mapa. */
+export function tollPaths(trip: LiveTrip, now: number): LatLng[][] {
+  return trip.tollMarks
+    .map((mark) =>
+      trip.points
+        .filter((p) => p[2] >= mark.from && p[2] <= (mark.to ?? now))
+        .map((p) => [p[0], p[1]] as LatLng),
+    )
+    .filter((path) => path.length > 1)
 }
 
 export function clearLiveTrip() {
@@ -207,6 +283,10 @@ export interface TrackedTrip {
   purpose: TripPurpose
   showId: string | null
   carIds: string[]
+  riders: Record<string, string[]>
+  tagBy: string | null
+  /** Metros recorridos en cada tramo de cuota marcado. */
+  tollMeters: number[]
 }
 
 export function trackedFrom(trip: LiveTrip): TrackedTrip {
@@ -223,5 +303,13 @@ export function trackedFrom(trip: LiveTrip): TrackedTrip {
     purpose: trip.purpose,
     showId: trip.showId,
     carIds: trip.carIds,
+    riders: trip.riders,
+    tagBy: trip.tagBy,
+    tollMeters: trip.tollMarks.map((mark) => {
+      const inside = trip.points.filter((p) => p[2] >= mark.from && p[2] <= (mark.to ?? ended))
+      let meters = 0
+      for (let i = 1; i < inside.length; i++) meters += haversineM(inside[i - 1]!, inside[i]!)
+      return Math.round(meters)
+    }),
   }
 }

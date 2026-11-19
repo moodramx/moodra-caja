@@ -183,7 +183,19 @@ insert into ids select 'v4', pg_temp.ev('viaje', jsonb_build_object(
   'tracked', true, 'distance_m', 18400, 'duration_s', 2400, 'traffic_pct', 18, 'gaps', 1,
   'started_at', '2026-11-19T18:00:00Z', 'ended_at', '2026-11-19T18:40:00Z', 'path', '_p~iF~ps|U_ulLnnqC',
   'wear_cents_per_km', 150, 'sharers', pg_temp.todos(),
-  'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'), 'price_per_liter_cents', 2400))));
+  'toll_segments', jsonb_build_array(jsonb_build_object('from', ' San Antonio ', 'to', 'San Jerónimo', 'cents', 9500)),
+  'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'), 'price_per_liter_cents', 2400,
+    'toll_cents', 9500, 'toll_paid_by', pg_temp.uid('b')))));
+select is((select toll_segments from public.v_trips where event_id = pg_temp.id('v4')),
+  '[{"from": "San Antonio", "to": "San Jerónimo", "cents": 9500}]'::jsonb,
+  'el viaje guarda de dónde a dónde se usó el tag y cuánto cobró');
+select is((select toll_paid_by from public.trip_cars where event_id = pg_temp.id('v4')), pg_temp.uid('b'),
+  'y el cobro se le reconoce al dueño del tag');
+select throws_ok($$ select pg_temp.ev('viaje', jsonb_build_object(
+  'origin_name', 'A', 'dest_name', 'B', 'purpose', 'ensayo', 'round_trip', false, 'distance_m', 1000,
+  'sharers', pg_temp.todos(), 'toll_segments', jsonb_build_array(jsonb_build_object('from', 'x', 'to', 'y', 'cents', -5)),
+  'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'))))) $$,
+  'P0001', null, 'un tramo con cobro negativo no entra');
 select results_eq(
   $$ select tracked, round_trip, distance_m, gaps, path, extract(epoch from ended_at - started_at)::int
      from public.v_trips where event_id = pg_temp.id('v4') $$,
@@ -191,9 +203,9 @@ select results_eq(
   'el viaje seguido guarda la distancia real y su ruta');
 -- 18.4 km ÷ rendimiento × $24 × 1.18 + 18.4 km × $1.50 de desgaste
 select is((select total_cents from public.trips where event_id = pg_temp.id('v4')),
-  (select round(18400::numeric * 2400 * 118 / (1000 * km_per_liter * 100)) + 2760
+  (select round(18400::numeric * 2400 * 118 / (1000 * km_per_liter * 100)) + 2760 + 9500
    from public.vehicles where id = pg_temp.id('car1'))::bigint,
-  'y cuesta gasolina con tráfico + desgaste de lo recorrido');
+  'y cuesta gasolina con tráfico + desgaste de lo recorrido + el tag');
 select throws_ok($$ select pg_temp.ev('viaje', jsonb_build_object(
   'origin_name', 'A', 'dest_name', 'B', 'purpose', 'ensayo', 'round_trip', true, 'tracked', true,
   'distance_m', 1000, 'sharers', pg_temp.todos(),
