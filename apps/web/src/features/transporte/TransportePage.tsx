@@ -1,6 +1,6 @@
 // Transporte entre integrantes: quién puso auto y tag en cada viaje, cuánto
 // costó (gasolina estimada + desgaste + casetas) y cuánto se deben entre sí.
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { BottomSheet } from '../../design/BottomSheet'
 import { Button } from '../../design/Button'
@@ -28,20 +28,21 @@ import {
   metersToKm,
   previewTrip,
   priceOf,
+  PURPOSES,
   settleUp,
   suggestedTrafficPct,
   type Fuel,
   type Rates,
 } from '../../lib/transport'
+import { clearLiveTrip, trackedFrom, useLiveTrip, type TrackedTrip } from '../../lib/liveTrip'
+import { decodePolyline, formatDuration, trafficPctFromSpeed } from '../../lib/track'
 import { fieldClass, useCapture } from '../captura/parts'
+import { LiveTripCard, SavedTripMap, StartTripForm } from './LiveTrip'
 
 const FUELS: Fuel[] = ['magna', 'premium', 'diesel']
-const PURPOSES = [
-  { key: 'ensayo', label: 'Ensayo', emoji: '🥁' },
-  { key: 'show', label: 'Show', emoji: '🎤' },
-  { key: 'otro', label: 'Otro', emoji: '📍' },
-] as const
 type Purpose = (typeof PURPOSES)[number]['key']
+const FUEL_CHECK_KEY = 'moodra.gasolina'
+const FUEL_CHECK_MS = 6 * 60 * 60 * 1000
 
 /** "123.45" → 12345 centavos, o null si no es un monto. Vacío = 0. */
 function pesosToCents(text: string): number | null {
@@ -77,30 +78,51 @@ function useRates(): Rates | null {
 }
 
 export function TransportePage() {
-  const [sheet, setSheet] = useState<'viaje' | 'auto' | 'tarifas' | null>(null)
+  const [sheet, setSheet] = useState<'iniciar' | 'viaje' | 'gps' | 'auto' | 'tarifas' | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const vehicles = useVehicles()
   const profiles = useProfiles()
+  const settings = useSettings()
   const rates = useRates()
+  const live = useLiveTrip()
   const nameOf = (id: string | null | undefined) =>
     profiles.data?.find((p) => p.id === id)?.display_name ?? 'Alguien'
   const cars = (vehicles.data ?? []).filter((v) => v.active)
+  const ended = live.trip?.status === 'ended' ? live.trip : null
+  const tracked = useMemo(() => (ended ? trackedFrom(ended) : null), [ended])
+
+  // El precio de la gasolina se actualiza solo (datos de la CRE). El servidor
+  // decide si ya toca; aquí solo se le avisa de vez en cuando.
+  useEffect(() => {
+    if (!navigator.onLine) return
+    try {
+      if (Date.now() - Number(localStorage.getItem(FUEL_CHECK_KEY) ?? 0) < FUEL_CHECK_MS) return
+      localStorage.setItem(FUEL_CHECK_KEY, String(Date.now()))
+    } catch {
+      return
+    }
+    void supabase.functions.invoke('fuel-prices', { method: 'GET' }).then(({ data }) => {
+      if ((data as { updated?: boolean } | null)?.updated) {
+        void queryClient.invalidateQueries({ queryKey: ['settings'] })
+      }
+    })
+  }, [queryClient])
 
   return (
     <Page number="04" title="Transporte">
-      <Balances nameOf={nameOf} />
-
-      <Button
-        size="lg"
-        block
-        onClick={() => setSheet('viaje')}
-        disabled={cars.length === 0 || !rates}
-      >
-        🚗 Nuevo viaje
-      </Button>
+      <LiveTripCard
+        rates={rates}
+        cars={cars}
+        onStart={() => setSheet('iniciar')}
+        onManual={() => setSheet('viaje')}
+        onReview={() => setSheet('gps')}
+      />
       {vehicles.data && cars.length === 0 && (
         <p className="text-center text-ink-muted">Primero da de alta un auto.</p>
       )}
+
+      <Balances nameOf={nameOf} />
 
       <Trips nameOf={nameOf} />
 
@@ -164,16 +186,46 @@ export function TransportePage() {
               <dd className="tabular-nums">{formatMXN(BigInt(rates.wear_cents_per_km))} / km</dd>
             </div>
           </dl>
+          <p className="mt-2 text-sm text-ink-muted">
+            {settings.data?.fuel_auto === false
+              ? 'La gasolina se pone a mano.'
+              : `La gasolina se actualiza sola cada día con los precios de las gasolineras del Valle de México${
+                  settings.data?.fuel_updated_at
+                    ? ` (última vez: ${new Date(settings.data.fuel_updated_at).toLocaleDateString(
+                        'es-MX',
+                        { day: 'numeric', month: 'short' },
+                      )})`
+                    : ''
+                }.`}
+          </p>
         </Card>
       )}
 
       <BottomSheet
+        open={sheet === 'iniciar'}
+        onOpenChange={(open) => !open && setSheet(null)}
+        title="Iniciar viaje"
+        description="La app mide el camino real mientras van."
+      >
+        <StartTripForm cars={cars} onDone={() => setSheet(null)} />
+      </BottomSheet>
+      <BottomSheet
         open={sheet === 'viaje'}
         onOpenChange={(open) => !open && setSheet(null)}
-        title="Nuevo viaje"
-        description="Su costo se reparte entre los integrantes."
+        title="Viaje a mano"
+        description="Para un viaje que no se siguió en el mapa."
       >
         {rates && <TripForm rates={rates} onDone={() => setSheet(null)} />}
+      </BottomSheet>
+      <BottomSheet
+        open={sheet === 'gps' && tracked !== null}
+        onOpenChange={(open) => !open && setSheet(null)}
+        title="Guardar viaje"
+        description="Su costo se reparte entre los integrantes."
+      >
+        {rates && tracked && (
+          <TripForm rates={rates} tracked={tracked} onDone={() => setSheet(null)} />
+        )}
       </BottomSheet>
       <BottomSheet
         open={sheet === 'auto'}
@@ -192,7 +244,13 @@ export function TransportePage() {
         title="Tarifas"
         description="Precio por litro y desgaste por kilómetro. Aplican a los viajes nuevos."
       >
-        {rates && <RatesForm rates={rates} onDone={() => setSheet(null)} />}
+        {rates && (
+          <RatesForm
+            rates={rates}
+            fuelAuto={settings.data?.fuel_auto !== false}
+            onDone={() => setSheet(null)}
+          />
+        )}
       </BottomSheet>
     </Page>
   )
@@ -335,7 +393,12 @@ function Trips({ nameOf }: { nameOf: (id: string | null | undefined) => string }
                       month: 'short',
                     })}
                     {' · '}
-                    {trip.round_trip ? 'ida y vuelta' : 'solo ida'} · {km.toFixed(1)} km
+                    {trip.tracked
+                      ? 'medido por GPS'
+                      : trip.round_trip
+                        ? 'ida y vuelta'
+                        : 'solo ida'}{' '}
+                    · {km.toFixed(1)} km
                   </span>
                 </span>
                 <span className="font-semibold tabular-nums">
@@ -343,7 +406,21 @@ function Trips({ nameOf }: { nameOf: (id: string | null | undefined) => string }
                 </span>
               </button>
               {open === trip.event_id && (
-                <ul className="pb-3 text-sm text-ink-muted">
+                <ul className="space-y-1 pb-3 text-sm text-ink-muted">
+                  {trip.path && (
+                    <li>
+                      <SavedTripMap points={decodePolyline(trip.path)} />
+                    </li>
+                  )}
+                  {trip.tracked && trip.duration_s ? (
+                    <li>
+                      Duró {formatDuration(trip.duration_s)}
+                      {trip.traffic_pct
+                        ? ` · ${trip.traffic_pct} % extra de gasolina por tráfico`
+                        : ''}
+                      .
+                    </li>
+                  ) : null}
                   {cars.map((car) => (
                     <li key={car.vehicle_name}>
                       {car.vehicle_name} (de {nameOf(car.owner_id)}): gasolina{' '}
@@ -445,7 +522,16 @@ interface CarState {
   tollPaidBy: string | null
 }
 
-function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
+function TripForm({
+  rates,
+  tracked = null,
+  onDone,
+}: {
+  rates: Rates
+  /** Viaje seguido en el mapa: la distancia y el tiempo ya vienen medidos. */
+  tracked?: TrackedTrip | null
+  onDone: () => void
+}) {
   const capture = useCapture()
   const queryClient = useQueryClient()
   const profiles = useProfiles()
@@ -456,17 +542,25 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
   const members = (profiles.data ?? []).filter((p) => p.activo)
   const cars = (vehicles.data ?? []).filter((v) => v.active)
 
-  const [purpose, setPurpose] = useState<Purpose>('ensayo')
-  const [showId, setShowId] = useState<string | null>(null)
+  const [purpose, setPurpose] = useState<Purpose>(tracked?.purpose ?? 'ensayo')
+  const [showId, setShowId] = useState<string | null>(tracked?.showId ?? null)
   const [origin, setOrigin] = useState<PlaceValue>(emptyPlace)
   const [dest, setDest] = useState<PlaceValue>(emptyPlace)
-  const [roundTrip, setRoundTrip] = useState(true)
-  const [km, setKm] = useState('')
-  const [duration, setDuration] = useState<number | null>(null)
-  const [traffic, setTraffic] = useState('0')
+  const [roundTrip, setRoundTrip] = useState(!tracked)
+  const [km, setKm] = useState(tracked ? (tracked.distanceM / 1000).toFixed(2) : '')
+  const [duration, setDuration] = useState<number | null>(tracked?.durationS ?? null)
+  const [traffic, setTraffic] = useState(
+    tracked ? String(trafficPctFromSpeed(tracked.distanceM, tracked.durationS)) : '0',
+  )
   const [routing, setRouting] = useState(false)
   const [routeNote, setRouteNote] = useState('')
-  const [selected, setSelected] = useState<Record<string, CarState>>({})
+  const [selected, setSelected] = useState<Record<string, CarState>>(() =>
+    Object.fromEntries(
+      cars
+        .filter((car) => tracked?.carIds.includes(car.id))
+        .map((car) => [car.id, { riders: [car.owner_id], toll: '', tollPaidBy: car.owner_id }]),
+    ),
+  )
   const [sharers, setSharers] = useState<string[] | null>(null)
 
   // Por defecto se reparte entre quienes participan en los repartos de la banda.
@@ -533,7 +627,9 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
     setRouteNote('')
     try {
       const { data, error } = await supabase.functions.invoke('route-estimate', {
-        body: { origin: origin.address, destination: dest.address },
+        body: tracked
+          ? { points: tracked.waypoints }
+          : { origin: origin.address, destination: dest.address },
       })
       // Cuando la función responde con error, el motivo viene en el cuerpo de la respuesta.
       let failure: unknown = null
@@ -554,7 +650,32 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
         toll_cents?: number | null
         error?: string
       }
-      if (error || result.error) {
+      if (tracked) {
+        // La distancia ya la midió el GPS: de Google solo interesan las casetas.
+        const toll = result.toll_cents ?? 0
+        const first = chosen[0]
+        if (error || result.error || !result.configured) {
+          setRouteNote(
+            `No se pudieron consultar las casetas${result.error ? ` (${result.error})` : ''}. Ponlas a mano con lo que cobró el tag.`,
+          )
+        } else {
+          if (toll > 0 && first) patchCar(first.id, { toll: centsToPesos(toll) })
+          const off =
+            result.distance_m &&
+            Math.abs(result.distance_m - tracked.distanceM) > tracked.distanceM * 0.15
+              ? ` Ojo: por esa ruta Google mide ${(result.distance_m / 1000).toFixed(1)} km; si el celular perdió la ubicación, corrige los kilómetros.`
+              : ''
+          setRouteNote(
+            (toll > 0
+              ? `Casetas de la ruta que tomaron: ${formatMXN(BigInt(toll))}${first ? ' (puestas en el primer auto; corrígelas con lo que cobró el tag).' : '.'}`
+              : result.tolls_unavailable
+                ? `Google no dejó consultar casetas (${result.tolls_unavailable}): ponlas a mano.`
+                : result.has_tolls
+                  ? 'Hay casetas en la ruta pero Google no sabe el precio: ponlas a mano.'
+                  : 'La ruta que tomaron no tiene casetas.') + off,
+          )
+        }
+      } else if (error || result.error) {
         setRouteNote(result.error ?? 'No se pudo calcular la ruta. Pon los kilómetros a mano.')
       } else if (!result.configured) {
         setRouteNote(
@@ -585,11 +706,23 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
         )
       }
     } catch {
-      setRouteNote('Sin señal: pon los kilómetros a mano.')
+      setRouteNote(
+        tracked ? 'Sin señal: pon las casetas a mano.' : 'Sin señal: pon los kilómetros a mano.',
+      )
     } finally {
       setRouting(false)
     }
   }
+
+  // Al terminar un viaje seguido en el mapa se preguntan sus casetas una vez.
+  const asked = useRef(false)
+  useEffect(() => {
+    if (!tracked || asked.current || tracked.waypoints.length < 2 || !navigator.onLine) return
+    asked.current = true
+    void askGoogle()
+    // Solo al abrir el resumen del viaje.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const save = () => {
     if (missing || !distanceM) return
@@ -599,7 +732,16 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
       dest_name: dest.name.trim(),
       dest_address: dest.address.trim() || undefined,
       purpose,
-      round_trip: roundTrip,
+      round_trip: tracked ? false : roundTrip,
+      ...(tracked
+        ? {
+            tracked: true,
+            started_at: tracked.startedAt,
+            ended_at: tracked.endedAt,
+            path: tracked.path || undefined,
+            gaps: tracked.gaps,
+          }
+        : {}),
       distance_m: distanceM,
       duration_s: duration,
       traffic_pct: trafficPct,
@@ -616,6 +758,7 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
       })),
     }
     void capture('viaje', payload, 'Viaje guardado ✓')
+    if (tracked) clearLiveTrip()
     // Los lugares nuevos con dirección se guardan para la próxima (si hay señal).
     for (const place of [origin, dest]) {
       if (!place.id && place.name.trim() && place.address.trim().length >= 3) {
@@ -666,21 +809,49 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
 
       <fieldset className="space-y-2">
         <legend className="font-semibold">Recorrido</legend>
-        <div className="flex flex-wrap gap-2">
-          <Chip selected={roundTrip} onClick={() => setRoundTrip(true)}>
-            Ida y vuelta
-          </Chip>
-          <Chip selected={!roundTrip} onClick={() => setRoundTrip(false)}>
-            Solo ida
-          </Chip>
-        </div>
+        {tracked ? (
+          <>
+            <p>
+              El GPS midió{' '}
+              <strong className="tabular-nums">{(tracked.distanceM / 1000).toFixed(1)} km</strong>{' '}
+              en {formatDuration(tracked.durationS)}.
+            </p>
+            {tracked.gaps > 0 && (
+              <p className="text-sm text-ink-muted">
+                ⚠️ El celular dejó de dar ubicación{' '}
+                {tracked.gaps === 1 ? 'una vez' : `${tracked.gaps} veces`}: revisa los kilómetros.
+              </p>
+            )}
+            <p className="text-sm text-ink-muted">
+              Este viaje es de un solo sentido; el regreso se inicia como otro viaje.
+            </p>
+          </>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Chip selected={roundTrip} onClick={() => setRoundTrip(true)}>
+              Ida y vuelta
+            </Chip>
+            <Chip selected={!roundTrip} onClick={() => setRoundTrip(false)}>
+              Solo ida
+            </Chip>
+          </div>
+        )}
         <Button
           variant="secondary"
           block
-          disabled={routing || origin.address.trim().length < 3 || dest.address.trim().length < 3}
+          disabled={
+            routing ||
+            (tracked
+              ? tracked.waypoints.length < 2
+              : origin.address.trim().length < 3 || dest.address.trim().length < 3)
+          }
           onClick={() => void askGoogle()}
         >
-          {routing ? 'Calculando…' : '🗺️ Calcular ruta con Google'}
+          {routing
+            ? 'Calculando…'
+            : tracked
+              ? '🧾 Calcular casetas de esta ruta'
+              : '🗺️ Calcular ruta con Google'}
         </Button>
         {routeNote && (
           <p role="status" className="text-sm text-ink-muted">
@@ -689,7 +860,9 @@ function TripForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
         )}
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-sm text-ink-muted">Km por sentido</span>
+            <span className="text-sm text-ink-muted">
+              {tracked ? 'Km recorridos' : 'Km por sentido'}
+            </span>
             <input
               className={fieldClass}
               inputMode="decimal"
@@ -968,9 +1141,18 @@ function VehicleForm({
   )
 }
 
-function RatesForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
+function RatesForm({
+  rates,
+  fuelAuto,
+  onDone,
+}: {
+  rates: Rates
+  fuelAuto: boolean
+  onDone: () => void
+}) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const [auto, setAuto] = useState(fuelAuto)
   const [values, setValues] = useState({
     magna: centsToPesos(rates.fuel_magna_cents),
     premium: centsToPesos(rates.fuel_premium_cents),
@@ -984,16 +1166,27 @@ function RatesForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
     diesel: pesosToCents(values.diesel),
     wear: pesosToCents(values.wear),
   }
-  const valid = Boolean(cents.magna && cents.premium && cents.diesel) && cents.wear !== null
+  const valid =
+    (auto || Boolean(cents.magna && cents.premium && cents.diesel)) && cents.wear !== null
 
   const save = async () => {
     setBusy(true)
-    const { error } = await supabase.rpc('set_transport_rates', {
-      p_magna_cents: cents.magna ?? 0,
-      p_premium_cents: cents.premium ?? 0,
-      p_diesel_cents: cents.diesel ?? 0,
+    // Con la gasolina automática solo se guarda el desgaste; los precios los pone el servidor.
+    let { error } = await supabase.rpc('set_transport_rates', {
+      p_magna_cents: auto ? rates.fuel_magna_cents : (cents.magna ?? 0),
+      p_premium_cents: auto ? rates.fuel_premium_cents : (cents.premium ?? 0),
+      p_diesel_cents: auto ? rates.fuel_diesel_cents : (cents.diesel ?? 0),
       p_wear_cents_per_km: cents.wear ?? 0,
     })
+    if (!error && auto !== fuelAuto) {
+      error = (await supabase.rpc('set_fuel_auto', { p_auto: auto })).error
+      // Al encenderla, que se consulte el precio de hoy en la próxima visita.
+      try {
+        localStorage.removeItem(FUEL_CHECK_KEY)
+      } catch {
+        // Sin almacenamiento local no pasa nada.
+      }
+    }
     setBusy(false)
     if (error) {
       toast({ message: errorText(error) })
@@ -1018,9 +1211,27 @@ function RatesForm({ rates, onDone }: { rates: Rates; onDone: () => void }) {
 
   return (
     <div className="space-y-4">
-      {field('magna', 'Magna (pesos por litro)')}
-      {field('premium', 'Premium (pesos por litro)')}
-      {field('diesel', 'Diésel (pesos por litro)')}
+      <label className="flex min-h-12 items-center gap-3">
+        <input
+          type="checkbox"
+          className="size-6 accent-current"
+          checked={auto}
+          onChange={(event) => setAuto(event.target.checked)}
+        />
+        <span>
+          <span className="block font-semibold">Actualizar la gasolina sola cada día</span>
+          <span className="text-sm text-ink-muted">
+            Con los precios que las gasolineras del Valle de México reportan a la CRE.
+          </span>
+        </span>
+      </label>
+      {!auto && (
+        <>
+          {field('magna', 'Magna (pesos por litro)')}
+          {field('premium', 'Premium (pesos por litro)')}
+          {field('diesel', 'Diésel (pesos por litro)')}
+        </>
+      )}
       {field('wear', 'Desgaste del auto (pesos por km)')}
       <p className="text-sm text-ink-muted">
         El desgaste cubre llantas, servicio y demás; se le reconoce al dueño del auto en cada viaje.

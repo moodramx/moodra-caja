@@ -9,6 +9,12 @@ export const FUEL_LABEL: Record<Fuel, string> = {
   diesel: 'Diésel',
 }
 
+export const PURPOSES = [
+  { key: 'ensayo', label: 'Ensayo', emoji: '🥁' },
+  { key: 'show', label: 'Show', emoji: '🎤' },
+  { key: 'otro', label: 'Otro', emoji: '📍' },
+] as const
+
 export interface Rates {
   fuel_magna_cents: number
   fuel_premium_cents: number

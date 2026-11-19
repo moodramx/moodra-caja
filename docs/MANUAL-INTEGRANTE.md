@@ -29,7 +29,9 @@ Si pagaste con **tu dinero**, la app te pregunta qué hacemos: te lo regresamos,
 
 ## Transporte
 
-Cuando van a ensayar o a tocar en auto: pestaña **Transporte → Nuevo viaje**. Pon de dónde a dónde, los kilómetros, en qué autos fueron, las casetas y de quién es el tag. La app calcula gasolina y desgaste, lo reparte entre todos y te dice **quién le paga a quién**. Cuando pagues, toca **Ya se pagó**.
+Cuando van a ensayar o a tocar en auto: pestaña **Transporte → Iniciar viaje**. Elige a qué van y en qué auto, y toca **Empezar viaje**: la app muestra el mapa y va midiendo lo que de verdad recorren, aunque cambien de ruta. **Deja la app abierta durante el camino** (si la cierras o bloqueas el celular, deja de medir). Al llegar toca **Terminar viaje → Revisar y guardar**: confirma de dónde a dónde, quiénes iban, las casetas (la app intenta calcularlas; corrígelas con lo que cobró el tag) y de quién es el tag. El regreso se inicia como otro viaje. Si van en dos autos por caminos distintos, cada auto inicia el suyo.
+
+La app calcula gasolina y desgaste, lo reparte entre todos y te dice **quién le paga a quién**. Cuando pagues, toca **Ya se pagó**. El precio de la gasolina se actualiza solo cada día. Si no siguieron el viaje en el mapa, usa **Registrar un viaje a mano**.
 
 ## Shows
 

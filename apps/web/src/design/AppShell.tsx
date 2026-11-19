@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useEffect, type ReactNode } from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
+import { initLiveTrip, useLiveTrip } from '../lib/liveTrip'
 
 const NAV = [
   {
@@ -24,6 +25,10 @@ const NAV = [
 
 /** Layout móvil: contenido con scroll y navegación inferior fija. */
 export function AppShell({ children }: { children: ReactNode }) {
+  const live = useLiveTrip()
+  const path = useLocation({ select: (location) => location.pathname })
+  // Retoma el viaje que estaba en curso si la app se cerró a medio camino.
+  useEffect(() => initLiveTrip(), [])
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <header className="flex items-center justify-between px-4 pt-safe">
@@ -38,6 +43,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="label-mono pb-0.5 text-sm text-accent">$$</span>
         </p>
       </header>
+      {live.trip && path !== '/transporte' && (
+        <Link
+          to="/transporte"
+          className="mx-4 mt-3 flex min-h-12 items-center justify-between gap-3 rounded-card border border-line bg-surface-2 px-4 font-semibold"
+        >
+          <span>
+            🚗 {live.trip.status === 'active' ? 'Viaje en curso' : 'Viaje sin guardar'} ·{' '}
+            <span className="tabular-nums">{(live.trip.distanceM / 1000).toFixed(1)} km</span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
       <main className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]">{children}</main>
       <nav
         aria-label="Secciones"

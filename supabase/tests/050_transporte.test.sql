@@ -175,6 +175,47 @@ select is(pg_temp.mov(pg_temp.id('v3'), '5.3.08'), 31000::bigint, 'el viaje va a
 select is(pg_temp.mov(pg_temp.id('v3'), '5.3.01'), 0::bigint, 'sin mezclarse con la gasolina pagada en efectivo');
 select is(pg_temp.mov(pg_temp.id('v3'), '6.11'), 0::bigint, 'y nada a transporte general');
 
+-- ---------------------------------------------------------------------------
+-- Viaje seguido en el mapa: distancia real, un solo sentido, con su ruta
+-- ---------------------------------------------------------------------------
+insert into ids select 'v4', pg_temp.ev('viaje', jsonb_build_object(
+  'origin_name', 'Casa pgTAP', 'dest_name', 'Sala pgTAP', 'purpose', 'ensayo', 'round_trip', false,
+  'tracked', true, 'distance_m', 18400, 'duration_s', 2400, 'traffic_pct', 18, 'gaps', 1,
+  'started_at', '2026-11-19T18:00:00Z', 'ended_at', '2026-11-19T18:40:00Z', 'path', '_p~iF~ps|U_ulLnnqC',
+  'wear_cents_per_km', 150, 'sharers', pg_temp.todos(),
+  'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'), 'price_per_liter_cents', 2400))));
+select results_eq(
+  $$ select tracked, round_trip, distance_m, gaps, path, extract(epoch from ended_at - started_at)::int
+     from public.v_trips where event_id = pg_temp.id('v4') $$,
+  $$ values (true, false, 18400, 1, '_p~iF~ps|U_ulLnnqC', 2400) $$,
+  'el viaje seguido guarda la distancia real y su ruta');
+-- 18.4 km ÷ rendimiento × $24 × 1.18 + 18.4 km × $1.50 de desgaste
+select is((select total_cents from public.trips where event_id = pg_temp.id('v4')),
+  (select round(18400::numeric * 2400 * 118 / (1000 * km_per_liter * 100)) + 2760
+   from public.vehicles where id = pg_temp.id('car1'))::bigint,
+  'y cuesta gasolina con tráfico + desgaste de lo recorrido');
+select throws_ok($$ select pg_temp.ev('viaje', jsonb_build_object(
+  'origin_name', 'A', 'dest_name', 'B', 'purpose', 'ensayo', 'round_trip', true, 'tracked', true,
+  'distance_m', 1000, 'sharers', pg_temp.todos(),
+  'cars', jsonb_build_array(jsonb_build_object('vehicle_id', pg_temp.id('car1'))))) $$,
+  'P0001', null, 'un viaje seguido no puede ser de ida y vuelta');
+
+-- Gasolina automática: solo el servidor pone precios, y solo si está encendida.
+reset role;
+select is(public.apply_fuel_prices(2391, 2689, 2655, 'CRE pgTAP'), true, 'el servidor guarda los precios del día');
+select results_eq($$ select fuel_magna_cents, fuel_premium_cents, fuel_diesel_cents, fuel_source from public.app_settings $$,
+  $$ values (2391::bigint, 2689::bigint, 2655::bigint, 'CRE pgTAP') $$, 'quedan en las tarifas');
+select throws_ok($$ select public.apply_fuel_prices(239, 2689, 2655, 'x') $$, 'P0001', null,
+  'un precio absurdo no entra');
+select pg_temp.act('a');
+select is((select fuel_auto from public.set_fuel_auto(false)), false, 'un integrante apaga la actualización automática');
+reset role;
+select is(public.apply_fuel_prices(2500, 2700, 2700, 'CRE pgTAP 2'), false, 'apagada, el servidor ya no cambia nada');
+select is((select fuel_magna_cents from public.app_settings), 2391::bigint, 'y el precio se queda como estaba');
+select is(has_function_privilege('authenticated', 'public.apply_fuel_prices(bigint, bigint, bigint, text)', 'execute'),
+  false, 'el cliente no puede poner precios por esa vía');
+select pg_temp.act('a');
+
 -- Todo sigue cuadrado.
 select is((select sum(debit_cents) from public.journal_lines), (select sum(credit_cents) from public.journal_lines),
   'cargos = abonos en todo el diario');

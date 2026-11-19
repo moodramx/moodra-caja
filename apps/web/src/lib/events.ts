@@ -115,13 +115,20 @@ export interface ViajePayload {
   dest_address?: string
   purpose: 'ensayo' | 'show' | 'otro'
   round_trip: boolean
-  /** Metros de un sentido. */
+  /** Metros de un sentido (o lo recorrido, si se siguió con el GPS). */
   distance_m: number
   duration_s?: number | null
   traffic_pct: number
   wear_cents_per_km: number
   sharers: string[]
   cars: TripCarPayload[]
+  /** Viaje seguido en el mapa con el GPS del celular. */
+  tracked?: boolean
+  started_at?: string
+  ended_at?: string
+  /** Ruta simplificada (polilínea codificada). */
+  path?: string
+  gaps?: number
   project_id?: string | null
   show_id?: string | null
   note?: string

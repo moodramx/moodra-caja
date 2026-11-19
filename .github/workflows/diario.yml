@@ -1,6 +1,6 @@
 name: Diario (avisos y keep-alive)
 
-# Cada noche: manda los avisos del día (shows sin cerrar, resumen de gira,
+# Cada noche: actualiza el precio de la gasolina, manda los avisos del día (shows sin cerrar, resumen de gira,
 # efectivo alto, entregas viejas) y de paso mantiene despierta la base de
 # Supabase, que en el plan gratis se pausa tras 7 días sin actividad.
 #
@@ -26,6 +26,9 @@ jobs:
           URL="${SUPABASE_URL:-https://ndoxwuqqrwiagnzfvsms.supabase.co}"
           # Keep-alive: esta consulta toca la base y no necesita secretos.
           curl --fail-with-body --silent --show-error "$URL/functions/v1/notify"
+          echo
+          # Precio de la gasolina de hoy (datos públicos de la CRE); tampoco necesita secretos.
+          curl --fail-with-body --silent --show-error "$URL/functions/v1/fuel-prices" || echo "::warning::No se pudo actualizar la gasolina."
           echo
           if [ -z "$CRON_SECRET" ]; then
             echo "::warning::Falta el secreto CRON_SECRET: no se mandaron los avisos del día (ver docs/RESPALDOS.md)."

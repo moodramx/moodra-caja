@@ -103,7 +103,7 @@ test('cualquiera da de alta el auto de otro integrante', async () => {
 
 test('un viaje a ensayo: uno pone el auto y otro el tag, y la app hace las cuentas', async () => {
   await transporte(a)
-  await a.getByRole('button', { name: /Nuevo viaje/ }).click()
+  await a.getByRole('button', { name: 'Registrar un viaje a mano' }).click()
   const form = sheet(a)
   await form.getByRole('button', { name: 'Ensayo' }).click()
 
@@ -166,7 +166,81 @@ test('el viaje y el pago aparecen en Movimientos', async () => {
   if (process.env.CAPTURAS) {
     await transporte(a)
     await a.screenshot({ path: '../../docs/capturas/transporte.png', fullPage: true })
-    await a.getByRole('button', { name: /Nuevo viaje/ }).click()
+    await a.getByRole('button', { name: 'Registrar un viaje a mano' }).click()
     await a.screenshot({ path: '../../docs/capturas/transporte-viaje.png' })
+  }
+})
+
+test('un viaje seguido en el mapa: se inicia, el GPS mide lo recorrido y se guarda', async () => {
+  test.setTimeout(120_000)
+  const context = a.context()
+  // Por si quedó abierta una hoja de la prueba anterior.
+  await a.keyboard.press('Escape')
+  // El mapa no hace falta para la prueba: sin salir a internet.
+  if (!process.env.CAPTURAS) {
+    await context.route('https://tile.openstreetmap.org/**', (route) => route.abort())
+  }
+  await context.grantPermissions(['geolocation'])
+  const at = (step: number) => ({ latitude: 19.4 + step * 0.0003, longitude: -99.15, accuracy: 8 })
+  await context.setGeolocation(at(0))
+
+  await transporte(a)
+  await a.getByRole('button', { name: /Iniciar viaje/ }).click()
+  await sheet(a).getByRole('button', { name: 'Ensayo' }).click()
+  // El auto de quien inicia ya viene elegido.
+  await expect(chip(a, 'Autos', auto)).toHaveAttribute('aria-pressed', 'true')
+  await sheet(a).getByRole('button', { name: 'Empezar viaje' }).click()
+  await expect(a.getByText('Viaje en curso')).toBeVisible()
+
+  // 24 pasos de ~33 m hacia el norte: unos 800 m.
+  for (let step = 1; step <= 24; step++) {
+    await context.setGeolocation(at(step))
+    await a.waitForTimeout(600)
+  }
+  await expect(a.getByLabel('Kilómetros recorridos')).toContainText(/0\.[78] km/)
+
+  if (process.env.CAPTURAS) {
+    await a.waitForTimeout(1500)
+    await a.screenshot({ path: '../../docs/capturas/transporte-en-curso.png' })
+  }
+
+  // El viaje sigue aunque se cambie de pestaña, y se ve desde cualquier lado.
+  await nav(a, 'Inicio')
+  await a.getByRole('link', { name: /Viaje en curso/ }).click()
+  await a.getByRole('button', { name: /Terminar viaje/ }).click()
+  await expect(a.getByText('Viaje terminado')).toBeVisible()
+
+  // Si la app se recarga, el viaje sin guardar sigue ahí.
+  await a.reload()
+  await expect(a.getByText('Viaje terminado')).toBeVisible()
+  await a.getByRole('button', { name: 'Revisar y guardar' }).click()
+  const form = sheet(a)
+  await expect(form.getByText(/El GPS midió 0\.[78] km/)).toBeVisible()
+  const salida = form.getByRole('group', { name: 'Salida' })
+  await salida.getByRole('button', { name: 'Otro lugar' }).click()
+  await salida.getByLabel('Salida: nombre del lugar').fill(sala)
+  const destino = form.getByRole('group', { name: 'Destino' })
+  await destino.getByRole('button', { name: 'Otro lugar' }).click()
+  await destino.getByLabel('Destino: nombre del lugar').fill(`Foro ${run}`)
+
+  const sharers = form.getByRole('group', { name: 'Se reparte entre' }).getByRole('button')
+  for (const button of await sharers.all()) {
+    const name = (await button.innerText()).trim()
+    const pressed = (await button.getAttribute('aria-pressed')) === 'true'
+    if (pressed !== [inte.name, conta.name].includes(name)) await button.click()
+  }
+  await expect(form.getByLabel('Cuentas del viaje')).toContainText('Costo del viaje')
+  if (process.env.CAPTURAS) {
+    await a.screenshot({ path: '../../docs/capturas/transporte-gps-resumen.png' })
+  }
+  await form.getByRole('button', { name: 'Guardar viaje' }).click()
+
+  const row = a.getByRole('button', { name: new RegExp(`${sala} → Foro ${run}`) })
+  await expect(row).toContainText('medido por GPS', { timeout: 15_000 })
+  await expect(a.getByText('Viaje terminado')).toBeHidden()
+  await row.click()
+  await expect(a.getByRole('img', { name: 'Mapa del viaje' })).toBeVisible()
+  if (process.env.CAPTURAS) {
+    await a.screenshot({ path: '../../docs/capturas/transporte-gps.png', fullPage: true })
   }
 })

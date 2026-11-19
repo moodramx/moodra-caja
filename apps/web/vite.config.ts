@@ -55,6 +55,16 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: { cacheName: 'exportar-reportes', expiration: { maxEntries: 6 } },
           },
+          {
+            // Mapa de Transporte: lo ya visto se guarda para cuando falle la señal.
+            urlPattern: /^https:\/\/tile\.openstreetmap\.org\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mapa',
+              expiration: { maxEntries: 400, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
         ],
         // Recibe las notificaciones push dentro del mismo service worker.
         importScripts: ['push-sw.js'],

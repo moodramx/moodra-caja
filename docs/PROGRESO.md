@@ -1,5 +1,13 @@
 # PROGRESO — Moodra $$
 
+## Transporte en vivo · 2026-11-19 (rama `transporte-en-vivo`, sin publicar)
+
+- **Iniciar viaje / Terminar viaje** con mapa (OpenStreetMap) y GPS: se cobra lo recorrido de verdad. El viaje en curso sobrevive a cerrar la app y se ve desde cualquier pestaña.
+- Al terminar: resumen con kilómetros, tiempo, extra por tráfico según la velocidad, casetas de la ruta recorrida (Google) y reparto.
+- **Gasolina diaria**: función `fuel-prices` (CRE, mediana del Valle de México), llamada por el trabajo nocturno y al abrir Transporte. Se apaga en Tarifas.
+- Migración `20261121000000_viaje_en_vivo.sql`.
+- **Sin verificar**: nada probado en un celular real (GPS real, pantalla encendida, iPhone); las casetas automáticas dependen de la llave de Google, que hoy responde 403.
+
 ## Estado general · 2026-11-10
 
 | Fase                                              | Estado                              |

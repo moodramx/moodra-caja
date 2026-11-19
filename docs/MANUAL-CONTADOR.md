@@ -85,7 +85,7 @@ Otros catálogos: **Usuarios** (alta, baja, contraseña, rol y si participa en r
 
 ## 9. Transporte entre integrantes
 
-Los viajes en autos de integrantes no mueven dinero de la banda. Cada viaje es un gasto cubierto por la aportación de cada integrante, y las diferencias quedan en cuentas "Transporte" (1.6.x) que siempre suman cero. Ajusta el precio del litro y el desgaste en **Transporte → Tarifas**.
+Los viajes en autos de integrantes no mueven dinero de la banda. Cada viaje es un gasto cubierto por la aportación de cada integrante, y las diferencias quedan en cuentas "Transporte" (1.6.x) que siempre suman cero. Los viajes se siguen en el mapa con el GPS y se cobra lo recorrido; también se pueden registrar a mano. El precio del litro se actualiza solo cada día (mediana de las gasolineras del Valle de México, datos de la CRE); se puede apagar y poner a mano en **Transporte → Tarifas**, donde también va el desgaste por kilómetro. Las casetas se consultan a Google al guardar cada viaje y se corrigen con lo que cobró el tag.
 
 ## 10. Notificaciones y respaldos
 

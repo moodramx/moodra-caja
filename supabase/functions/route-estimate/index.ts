@@ -1,4 +1,5 @@
-// route-estimate: distancia, tiempo con tráfico y casetas entre dos direcciones,
+// route-estimate: distancia, tiempo con tráfico y casetas entre dos direcciones
+// (o siguiendo los puntos de una ruta ya recorrida),
 // con la Routes API de Google. La llave (GOOGLE_MAPS_KEY) vive solo en los
 // secrets de Supabase. Sin llave responde { configured: false } y la app deja
 // capturar los kilómetros y las casetas a mano.
@@ -11,10 +12,16 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-const Body = z.object({
-  origin: z.string().trim().min(3).max(300),
-  destination: z.string().trim().min(3).max(300),
-})
+const Coord = z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)])
+const Body = z.union([
+  z.object({
+    origin: z.string().trim().min(3).max(300),
+    destination: z.string().trim().min(3).max(300),
+  }),
+  // Ruta ya recorrida: puntos [lat, lng] en orden. Google la reconstruye
+  // pasando por ellos, y así las casetas son las de la ruta que sí se tomó.
+  z.object({ points: z.array(Coord).min(2).max(12) }),
+])
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -85,8 +92,22 @@ Deno.serve(async (req) => {
     return json(400, { error: 'JSON inválido' })
   }
   const parsed = Body.safeParse(raw)
-  if (!parsed.success) return json(400, { error: 'Faltan las direcciones' })
+  if (!parsed.success) return json(400, { error: 'Faltan las direcciones o la ruta' })
 
+  const at = (point: [number, number]) => ({
+    location: { latLng: { latitude: point[0], longitude: point[1] } },
+  })
+  const ends =
+    'points' in parsed.data
+      ? {
+          origin: at(parsed.data.points[0]!),
+          destination: at(parsed.data.points.at(-1)!),
+          intermediates: parsed.data.points.slice(1, -1).map((p) => ({ ...at(p), via: true })),
+        }
+      : {
+          origin: { address: parsed.data.origin },
+          destination: { address: parsed.data.destination },
+        }
   const ask = (withTolls: boolean) =>
     fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
       method: 'POST',
@@ -98,8 +119,7 @@ Deno.serve(async (req) => {
           (withTolls ? ',routes.travelAdvisory.tollInfo' : ''),
       },
       body: JSON.stringify({
-        origin: { address: parsed.data.origin },
-        destination: { address: parsed.data.destination },
+        ...ends,
         travelMode: 'DRIVE',
         routingPreference: 'TRAFFIC_AWARE',
         ...(withTolls

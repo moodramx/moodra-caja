@@ -428,3 +428,6 @@ enabled = true
 # notify valida por su cuenta: sesión de usuario o el secreto del cron de GitHub.
 [functions.notify]
 verify_jwt = false
+
+[functions.fuel-prices]
+verify_jwt = false
